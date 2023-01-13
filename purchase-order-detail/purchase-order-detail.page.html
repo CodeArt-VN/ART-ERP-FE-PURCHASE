@@ -1,0 +1,256 @@
+<ion-header>
+	<app-detail-toolbar [page]="this">
+		<ion-button (click)="copyToReceipt()" title="{{'erp.app.pages.purchase.purchase-order.copy-to-receipt' | translate}}" *ngIf="pageConfig.canCopyToReceipt">
+			<ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
+		</ion-button>
+		<ion-button (click)="importClick()" *ngIf="formGroup.controls.Status.value=='PODraft' && pageConfig.canEdit" title="{{'erp.app.pages.purchase.purchase-order.import' | translate}}">
+			<ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
+		</ion-button>
+	</app-detail-toolbar>
+</ion-header>
+
+<ion-content appScrollbarTheme class="ion-padding">
+	<div id="order-detail-page" style="position: absolute;"></div>
+	<div class="main-view" *ngIf="item && pageConfig.showSpinner==false">
+		<ion-grid fixed>
+			<form [formGroup]="formGroup">
+				<ion-row class="hr-group">
+					<ion-col size="12" size-sm="12" size-md="12" size-xl="3">
+						<ion-list-header class="ion-no-padding">
+							<ion-label color="primary">{{'erp.app.pages.purchase.purchase-order.purchase-order' | translate}}</ion-label>
+						</ion-list-header>
+					</ion-col>
+					<ion-col size="12" size-sm size-xl="4">
+						<!-- <div class="c-control">
+                            <label class="c-label" for="Id"># Id</label>
+                            <input class="c-input" id="Id" formControlName="Id" type="number">
+                        </div> -->
+						<div class="c-control">
+							<label class="c-label" for="Code">{{'erp.app.pages.purchase.purchase-order.po-vendor-code' | translate}} <small *ngIf="item.Id">{{'erp.app.pages.purchase.purchase-order.id' | translate}}: {{item.Id}}</small></label>
+							<input class="c-input" (change)="saveOrder();" id="Code" formControlName="Code" type="text">
+						</div>
+
+						<div class="c-control">
+							<label class="c-label" for="IDBranch">{{'erp.app.pages.purchase.purchase-order.id-branch' | translate}}
+								<span *ngIf="!formGroup.controls.IDBranch.valid && !formGroup.controls.IDBranch.pending && (formGroup.controls.IDBranch.dirty || submitAttempt)" ion-text color="danger">(*)</span>
+							</label>
+							<ng-select class="c-input" (change)="saveOrder();" labelForId="IDBranch" formControlName="IDBranch" [items]="branchList" [virtualScroll]="true" bindLabel="Name" bindValue="Id" placeholder="{{'erp.app.pages.purchase.purchase-order.search-placeholder' | translate}}">
+								<ng-template ng-option-tmp let-i="item" let-search="searchTerm">
+									<div *ngIf="i">
+										<div> <span *ngFor="let l of i.levels">&nbsp;&nbsp;&nbsp;</span> <span [ngOptionHighlight]="search">{{i.Name}}</span></div>
+									</div>
+								</ng-template>
+							</ng-select>
+						</div>
+
+						<div class="c-control">
+							<label class="c-label" for="IDVendor">{{'erp.app.pages.purchase.purchase-order.vendor-name' | translate}}
+								<span *ngIf="!formGroup.controls.IDVendor.valid && !formGroup.controls.IDVendor.pending && (formGroup.controls.IDVendor.dirty || submitAttempt)" ion-text color="danger">(*)</span>
+							</label>
+							<ng-select class="c-input" (change)="saveOrder();" labelForId="IDVendor" formControlName="IDVendor" [items]="vendorList" [virtualScroll]="true" bindLabel="Name" bindValue="Id" placeholder="{{'erp.app.pages.purchase.purchase-order.search-placeholder' | translate}}">
+								<ng-template ng-option-tmp let-i="item" let-search="searchTerm">
+									<div *ngIf="i">
+										<div> <span *ngFor="let l of i.levels">&nbsp;&nbsp;&nbsp;</span> <span [ngOptionHighlight]="search">{{i.Name}}</span></div>
+									</div>
+								</ng-template>
+							</ng-select>
+						</div>
+
+						<div class="c-control">
+							<label class="c-label" for="IDStorer">{{'erp.app.pages.purchase.purchase-order.storer-name' | translate}}
+								<span *ngIf="!formGroup.controls.IDStorer.valid && !formGroup.controls.IDStorer.pending && (formGroup.controls.IDStorer.dirty || submitAttempt)" ion-text color="danger">(*)</span>
+							</label>
+							<ng-select class="c-input" (change)="saveOrder();" labelForId="IDStorer" formControlName="IDStorer" [items]="storerList" [virtualScroll]="true" bindLabel="Name" bindValue="Id" placeholder="{{'erp.app.pages.purchase.purchase-order.search-placeholder' | translate}}">
+								<ng-template ng-option-tmp let-i="item" let-search="searchTerm">
+									<div *ngIf="i">
+										<div> <span *ngFor="let l of i.levels">&nbsp;&nbsp;&nbsp;</span> <span [ngOptionHighlight]="search">{{i.Name}}</span></div>
+									</div>
+								</ng-template>
+							</ng-select>
+						</div>
+
+					</ion-col>
+					<ion-col size="12" size-sm size-xl="4">
+						<!-- <div class="c-control">
+                            <label class="c-label">Ngày lên đơn</label>
+                            <input readonly class="c-input" [(ngModel)]="item.OrderDateText" [ngModelOptions]="{standalone: true}">
+                        </div> -->
+						<div class="c-control">
+							<label class="c-label" for="Status">{{'erp.app.pages.purchase.purchase-order.status-detail' | translate}}
+								<span *ngIf="!formGroup.controls.Status.valid && !formGroup.controls.Status.pending && (formGroup.controls.Status.dirty || submitAttempt)" ion-text color="danger">(*)</span>
+							</label>
+							<ng-select class="c-input" (change)="saveOrder();" labelForId="Status" formControlName="Status" [items]="statusList" [virtualScroll]="true" bindLabel="Name" bindValue="Code" placeholder="{{'erp.app.pages.purchase.purchase-order.search-placeholder' | translate}}">
+								<ng-template ng-option-tmp let-i="item" let-search="searchTerm">
+									<div *ngIf="i">
+										<div> <span *ngFor="let l of i.levels">&nbsp;&nbsp;&nbsp;</span> <span [ngOptionHighlight]="search">{{i.Name}}</span></div>
+									</div>
+								</ng-template>
+							</ng-select>
+						</div>
+						<div class="c-control">
+							<label class="c-label" for="PaymentStatus">{{'erp.app.pages.purchase.purchase-order.payment-status' | translate}}
+								<span *ngIf="!formGroup.controls.PaymentStatus.valid && !formGroup.controls.PaymentStatus.pending && (formGroup.controls.PaymentStatus.dirty || submitAttempt)" ion-text color="danger">(*)</span>
+							</label>
+							<ng-select class="c-input" (change)="saveOrder();" labelForId="PaymentStatus" formControlName="PaymentStatus" [items]="paymentStatusList" [virtualScroll]="true" bindLabel="Name" bindValue="Code" placeholder="{{'erp.app.pages.purchase.purchase-order.search-placeholder' | translate}}">
+								<ng-template ng-option-tmp let-i="item" let-search="searchTerm">
+									<div *ngIf="i">
+										<div> <span *ngFor="let l of i.levels">&nbsp;&nbsp;&nbsp;</span> <span [ngOptionHighlight]="search">{{i.Name}}</span></div>
+									</div>
+								</ng-template>
+							</ng-select>
+						</div>
+						<div class="c-control">
+							<label class="c-label" for="OrderDate">{{'erp.app.pages.purchase.purchase-order.order-date' | translate}}
+								<span *ngIf="!formGroup.controls.OrderDate.valid && !formGroup.controls.OrderDate.pending && (formGroup.controls.OrderDate.dirty || submitAttempt)" ion-text color="danger">(*)</span>
+							</label>
+							<input class="c-input" (change)="saveOrder();" id="OrderDate" formControlName="OrderDate" type="datetime-local">
+						</div>
+						<div class="c-control">
+							<label class="c-label" for="ExpectedReceiptDate">{{'erp.app.pages.purchase.purchase-order.expected-receipt-date' | translate}}
+								<span *ngIf="!formGroup.controls.ExpectedReceiptDate.valid && !formGroup.controls.ExpectedReceiptDate.pending && (formGroup.controls.ExpectedReceiptDate.dirty || submitAttempt)" ion-text color="danger">(*)</span>
+							</label>
+							<input class="c-input" (change)="saveOrder();" id="ExpectedReceiptDate" formControlName="ExpectedReceiptDate" type="datetime-local">
+						</div>
+
+
+					</ion-col>
+				</ion-row>
+			</form>
+		</ion-grid>
+
+		<div class="row-full shadow full-screen">
+			<ion-toolbar color="primary">
+				<ion-segment scrollable="true" (ionChange)="segmentChanged($event)" [value]="segmentView">
+					<ion-segment-button value="s1">
+						<ion-label>{{'erp.app.pages.purchase.purchase-order.item-list' | translate}}</ion-label>
+					</ion-segment-button>
+				</ion-segment>
+			</ion-toolbar>
+			<div *ngIf="segmentView == 's1'">
+				<form [formGroup]="formGroup">
+					<ng-container formArrayName="OrderLines">
+						<div class="table-contain">
+							<section class="table" style="min-width: 720px;">
+								<header class="bold">
+									<div class="col-id cell">#</div>
+									<div class="col-name cell">{{'erp.app.pages.purchase.purchase-order.item-label' | translate}}</div>
+									<div class="col-uom cell">{{'erp.app.pages.purchase.purchase-order.uom-label' | translate}}</div>
+									<div class="col-qty cell">{{'erp.app.pages.purchase.purchase-order.quantity-label' | translate}}</div>
+									<div class="col-discount cell">{{'erp.app.pages.purchase.purchase-order.discount-label' | translate}}</div>
+									<div class="col-promotion cell" title="{{'erp.app.pages.purchase.purchase-order.promotion-label-title' | translate}}">{{'erp.app.pages.purchase.purchase-order.promotion-label' | translate}} </div>
+									<div class="col-price cell">{{'erp.app.pages.purchase.purchase-order.price-label' | translate}}</div>
+									<div class="col-total cell">{{'erp.app.pages.purchase.purchase-order.total-label' | translate}}</div>
+									<div class="col-price cell">{{'erp.app.pages.purchase.purchase-order.vat-label' | translate}}</div>
+									<div class="col-del cell" *ngIf="pageConfig.canEdit"></div>
+								</header>
+
+								<div class="row" *ngFor="let g of formGroup.get('OrderLines')['controls']; let idx = index;">
+									<ng-container [formGroup]="g">
+										<div class="col-id cell">{{idx+1}}</div>
+										<div class="col-name cell">
+											<ng-select formControlName="_Item" appendTo="#order-detail-page" [readonly]="!pageConfig.canEdit || submitAttempt" class="c-input" (change)="changedIDItem(g, $event)" [labelForId]="'IDItem'+idx" [items]="g.controls._ItemDataSource.value | async" [typeahead]="g.controls._ItemSearchInput.value" [loading]="g.controls._ItemSearchLoading.value" [virtualScroll]="true" bindLabel="Name" placeholder="{{'erp.app.pages.purchase.purchase-order.changeitem-placeholder' | translate}}">
+												<ng-template ng-label-tmp let-i="item">
+													<b *ngIf="i.Code" [title]="i.Id">
+														{{i.Code}}
+													</b>
+													{{i.Name}}
+												</ng-template>
+												<ng-template ng-option-tmp let-i="item" let-search="searchTerm">
+													<div *ngIf="i">
+														<div><span [ngOptionHighlight]="search">{{i.Name}}</span></div>
+														<small>#<b><span class="important" [ngOptionHighlight]="search">{{i.Id}} - {{i.Code}}</span></b></small>
+													</div>
+												</ng-template>
+											</ng-select>
+										</div>
+										<div class="col-uom cell">
+											<select formControlName="IDUoM" [attr.disabled]="(!pageConfig.canEdit || submitAttempt)?'':null" class="c-input c-dropdown" (change)="changedIDUoM(g)">
+												<option [disabled]="t.Flag" *ngFor="let t of g.controls._UoMs.value" [value]="t.Id">{{t.Name}}</option>
+											</select>
+										</div>
+										<div [ngClass]="{disable: !pageConfig.canEdit}" class="col-qty cell">
+											<input formControlName="UoMQuantityExpected" [readonly]="!pageConfig.canEdit || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" [min]="1" [max]="9999" onkeydown="return event.keyCode !== 190">
+										</div>
+										<div [ngClass]="{disable: !pageConfig.canEdit || g.controls.IsPromotionItem.value}" class="col-discount cell">
+											<input formControlName="TotalDiscount" [readonly]="!pageConfig.canEdit || g.controls.IsPromotionItem.value || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" mask="separator.2" thousandSeparator="," [allowNegativeNumbers]="false" [hiddenInput]="true">
+										</div>
+
+										<div [ngClass]="{disable: !pageConfig.canEdit}" class="col-promotion cell">
+											<input formControlName="IsPromotionItem" [attr.disabled]="(!pageConfig.canEdit || submitAttempt)?'':null" (change)="saveOrder();" class="c-checkbox" type="checkbox">
+										</div>
+
+										<div class="col-price cell disable" [ngClass]="{disable: !pageConfig.canEdit || !pageConfig.canEditPrice}">
+											<input formControlName="UoMPrice" class="c-input" [readonly]="!(pageConfig.canEdit && pageConfig.canEditPrice && !g.controls.IsPromotionItem.value)" (focus)="$event.target.select()" (change)="saveOrder()" mask="separator.0" thousandSeparator="," [allowNegativeNumbers]="false">
+										</div>
+
+										<div class="col-total cell disable">
+											<span class="c-input disable">{{(g.controls.IsPromotionItem.value? 0 : (g.controls.UoMQuantityExpected.value * g.controls.UoMPrice.value - g.controls.TotalDiscount.value)) | mask: 'separator.0':','}}</span>
+										</div>
+										<div class="col-price cell">
+											<input formControlName="TaxRate" class="c-input" [readonly]="true" (focus)="$event.target.select()" mask="separator.0" thousandSeparator="," [allowNegativeNumbers]="false">
+										</div>
+
+										<div class="col-del cell" *ngIf="pageConfig.canEdit" (click)="removeOrderLine(idx)">
+											<ion-icon color="danger" class="min-btn" name="trash-outline"></ion-icon>
+										</div>
+									</ng-container>
+								</div>
+
+								<div class="row" *ngIf="pageConfig.canEdit && item?.OrderLines?.length > 1">
+									<div class="col-id cell" *ngIf="pageConfig.canEdit" (click)="addOrderLine({ IDOrder: item.Id, Id: 0 })">
+										<ion-icon class="min-btn" title="{{'erp.app.pages.purchase.purchase-order.add-order-line' | translate}}" name="add-circle-outline"></ion-icon>
+									</div>
+									<div class="col-id cell" *ngIf="!pageConfig.canEdit"></div>
+									<div class="col-name cell">
+										<b (click)="addOrderLine({ IDOrder: item.Id, Id: 0 })" *ngIf="pageConfig.canEdit">{{'erp.app.pages.purchase.purchase-order.add-order-line' | translate}}</b>
+
+										<ion-button fill="clear" size="small" (click)="showSaleOrderPickerModal()" *ngIf="pageConfig.canEdit">
+											<ion-icon slot="start" name="git-pull-request-outline"></ion-icon>
+											{{'erp.app.pages.purchase.purchase-order.show-sale-order-picker' | translate}}
+										</ion-button>
+
+									</div>
+									<div class="col-uom cell">
+										<b>{{'erp.app.pages.purchase.purchase-order.total' | translate}}:</b>
+									</div>
+
+									<div class="col-qty cell"></div>
+									<div class="col-discount cell disable">
+										<input class="c-input" [disabled]="true" mask="separator.0" thousandSeparator="," [allowNegativeNumbers]="true" [ngModel]="item.TotalDiscount" [ngModelOptions]="{standalone: true}">
+									</div>
+									<div class="col-promotion cell disable"></div>
+
+									<div class="col-price cell disable "></div>
+									<div class="col-total cell disable">
+										<input class="c-input" [disabled]="true" mask="separator.0" thousandSeparator="," [allowNegativeNumbers]="true" [ngModel]="item.TotalAfterTax" [ngModelOptions]="{standalone: true}">
+									</div>
+									<div class="col-price cell disable"></div>
+									<div class="col-del cell" *ngIf="pageConfig.canEdit"></div>
+								</div>
+							</section>
+						</div>
+					</ng-container>
+				</form>
+				<div class="table-contain">
+					<div class="row" *ngIf="pageConfig.canEdit && item?.OrderLines?.length <= 1">
+						<div class="cell">
+							<ion-button fill="clear" size="small" (click)="addOrderLine({ IDOrder: item.Id, Id: 0 })">
+								<ion-icon slot="start" name="add-circle-outline"></ion-icon>
+								{{'erp.app.pages.purchase.purchase-order.add-order-line' | translate}}
+							</ion-button>
+
+							<ion-button fill="clear" size="small" (click)="showSaleOrderPickerModal()">
+								<ion-icon slot="start" name="git-pull-request-outline"></ion-icon>
+								{{'erp.app.pages.purchase.purchase-order.show-sale-order-picker' | translate}}
+							</ion-button>
+
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>
+	<input class="hide-all" #importfile type="file" accept=".xlsx" (change)="uploadOrderLine($event)" />
+</ion-content>

@@ -1,0 +1,293 @@
+<ion-header>
+	<ion-toolbar>
+		<ion-buttons slot="start" class="ion-hide-sm-down_">
+			<ion-button color="dark" class="ion-hide-sm-down">
+				{{'erp.app.pages.purchase.purchase-order-note.page-title' | translate}}
+			</ion-button>
+		</ion-buttons>
+		<ion-buttons slot="end">
+			<!-- <ion-button (click)="changePrintMode()" title="{{'erp.app.pages.purchase.purchase-order-note.print-mode' | translate}}">
+				<ion-icon slot="icon-only" [name]="printMode == 'A4' ? 'cut-outline':'file-tray-full-outline'"></ion-icon>
+			</ion-button>
+			<span class="split ion-hide-sm-down">|</span> -->
+			<ion-button (click)="print()" title="{{'erp.app.pages.purchase.purchase-order-note.print' | translate}}">
+				<ion-icon slot="icon-only" name="print"></ion-icon>
+			</ion-button>
+			<ion-button (click)="refresh()" title="{{'erp.app.pages.purchase.purchase-order-note.refresh' | translate}}">
+				<ion-icon slot="icon-only" name="reload-outline"></ion-icon>
+			</ion-button>
+			<ion-button title="{{'erp.app.pages.purchase.purchase-order-note.show-feature' | translate}}" (click)="pageConfig.isShowFeature = !pageConfig.isShowFeature;">
+				<ion-icon slot="icon-only" [name]="pageConfig.isShowFeature? 'close-outline':'list-circle-outline'">
+				</ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
+</ion-header>
+
+
+<ion-content appScrollbarTheme appPrintFix class="A4 left" [ngClass]="{withFeature: pageConfig.isShowFeature}">
+	<ion-fab *ngIf="pageConfig.isShowFeature" [ngClass]="{withSearch: pageConfig.isShowSearch}" class="feature no-print " vertical="top" horizontal="start" slot="fixed">
+		<ion-list>
+			<ion-list-header lines="full">
+				<ion-label color="dark">{{'erp.app.pages.purchase.purchase-order-note.purchase-order' | translate}}</ion-label>
+
+				<ion-button size="small" (click)="toggleDateFilter()">
+					<ion-icon slot="icon-only" [name]="query.Status == 'PORequestApproved' ? 'calendar-outline' : 'calendar'"></ion-icon>
+				</ion-button>
+			</ion-list-header>
+
+		</ion-list>
+
+		<ion-list>
+			<ion-item lines="full" *ngIf="query.IDStatus!='[301]'">
+				<div class="c-control">
+					<label class="c-label" for="OrderDate">{{'erp.app.pages.purchase.purchase-order-note.order-date' | translate}}</label>
+					<input class="c-input" (change)="refresh()" id="OrderDate" type="date" [(ngModel)]="query.OrderDate">
+				</div>
+			</ion-item>
+
+			<ion-item [color]="i.Id == selectedPurchaseOrderID? 'primary': '' " button detail="true" lines="full" class="clickable" *ngFor="let i of items" (click)="loadPurchaseOrderNote(i)">
+				<ion-label class="ion-text-wrap">
+					<p>
+						<b>
+							<ion-text [color]="i.Id == selectedPurchaseOrderID? '': 'primary' ">{{'erp.app.pages.purchase.purchase-order-note.po' | translate}}:{{i.Id}}</ion-text>
+							<ion-text [color]="i.Id == selectedPurchaseOrderID? '': 'dark' "> - {{i.OrderDateText}}</ion-text>
+						</b>
+					</p>
+					<ion-text>
+						<small>{{i.VendorName}} => {{i.BranchName}}</small>
+					</ion-text>
+				</ion-label>
+			</ion-item>
+		</ion-list>
+
+		<img style="width: 1px; height: 1px; opacity: 0;" src="assets/RPT-Logo-ART.png">
+
+	</ion-fab>
+
+	<div style="overflow: auto;">
+		<div class="giao-nhan" *ngFor="let o of sheets">
+
+			<section class="sheet padding-10mm rpt p1">
+				<table>
+					<thead>
+						<tr>
+							<td>
+								<div class="page-header-space"></div>
+							</td>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+
+								<div class="top-zone">
+									
+									<div class="ribbon" *ngIf="o.Status != 'PORequestApproved'">
+										<span class="text">
+											{{o.StatusText}}
+										</span>
+									</div>
+									<table class="rpt-header" cellpadding="0" cellspacing="0">
+										<tbody>
+											<tr>
+												<td rowspan="6" class="logo">
+													<img [src]="o._Branch.LogoURL" (error)="$event.src='assets/RPT-Logo-ART.png'">
+												</td>
+												<td colspan="2" class="bol title">{{'erp.app.pages.purchase.purchase-order-note.po-title' | translate}}</td>
+												<td class="bol num" colspan="2">{{o.Code? o.Code : 'PO: '+o.Id}}</td>
+												<td rowspan="6" class="topQR">
+													<div *ngIf="o.Code">{{'erp.app.pages.purchase.purchase-order-note.po' | translate}}:{{o.Id}}</div>
+													<a [href]="'#/'+'purchase-order/'+o.Id" (click)="nav('purchase-order/'+o.Id,'forward')">
+														<img class="qrc" [src]="o.QRC">
+													</a>
+												</td>
+											</tr>
+											<tr>
+												<td class="head-c1 bol" colspan="2">{{o._Storer.CompanyName}}</td>
+												<td class="bol num" colspan="2">{{o.OrderDateText}}</td>
+											</tr>
+											<tr>
+												<td colspan="4"><span>{{o._Branch.Address}}</span></td>
+												<td colspan="2"></td>
+											</tr>
+											<tr>
+												<td></td>
+												<td class="bol"></td>
+												<td class="bol num" colspan="2"></td>
+											</tr>
+											<tr>
+												<td colspan="4" class="">
+													<span>
+														<b> {{'erp.app.pages.purchase.purchase-order-note.dear' | translate}}:</b> {{o._Vendor.CompanyName}},
+														<br>{{'erp.app.pages.purchase.purchase-order-note.rule' | translate}}:
+													</span>
+												</td>
+											</tr>
+											<tr>
+												<td colspan="4" class="">
+													<span *ngIf="o.ExpectedReceiptDate">
+														<b> {{'erp.app.pages.purchase.purchase-order-note.expected-receipt-date' | translate}}:</b> {{o.ExpectedReceiptDateText}}
+													</span>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+
+									<div class="ds-san-pham">
+										<table cellpadding="0" cellspacing="0">
+											<tbody>
+												<tr class="head">
+													<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.stt' | translate}}</td>
+													<td>
+														<div class="ten-sp ck">{{'erp.app.pages.purchase.purchase-order-note.item-name' | translate}}</div>
+													</td>
+													<ng-container *ngIf="isShowPackingUoM">
+														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.quota' | translate}}</td>
+														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.uom' | translate}}</td>
+														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.qty' | translate}}</td>
+													</ng-container>
+													<ng-container *ngIf="!isShowPackingUoM">
+														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.box' | translate}}</td>
+														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.odd' | translate}}</td>
+													</ng-container>
+													<td class="num">{{'erp.app.pages.purchase.purchase-order-note.price' | translate}}</td>
+													<td class="num">{{'erp.app.pages.purchase.purchase-order-note.total' | translate}}</td>
+													<!-- <td class="num">VAT</td>
+													<td class="num">T.GTGT</td>
+													<td class="num">TT sau thuế</td> -->
+													
+												</tr>
+												<ng-container *ngFor="let i of o.OrderLines; let idx = index; ">
+													<tr *ngFor="let uom of i._SplitUoMs; let gdx = index; ">
+
+														<td class="cen" [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">{{idx+1}}</td>
+														<td [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">
+															<div class="ten-sp ck"><b *ngIf="i._Item.Code">{{i._Item.Code}}</b><b *ngIf="!i._Item.Code">{{i.IDItem}}</b> - {{i._Item.Name}}</div>
+														</td>
+														<ng-container *ngIf="isShowPackingUoM">
+															<!-- Quy cách -->
+															<td class="num bol"> <span> {{i._PackingUoM}}</span> </td>
+															<!-- Đơn vị tính -->
+															<td class="num bol"> <span> {{uom.UoMName}} </span> </td>
+															
+															<td class="num bol"> <span>{{uom.Quantity}}</span> </td>
+														</ng-container>
+														<ng-container *ngIf="!isShowPackingUoM">
+															<td class="num bol" *ngIf="uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity"> <span *ngIf="uom.UoMId == i._Item.PurchasingUoM">{{uom.Quantity}}</span> </td>
+															<td class="num bol" *ngIf="uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity"> <span *ngIf="uom.BaseQuantity == uom.Quantity"> {{uom.Quantity}} </span> </td>
+
+															<td colspan="2" class="ion-text-center bol" *ngIf="!(uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity)">{{uom.Quantity}} {{uom.UoMName}}</td>
+														</ng-container>
+														<td class="num">
+															{{i.UoMPriceText}} 
+														</td>
+														<td class="num" [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">
+															{{i.TotalBeforeDiscountText}}
+														</td>
+
+														<!-- <td class="num" [attr.rowspan]="i._SplitUoMs.length" >{{i.TaxRate}}</td>
+														<td class="num" [attr.rowspan]="i._SplitUoMs.length" >{{i.Tax}}</td>
+														<td class="num" [attr.rowspan]="i._SplitUoMs.length" >{{i.TotalAfterTax}}</td> -->
+														
+													</tr>
+												</ng-container>
+											
+												<tr style="border-top: dashed 1px #000;" >
+													<td [attr.colspan]="isShowPackingUoM? 6:5" class="num">
+														{{'erp.app.pages.purchase.purchase-order-note.total-before-discount' | translate}}
+													</td>
+													<td class="num"><b>{{o.TotalBeforeDiscountText}}</b></td>
+												</tr>
+												<tr >
+													<td [attr.colspan]="isShowPackingUoM? 6:5" class="num">
+														{{'erp.app.pages.purchase.purchase-order-note.total-tax' | translate}}
+													</td>
+													<td class="num"><b>{{o.TotalTaxText}}</b></td>
+												</tr>
+												<tr >
+													<td [attr.colspan]="isShowPackingUoM? 6:5" class="num">
+														{{'erp.app.pages.purchase.purchase-order-note.total-after-tax' | translate}}
+													</td>
+													<td class="num"><b>{{o.TotalAfterTaxText}}</b></td>
+												</tr>
+												<!-- <tr style="border-top: dashed 1px #000;" >
+													<td colspan="6" class="num">
+														{{o.DocTienBangChu}}
+													</td>
+												</tr> -->
+											</tbody>
+										</table>
+									</div>
+
+									<!-- <table class="thanh-tien" cellpadding="0" cellspacing="0">
+										<tbody>
+											<tr>
+												<td class="c1">Tổng tiền:</td>
+												<td class="bol">{{o.TotalBeforeDiscountText}}</td>
+												<td class="num">Tổng CK:</td>
+												<td class="bol"> </td>
+												<td class="num">Tổng phải trả:</td>
+												<td class="num bol"></td>
+												<td class="num">VAT</td>
+												<td class="num">T.GTGT</td>
+												<td class="num bol">TT sau thuế</td>
+											</tr>
+											<tr>
+												<td class="num" colspan="6"> </td>
+											</tr>
+										</tbody>
+									</table> -->
+
+									<table class="chu-ky" cellpadding="0" cellspacing="0">
+										<tbody>
+											<tr>
+												<td style="width: 50%;">{{'erp.app.pages.purchase.purchase-order-note.seller' | translate}}
+													<div class="line2">
+														<i>{{'erp.app.pages.purchase.purchase-order-note.sign-full-name' | translate}}</i>
+													</div></td>
+												<td>
+													{{'erp.app.pages.purchase.purchase-order-note.buyer' | translate}}
+													<div class="line2">
+														<i>{{'erp.app.pages.purchase.purchase-order-note.sign-full-name' | translate}}</i>
+													</div>
+												</td>
+											</tr>
+											<tr>
+												<td></td>
+												<td></td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<table class="noti" cellpadding="0" cellspacing="0">
+									<tbody>
+										<tr>
+											<td class="cen">
+												{{'erp.app.pages.purchase.purchase-order-note.footer' | translate}}<br>
+												{{'erp.app.pages.purchase.purchase-order-note.footer-2' | translate}}
+												<!-- <span *ngIf="o._Branch.Phone">Quý công ty cần liên hệ về sản phẩm dịch vụ vui lòng gọi <b>{{ o._Branch.Phone }}</b></span>
+												<span *ngIf="o._Branch.Phone2"> hoặc liên hệ vận chuyển, giao hàng theo hotline <b>{{ o._Branch.Phone2 }}</b></span>. -->
+											</td>
+										</tr>
+									</tbody>
+								</table>
+
+
+							</td>
+						</tr>
+					</tbody>
+
+					<tfoot>
+						<tr>
+							<td>
+								<div class="page-footer-space"></div>
+							</td>
+						</tr>
+					</tfoot>
+				</table>
+			</section>
+
+		</div>
+	</div>
+</ion-content>
