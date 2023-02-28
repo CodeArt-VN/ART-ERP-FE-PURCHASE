@@ -137,13 +137,13 @@
                 <small *ngIf="i.OrderTimeText ">{{i.OrderTimeText}}</small>
             </div>
             <div class="col-name cell">
-                <span title="{{'erp.app.pages.purchase.sale-order-picker.view-order-detail' | translate}}" [ngOptionHighlight]="query.CustomerName">{{i.CustomerName}}</span>
+                <span title="{{'erp.app.pages.purchase.sale-order-picker.view-order-detail' | translate}}" [ngOptionHighlight]="query.CustomerName">{{i._Customer?.Name}}</span>
                 <small title="{{'erp.app.pages.purchase.sale-order-picker.view-contact-detail' | translate}}">#{{i.IDContact}}</small>
                 <small class="right">
-                    <ion-text color="dark"> <span>{{i.AddressLine1}}</span> <span *ngIf="i.AddressLine2"> &nbsp; {{i.AddressLine2}}</span> </ion-text>
+                    <ion-text color="dark"> <span>{{i._Customer?.Address?.AddressLine1}}</span> <span *ngIf="i.AddressLine2"> &nbsp; {{i._Customer?.Address?.AddressLine2}}</span> </ion-text>
                 </small>
             </div>
-            <div class="col-code cell money">{{i.TotalText}}</div>
+            <div class="col-code cell money">{{i.OriginalTotalAfterTax | number: '1.0-0'}}</div>
             <div class="col-code cell">{{i.Code}}</div>
             
         </div>

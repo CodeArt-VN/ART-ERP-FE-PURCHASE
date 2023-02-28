@@ -52,7 +52,7 @@ export class SaleOrderPickerModalPage extends PageBase {
             i.OrderTimeText = i.OrderDate ? lib.dateFormat(i.OrderDate, 'hh:MM') : '';
             i.OrderDateText = i.OrderDate ? lib.dateFormat(i.OrderDate, 'dd/mm/yy') : '';
             i.Query = i.OrderDate ? lib.dateFormat(i.OrderDate, 'yyyy-mm-dd') : '';
-            i.TotalText = lib.currencyFormat(i.TotalAfterTax);
+
         });
         super.loadedData(event);
     }

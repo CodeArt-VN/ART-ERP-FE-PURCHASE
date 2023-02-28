@@ -25,6 +25,7 @@
                             <label class="c-label" for="Id"># Id</label>
                             <input class="c-input" id="Id" formControlName="Id" type="number">
                         </div> -->
+						
 						<div class="c-control">
 							<label class="c-label" for="Code">{{'erp.app.pages.purchase.purchase-order.po-vendor-code' | translate}} <small *ngIf="item.Id">{{'erp.app.pages.purchase.purchase-order.id' | translate}}: {{item.Id}}</small></label>
 							<input class="c-input" (change)="saveOrder();" id="Code" formControlName="Code" type="text">
@@ -169,7 +170,7 @@
 											</select>
 										</div>
 										<div [ngClass]="{disable: !pageConfig.canEdit}" class="col-qty cell">
-											<input formControlName="UoMQuantityExpected" [readonly]="!pageConfig.canEdit || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" [min]="1" [max]="9999" onkeydown="return event.keyCode !== 190">
+											<input formControlName="UoMQuantityExpected" [readonly]="!pageConfig.canEdit || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" min="0.000000001" step="1" max="999999999999999999" onkeydown="return event.keyCode !== 190">
 										</div>
 										<div [ngClass]="{disable: !pageConfig.canEdit || g.controls.IsPromotionItem.value}" class="col-discount cell">
 											<input formControlName="TotalDiscount" [readonly]="!pageConfig.canEdit || g.controls.IsPromotionItem.value || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" mask="separator.2" thousandSeparator="," [allowNegativeNumbers]="false" [hiddenInput]="true">

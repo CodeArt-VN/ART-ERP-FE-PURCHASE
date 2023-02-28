@@ -106,12 +106,12 @@ export class PurchaseOrderDetailPage extends PageBase {
         this.contactProvider.read({ IsStorer: true, Take: 5000 }).then((resp) => {
             this.storerList = resp['data'];
         });
-        this.statusProvider.read({ Code_eq: 'PURCHASING', AllChildren: true }).then(resp => {
-            let poStatus = resp['data'].find(d => d.Code == 'POStatus');
-            this.statusList = resp['data'].filter(d => d.IDParent == poStatus.Id);
-
-            let paymentStatus = resp['data'].find(d => d.Code == 'POPaymentStatus');
-            this.paymentStatusList = resp['data'].filter(d => d.IDParent == paymentStatus.Id);
+        
+        this.env.getStatus('POStatus').then((data:any)=>{
+            this.statusList = data;
+        });
+        this.env.getStatus('POPaymentStatus').then((data:any)=>{
+            this.paymentStatusList = data;
         });
     }
 
