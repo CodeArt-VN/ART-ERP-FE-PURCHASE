@@ -83,7 +83,7 @@
 
 								<div class="top-zone">
 									
-									<div class="ribbon" *ngIf="o.Status != 'PORequestApproved'">
+									<div class="ribbon" *ngIf="o.Status == 'PODraft' || o.Status == 'POCancelled' || o.Status == 'PORequestUnapproved' || o.Status == 'PORequestSubmitted' ">
 										<span class="text">
 											{{o.StatusText}}
 										</span>

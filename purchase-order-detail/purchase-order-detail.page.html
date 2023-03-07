@@ -170,7 +170,7 @@
 											</select>
 										</div>
 										<div [ngClass]="{disable: !pageConfig.canEdit}" class="col-qty cell">
-											<input formControlName="UoMQuantityExpected" [readonly]="!pageConfig.canEdit || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" min="0.000000001" step="1" max="999999999999999999" onkeydown="return event.keyCode !== 190">
+											<input formControlName="UoMQuantityExpected" [readonly]="!pageConfig.canEdit || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" min="0" step="1" max="999999999999999999" onkeydown="return event.keyCode !== 190">
 										</div>
 										<div [ngClass]="{disable: !pageConfig.canEdit || g.controls.IsPromotionItem.value}" class="col-discount cell">
 											<input formControlName="TotalDiscount" [readonly]="!pageConfig.canEdit || g.controls.IsPromotionItem.value || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" mask="separator.2" thousandSeparator="," [allowNegativeNumbers]="false" [hiddenInput]="true">
