@@ -3,7 +3,7 @@ import { NavController, LoadingController, AlertController, ModalController } fr
 import { PageBase } from 'src/app/page-base';
 import { ActivatedRoute } from '@angular/router';
 import { EnvService } from 'src/app/services/core/env.service';
-import { BRA_BranchProvider, CRM_ContactProvider, PURCHASE_OrderDetailProvider, PURCHASE_OrderProvider, SYS_StatusProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
+import { BRA_BranchProvider, CRM_ContactProvider, PURCHASE_OrderDetailProvider, PURCHASE_OrderProvider, SYS_ConfigProvider, SYS_StatusProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
 import { lib } from 'src/app/services/static/global-functions';
@@ -48,19 +48,20 @@ export class PurchaseOrderDetailPage extends PageBase {
             IDBranch: ['', Validators.required],
             IDStorer: ['', Validators.required],
             IDVendor: ['', Validators.required],
-            Id: [0],
+            Id: new FormControl({ value: '', disabled: true }),
             Code: [''],
-            // Name: [''],
+            Name: [''],
             // ForeignName: [''],
-            // Remark: [''],
+            Remark: [''],
             // ForeignRemark: [''],
             OrderDate: new FormControl({ value: '', disabled: true }),
             ExpectedReceiptDate: [''],
-            ReceiptedDate: [''],
+            ReceiptedDate: new FormControl({ value: '', disabled: true }),
             Status: new FormControl({ value: 'PODraft', disabled: true }),
             PaymentStatus: ['WaitForPay', Validators.required],
             IsDisabled: [''],
-            OrderLines: this.formBuilder.array([])
+            OrderLines: this.formBuilder.array([]),
+            TotalAfterTax: new FormControl({ value: '', disabled: true })
         });
 
         Object.assign(pageProvider, {
@@ -177,6 +178,7 @@ export class PurchaseOrderDetailPage extends PageBase {
             IDUoM: [line.IDUoM, Validators.required],
             UoMPrice: [line.UoMPrice],
             UoMQuantityExpected: [line.UoMQuantityExpected, Validators.required],
+            QuantityAdjusted: [line.QuantityAdjusted],
             IsPromotionItem: [line.IsPromotionItem],
             TotalBeforeDiscount: new FormControl({ value: line.TotalBeforeDiscount, disabled: true }),
             TotalDiscount: [line.TotalDiscount],
@@ -228,8 +230,11 @@ export class PurchaseOrderDetailPage extends PageBase {
     }
 
     calcTotalLine() {
+        this.item.TotalBeforeDiscount = this.formGroup.controls.OrderLines.value.map(x => x.UoMPrice * x.UoMQuantityExpected).reduce((a, b) => (+a) + (+b), 0);
         this.item.TotalDiscount = this.formGroup.controls.OrderLines.value.map(x => x.TotalDiscount).reduce((a, b) => (+a) + (+b), 0);
-        this.item.TotalAfterTax = this.formGroup.controls.OrderLines.value.map(x => x.IsPromotionItem ? 0 : (x.UoMPrice * x.UoMQuantityExpected - x.TotalDiscount)).reduce((a, b) => (+a) + (+b), 0)
+        this.item.TotalAfterDiscount = this.item.TotalBeforeDiscount - this.item.TotalDiscount;
+        this.item.Tax = this.item.TotalAfterDiscount * 10 / 100;
+        this.item.TotalAfterTax = this.item.TotalAfterDiscount + this.item.Tax;
     }
 
     savedChange(savedItem = null, form = this.formGroup) {
