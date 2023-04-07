@@ -148,8 +148,8 @@
 														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.qty' | translate}}</td>
 													</ng-container>
 													<ng-container *ngIf="!isShowPackingUoM">
-														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.box' | translate}}</td>
-														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.odd' | translate}}</td>
+														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.uom' | translate}}</td>
+														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.qty' | translate}}</td>
 													</ng-container>
 													<td class="num">{{'erp.app.pages.purchase.purchase-order-note.price' | translate}}</td>
 													<td class="num">{{'erp.app.pages.purchase.purchase-order-note.total' | translate}}</td>
@@ -174,10 +174,9 @@
 															<td class="num bol"> <span>{{uom.Quantity}}</span> </td>
 														</ng-container>
 														<ng-container *ngIf="!isShowPackingUoM">
-															<td class="num bol" *ngIf="uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity"> <span *ngIf="uom.UoMId == i._Item.PurchasingUoM">{{uom.Quantity}}</span> </td>
-															<td class="num bol" *ngIf="uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity"> <span *ngIf="uom.BaseQuantity == uom.Quantity"> {{uom.Quantity}} </span> </td>
+															<td class="ion-text-center bol">{{i.UoMName}}</td>
+															<td class="num bol"> <span>{{i.UoMQuantityExpected}}</span></td>
 
-															<td colspan="2" class="ion-text-center bol" *ngIf="!(uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity)">{{uom.Quantity}} {{uom.UoMName}}</td>
 														</ng-container>
 														<td class="num">
 															{{i.UoMPriceText}} 

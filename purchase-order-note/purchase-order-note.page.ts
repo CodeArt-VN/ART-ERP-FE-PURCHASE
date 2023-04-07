@@ -35,6 +35,32 @@ export class PurchaseOrderNotePage extends PageBase {
 
     isShowPackingUoM = true;
 
+    loadData(event): void {
+        let query = {
+            Code: 'ConvertToLargerUoM',
+            IDBranch: this.env.selectedBranch
+        }
+
+        let apiPath = {
+            method: "GET",
+            url: function () { return ApiSetting.apiDomain("SYS/Config/ConfigByBranch") }
+        };
+
+        Promise.all([
+            this.pageProvider.commonService.connect(apiPath.method, apiPath.url(), query).toPromise()
+        ]).then((values: any) => {
+            let data = values[0];
+            if (data.Value == 'true') {
+                this.isShowPackingUoM = true;
+            }
+            else {
+                this.isShowPackingUoM = false;
+            }
+            this.query.SortBy = 'Id_desc';
+            super.loadData(event);
+        });
+    }
+
     loadedData(event) {
         super.loadedData(event);
         if (window.location.host.indexOf('artlogistics') > -1) {
