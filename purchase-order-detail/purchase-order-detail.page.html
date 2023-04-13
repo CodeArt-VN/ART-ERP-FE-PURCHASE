@@ -6,7 +6,7 @@
 		<ion-button (click)="copyToReceipt()" title="{{'erp.app.pages.purchase.purchase-order.copy-to-receipt' | translate}}" *ngIf="pageConfig.canCopyToReceipt">
 			<ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
 		</ion-button>
-		<ion-button (click)="importClick()" *ngIf="formGroup.controls.Status.value=='PODraft' && pageConfig.canEdit" title="{{'erp.app.pages.purchase.purchase-order.import' | translate}}">
+		<ion-button (click)="importClick()" *ngIf="formGroup.controls.Status.value=='Draft' && pageConfig.canEdit" title="{{'erp.app.pages.purchase.purchase-order.import' | translate}}">
 			<ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
 		</ion-button>
 	</app-detail-toolbar>
@@ -116,8 +116,9 @@
 									<div class="col-id cell">#</div>
 									<div class="col-name cell">{{'erp.app.pages.purchase.purchase-order.item-label' | translate}}</div>
 									<div class="col-uom cell">{{'erp.app.pages.purchase.purchase-order.uom-label' | translate}}</div>
-									<div class="col-qty cell">{{'erp.app.pages.purchase.purchase-order.quantity-label' | translate}}</div>
-									<div class="col-qty cell">{{'erp.app.pages.purchase.purchase-order.adjusted-quantity-label' | translate}}</div>
+									<div class="col-qty cell" *ngIf="pageConfig.POShowSuggestedQuantity && item.Type == 'FromPurchaseSuggestion'">Đề nghị</div>
+									<div class="col-qty cell">SL đặt</div>
+									<div class="col-qty cell" *ngIf="pageConfig.POShowAdjustedQuantity">SL đ.chỉnh</div>
 									<div class="col-discount cell">{{'erp.app.pages.purchase.purchase-order.discount-label' | translate}}</div>
 									<div class="col-promotion cell" title="{{'erp.app.pages.purchase.purchase-order.promotion-label-title' | translate}}">{{'erp.app.pages.purchase.purchase-order.promotion-label' | translate}} </div>
 									<div class="col-price cell">{{'erp.app.pages.purchase.purchase-order.price-label' | translate}}</div>
@@ -150,11 +151,14 @@
 												<option [disabled]="t.Flag" *ngFor="let t of g.controls._UoMs.value" [value]="t.Id">{{t.Name}}</option>
 											</select>
 										</div>
+										<div *ngIf="pageConfig.POShowSuggestedQuantity && item.Type == 'FromPurchaseSuggestion'" [ngClass]="{disable: !pageConfig.canEdit}" class="col-qty cell">
+											<input formControlName="SuggestedQuantity" [readonly]="!pageConfig.canEdit || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" min="0" step="1" max="999999999999999999" onkeydown="return event.keyCode !== 190">
+										</div>
 										<div [ngClass]="{disable: !pageConfig.canEdit}" class="col-qty cell">
 											<input formControlName="UoMQuantityExpected" [readonly]="!pageConfig.canEdit || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" min="0" step="1" max="999999999999999999" onkeydown="return event.keyCode !== 190">
 										</div>
-										<div [ngClass]="{disable: !pageConfig.canEdit}" class="col-qty cell">
-											<input formControlName="QuantityAdjusted" [readonly]="!pageConfig.canEdit || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" min="0" step="1" max="999999999999999999" onkeydown="return event.keyCode !== 190">
+										<div *ngIf="pageConfig.POShowAdjustedQuantity" [ngClass]="{disable: !pageConfig.canEdit}" class="col-qty cell">
+											<input formControlName="QuantityAdjusted" [readonly]="!pageConfig.canEdit || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" [min]="-1* g.controls.UoMQuantityExpected.value" onkeydown="return event.keyCode !== 190">
 										</div>
 										<div [ngClass]="{disable: !pageConfig.canEdit || g.controls.IsPromotionItem.value}" class="col-discount cell">
 											<input formControlName="TotalDiscount" [readonly]="!pageConfig.canEdit || g.controls.IsPromotionItem.value || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" mask="separator.2" thousandSeparator="," [allowNegativeNumbers]="false" [hiddenInput]="true">
@@ -168,13 +172,13 @@
 											<input formControlName="UoMPrice" class="c-input" [readonly]="!(pageConfig.canEdit && pageConfig.canEditPrice && !g.controls.IsPromotionItem.value)" (focus)="$event.target.select()" (change)="saveOrder()" mask="separator.0" thousandSeparator="," [allowNegativeNumbers]="false">
 										</div>
 
-										<div class="col-total cell disable">
-											<span class="c-input disable">{{(g.controls.IsPromotionItem.value? 0 : (g.controls.UoMQuantityExpected.value * g.controls.UoMPrice.value - g.controls.TotalDiscount.value)) | mask: 'separator.0':','}}</span>
-										</div>
+										
 										<div class="col-price cell">
 											<input formControlName="TaxRate" class="c-input" [readonly]="true" (focus)="$event.target.select()" mask="separator.0" thousandSeparator="," [allowNegativeNumbers]="false">
 										</div>
-
+										<div class="col-total cell disable">
+											<span class="c-input disable">{{(g.controls.IsPromotionItem.value? 0 : (((g.controls.UoMQuantityExpected.value + g.controls.QuantityAdjusted.value) * g.controls.UoMPrice.value - g.controls.TotalDiscount.value)) * ((1+g.controls.TaxRate.value/100))) | number: '1.0-0'}}</span>
+										</div>
 										<div class="col-del cell" *ngIf="pageConfig.canEdit" (click)="removeOrderLine(idx)">
 											<ion-icon color="danger" class="min-btn" name="trash-outline"></ion-icon>
 										</div>
@@ -201,15 +205,13 @@
 
 									<div class="col-qty cell"></div>
 									<div class="col-discount cell disable">
-										<input class="c-input" [disabled]="true" mask="separator.0" thousandSeparator="," [allowNegativeNumbers]="true" [ngModel]="item.TotalDiscount" [ngModelOptions]="{standalone: true}">
+										<span class="c-input"><b>{{item.TotalDiscount | number: '1.0-0'}}</b></span>
 									</div>
 									<div class="col-promotion cell disable"></div>
 
 									<div class="col-price cell disable "></div>
-									<div class="col-total cell disable">
-										<input class="c-input" [disabled]="true" mask="separator.0" thousandSeparator="," [allowNegativeNumbers]="true" [ngModel]="item.TotalAfterTax" [ngModelOptions]="{standalone: true}">
-									</div>
-									<div class="col-price cell disable"></div>
+									<div class="col-total cell disable"></div>
+									<div class="col-price cell disable"><b>{{item.TotalAfterTax | number: '1.0-0'}}</b></div>
 									<div class="col-del cell" *ngIf="pageConfig.canEdit"></div>
 								</div>
 							</section>

@@ -142,15 +142,18 @@
 													<td>
 														<div class="ten-sp ck">{{'erp.app.pages.purchase.purchase-order-note.item-name' | translate}}</div>
 													</td>
-													<ng-container *ngIf="isShowPackingUoM">
-														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.quota' | translate}}</td>
-														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.uom' | translate}}</td>
-														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.qty' | translate}}</td>
+													<td class="cen" *ngIf="pageConfig.PONShowPackingUoM && !pageConfig.PONShowEACaseOnly">Quy cách</td>
+
+													<ng-container *ngIf="!pageConfig.PONShowEACaseOnly">
+														<td class="cen" >{{'erp.app.pages.purchase.purchase-order-note.uom' | translate}}</td>
+														<td class="cen" >{{'erp.app.pages.purchase.purchase-order-note.qty' | translate}}</td>
 													</ng-container>
-													<ng-container *ngIf="!isShowPackingUoM">
-														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.uom' | translate}}</td>
-														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.qty' | translate}}</td>
+
+													<ng-container *ngIf="pageConfig.PONShowEACaseOnly">
+														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.box' | translate}}</td>
+														<td class="cen">{{'erp.app.pages.purchase.purchase-order-note.odd' | translate}}</td>	
 													</ng-container>
+
 													<td class="num">{{'erp.app.pages.purchase.purchase-order-note.price' | translate}}</td>
 													<td class="num">{{'erp.app.pages.purchase.purchase-order-note.total' | translate}}</td>
 													<!-- <td class="num">VAT</td>
@@ -165,19 +168,18 @@
 														<td [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">
 															<div class="ten-sp ck"><b *ngIf="i._Item.Code">{{i._Item.Code}}</b><b *ngIf="!i._Item.Code">{{i.IDItem}}</b> - {{i._Item.Name}}</div>
 														</td>
-														<ng-container *ngIf="isShowPackingUoM">
-															<!-- Quy cách -->
-															<td class="num bol"> <span> {{i._PackingUoM}}</span> </td>
-															<!-- Đơn vị tính -->
+														<td class="num bol" *ngIf="pageConfig.PONShowPackingUoM && !pageConfig.PONShowEACaseOnly"> <span> {{i._PackingUoM}}</span> </td>
+														<ng-container *ngIf="!pageConfig.PONShowEACaseOnly">
 															<td class="num bol"> <span> {{uom.UoMName}} </span> </td>
-															
 															<td class="num bol"> <span>{{uom.Quantity}}</span> </td>
 														</ng-container>
-														<ng-container *ngIf="!isShowPackingUoM">
-															<td class="ion-text-center bol">{{i.UoMName}}</td>
-															<td class="num bol"> <span>{{i.UoMQuantityExpected}}</span></td>
 
+														<ng-container *ngIf="pageConfig.PONShowEACaseOnly">
+															<td class="num bol" *ngIf="uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity"> <span *ngIf="uom.UoMId == i._Item.PurchasingUoM">{{uom.Quantity}}</span> </td>
+															<td class="num bol" *ngIf="uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity"> <span *ngIf="uom.BaseQuantity == uom.Quantity"> {{uom.Quantity}} </span> </td>
+															<td colspan="2" class="ion-text-center bol" *ngIf="!(uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity)">{{uom.Quantity}} {{uom.UoMName}}</td>
 														</ng-container>
+
 														<td class="num">
 															{{i.UoMPriceText}} 
 														</td>
@@ -192,24 +194,24 @@
 													</tr>
 												</ng-container>
 											
-												<tr style="border-top: dashed 1px #000;" >
-													<td [attr.colspan]="isShowPackingUoM? 6:5" class="num">
+												<!-- <tr style="border-top: dashed 1px #000;" >
+													<td [attr.colspan]="pageConfig.PONShowPackingUoM? 6:5" class="num">
 														{{'erp.app.pages.purchase.purchase-order-note.total-before-discount' | translate}}
 													</td>
 													<td class="num"><b>{{o.TotalBeforeDiscountText}}</b></td>
 												</tr>
 												<tr >
-													<td [attr.colspan]="isShowPackingUoM? 6:5" class="num">
+													<td [attr.colspan]="pageConfig.PONShowPackingUoM? 6:5" class="num">
 														{{'erp.app.pages.purchase.purchase-order-note.total-tax' | translate}}
 													</td>
 													<td class="num"><b>{{o.TotalTaxText}}</b></td>
 												</tr>
 												<tr >
-													<td [attr.colspan]="isShowPackingUoM? 6:5" class="num">
+													<td [attr.colspan]="pageConfig.PONShowPackingUoM? 6:5" class="num">
 														{{'erp.app.pages.purchase.purchase-order-note.total-after-tax' | translate}}
 													</td>
 													<td class="num"><b>{{o.TotalAfterTaxText}}</b></td>
-												</tr>
+												</tr> -->
 												<!-- <tr style="border-top: dashed 1px #000;" >
 													<td colspan="6" class="num">
 														{{o.DocTienBangChu}}

@@ -57,7 +57,8 @@ export class PurchaseOrderDetailPage extends PageBase {
             OrderDate: new FormControl({ value: '', disabled: true }),
             ExpectedReceiptDate: [''],
             ReceiptedDate: new FormControl({ value: '', disabled: true }),
-            Status: new FormControl({ value: 'PODraft', disabled: true }),
+            Type : ['Regular'],
+            Status: new FormControl({ value: 'Draft', disabled: true }),
             PaymentStatus: ['WaitForPay', Validators.required],
             IsDisabled: [''],
             OrderLines: this.formBuilder.array([]),
@@ -108,12 +109,23 @@ export class PurchaseOrderDetailPage extends PageBase {
             this.storerList = resp['data'];
         });
         
-        this.env.getStatus('POStatus').then((data:any)=>{
+        this.env.getStatus('PurchaseOrder').then((data:any)=>{
             this.statusList = data;
         });
         this.env.getStatus('POPaymentStatus').then((data:any)=>{
             this.paymentStatusList = data;
         });
+
+        Promise.all([
+            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', {Code: 'POShowSuggestedQuantity', IDBranch: this.env.selectedBranch}).toPromise(),
+            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', {Code: 'POShowAdjustedQuantity', IDBranch: this.env.selectedBranch}).toPromise(),
+        ]).then((values: any) => {
+            this.pageConfig.POShowSuggestedQuantity = JSON.parse(values[0]['Value']);
+            this.pageConfig.POShowAdjustedQuantity = JSON.parse(values[1]['Value']);
+            
+        });
+
+        
     }
 
     markNestedNode(ls, Id) {
@@ -130,11 +142,11 @@ export class PurchaseOrderDetailPage extends PageBase {
             if (this.item.OrderLines)
                 this.item.OrderLines.sort((a, b) => (a.Id > b.Id) ? 1 : ((b.Id > a.Id) ? -1 : 0));
 
-            if (!(this.item.Status == 'PODraft' || this.item.Status == 'PORequestUnapproved')) {
+            if (!(this.item.Status == 'Draft' || this.item.Status == 'PORequestUnapproved')) {
                 this.pageConfig.canEdit = false;
             }
 
-            if ((this.item.Status == 'PORequestApproved' || this.item.Status == 'POSubmitted') && this.pageConfig.canEditApprovedOrder) {
+            if ((this.item.Status == 'PORequestApproved' || this.item.Status == 'Submitted') && this.pageConfig.canEditApprovedOrder) {
                 this.pageConfig.canEdit = true;
             }
 
@@ -177,6 +189,7 @@ export class PurchaseOrderDetailPage extends PageBase {
             IDItem: [line.IDItem, Validators.required],
             IDUoM: [line.IDUoM, Validators.required],
             UoMPrice: [line.UoMPrice],
+            SuggestedQuantity: new FormControl({ value: line.SuggestedQuantity, disabled: true }),
             UoMQuantityExpected: [line.UoMQuantityExpected, Validators.required],
             QuantityAdjusted: [line.QuantityAdjusted],
             IsPromotionItem: [line.IsPromotionItem],
@@ -230,10 +243,12 @@ export class PurchaseOrderDetailPage extends PageBase {
     }
 
     calcTotalLine() {
-        this.item.TotalBeforeDiscount = this.formGroup.controls.OrderLines.value.map(x => x.UoMPrice * x.UoMQuantityExpected).reduce((a, b) => (+a) + (+b), 0);
+        console.log(this.formGroup.controls.OrderLines);
+        
+        this.item.TotalBeforeDiscount = this.formGroup.controls.OrderLines.value.map(x => x.UoMPrice * (x.UoMQuantityExpected + x.QuantityAdjusted)).reduce((a, b) => (+a) + (+b), 0);
         this.item.TotalDiscount = this.formGroup.controls.OrderLines.value.map(x => x.TotalDiscount).reduce((a, b) => (+a) + (+b), 0);
         this.item.TotalAfterDiscount = this.item.TotalBeforeDiscount - this.item.TotalDiscount;
-        this.item.Tax = this.item.TotalAfterDiscount * 10 / 100;
+        this.item.Tax = this.formGroup.controls.OrderLines.value.map(x => x.UoMPrice * (x.UoMQuantityExpected + x.QuantityAdjusted) * (x.TaxRate / 100)).reduce((a, b) => (+a) + (+b), 0);
         this.item.TotalAfterTax = this.item.TotalAfterDiscount + this.item.Tax;
     }
 

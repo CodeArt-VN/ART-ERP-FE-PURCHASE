@@ -36,7 +36,7 @@ export class PurchaseOrderPage extends PageBase {
             this.sortToggle('Id', true);
         }
         this.statusProvider.read({ Code_eq: 'PURCHASING', AllChildren: true }).then(resp => {
-            let poStatus = resp['data'].find(d => d.Code == 'POStatus');
+            let poStatus = resp['data'].find(d => d.Code == 'PurchaseOrder');
             this.statusList = resp['data'].filter(d => d.IDParent == poStatus.Id);
 
             let paymentStatus = resp['data'].find(d => d.Code == 'POPaymentStatus');
@@ -71,7 +71,7 @@ export class PurchaseOrderPage extends PageBase {
         if (!this.pageConfig.canSubmitOrdersForApproval) return;
         if (this.submitAttempt) return;
 
-        let itemsCanNotProcess = this.selectedItems.filter(i => !(i.Status == 'PODraft' || i.Status == 'PORequestUnapproved'));
+        let itemsCanNotProcess = this.selectedItems.filter(i => !(i.Status == 'Draft' || i.Status == 'PORequestUnapproved'));
         if (itemsCanNotProcess.length == this.selectedItems.length) {
             this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-send-approve-new-draft-disapprove-only','warning');
         }
@@ -79,7 +79,7 @@ export class PurchaseOrderPage extends PageBase {
             itemsCanNotProcess.forEach(i => {
                 i.checked = false;
             });
-            this.selectedItems = this.selectedItems.filter(i => (i.Status == 'PODraft' || i.Status == 'PORequestUnapproved'));
+            this.selectedItems = this.selectedItems.filter(i => (i.Status == 'Draft' || i.Status == 'PORequestUnapproved'));
 
             this.env.showPrompt('Bạn chắc muốn gửi duyệt ' + this.selectedItems.length + ' đơn hàng đang chọn?', null, 'Gửi duyệt ' + this.selectedItems.length + ' mua hàng')
                 .then(_ => {
@@ -181,7 +181,7 @@ export class PurchaseOrderPage extends PageBase {
         if (!this.pageConfig.canCancel) return;
         if (this.submitAttempt) return;
 
-        let itemsCanNotProcess = this.selectedItems.filter(i => !(i.Status == 'PODraft' || i.Status == 'PORequestUnapproved'));
+        let itemsCanNotProcess = this.selectedItems.filter(i => !(i.Status == 'Draft' || i.Status == 'PORequestUnapproved'));
         if (itemsCanNotProcess.length == this.selectedItems.length) {
             this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-cancel-pending-draft-only','warning');
         }
@@ -189,7 +189,7 @@ export class PurchaseOrderPage extends PageBase {
             itemsCanNotProcess.forEach(i => {
                 i.checked = false;
             });
-            this.selectedItems = this.selectedItems.filter(i => (i.Status == 'PODraft' || i.Status == 'PORequestUnapproved'));
+            this.selectedItems = this.selectedItems.filter(i => (i.Status == 'Draft' || i.Status == 'PORequestUnapproved'));
             this.env.showPrompt('Bạn chắc muốn HỦY ' + this.selectedItems.length + ' đơn hàng đang chọn?', null, 'Duyệt ' + this.selectedItems.length + ' đơn hàng')
                 .then(_ => {
                     this.submitAttempt = true;

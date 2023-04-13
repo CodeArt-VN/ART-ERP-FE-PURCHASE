@@ -33,40 +33,28 @@ export class PurchaseOrderNotePage extends PageBase {
         this.query.Status = 'PORequestApproved';
     }
 
-    isShowPackingUoM = true;
-
-    loadData(event): void {
-        let query = {
-            Code: 'ConvertToLargerUoM',
-            IDBranch: this.env.selectedBranch
-        }
-
-        let apiPath = {
-            method: "GET",
-            url: function () { return ApiSetting.apiDomain("SYS/Config/ConfigByBranch") }
-        };
-
+    
+    preLoadData(event?: any): void {
         Promise.all([
-            this.pageProvider.commonService.connect(apiPath.method, apiPath.url(), query).toPromise()
+            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', {Code: 'PONConvertToLargerUoM', IDBranch: this.env.selectedBranch}).toPromise(),
+            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', {Code: 'PONShowPackingUoM', IDBranch: this.env.selectedBranch}).toPromise(),
+            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', {Code: 'PONShowEACaseOnly', IDBranch: this.env.selectedBranch}).toPromise(),
         ]).then((values: any) => {
-            let data = values[0];
-            if (data.Value == 'true') {
-                this.isShowPackingUoM = true;
-            }
-            else {
-                this.isShowPackingUoM = false;
-            }
-            this.query.SortBy = 'Id_desc';
-            super.loadData(event);
+            this.pageConfig.PONConvertToLargerUoM = JSON.parse(values[0]['Value']);
+            this.pageConfig.PONShowPackingUoM = JSON.parse(values[1]['Value']);
+            this.pageConfig.PONShowEACaseOnly = JSON.parse(values[2]['Value']);
+            super.preLoadData(event);
         });
     }
 
+    
+    
+    
+
+
     loadedData(event) {
         super.loadedData(event);
-        if (window.location.host.indexOf('artlogistics') > -1) {
-			this.isShowPackingUoM = false;
-		}
-        
+       
         this.items.forEach(i => {
             i.OrderDateText = lib.dateFormat(i.OrderDate, 'dd/mm/yy hh:MM');
             i.OrderTimeText = lib.dateFormat(i.OrderDate, 'hh:MM');
@@ -139,7 +127,7 @@ export class PurchaseOrderNotePage extends PageBase {
                     this.env.showMessage(err.message, 'danger');
                 }
                 else {
-                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-create-order','danger');
+                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-create-order', 'danger');
                 }
                 this.submitAttempt = false;
                 if (loading) loading.dismiss();
