@@ -184,7 +184,7 @@ export class PurchaseOrderDetailPage extends PageBase {
             IDOrder: [line.IDOrder],
             Id: [line.Id],
             // Code: [line.Code],
-            // Remark: [line.Remark],
+            Remark: [line.Remark],
             // ForeignRemark: [line.ForeignRemark],
             IDItem: [line.IDItem, Validators.required],
             IDUoM: [line.IDUoM, Validators.required],
