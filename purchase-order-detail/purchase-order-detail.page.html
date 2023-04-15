@@ -124,6 +124,7 @@
 									<div class="col-price cell">{{'erp.app.pages.purchase.purchase-order.price-label' | translate}}</div>
 									<div class="col-total cell">{{'erp.app.pages.purchase.purchase-order.total-label' | translate}}</div>
 									<div class="col-price cell">{{'erp.app.pages.purchase.purchase-order.vat-label' | translate}}</div>
+									<div class="col-price cell">Ghi chú</div>
 									<div class="col-del cell" *ngIf="pageConfig.canEdit"></div>
 								</header>
 
@@ -178,6 +179,9 @@
 										</div>
 										<div class="col-total cell disable">
 											<span class="c-input disable">{{(g.controls.IsPromotionItem.value? 0 : (((g.controls.UoMQuantityExpected.value + g.controls.QuantityAdjusted.value) * g.controls.UoMPrice.value - g.controls.TotalDiscount.value)) * ((1+g.controls.TaxRate.value/100))) | number: '1.0-0'}}</span>
+										</div>
+										<div [ngClass]="{disable: !pageConfig.canEdit}" class="col-promotion cell">
+											<input formControlName="Remark" [attr.disabled]="(!pageConfig.canEdit || submitAttempt)?'':null" (change)="saveOrder();" class="c-input" type="text">
 										</div>
 										<div class="col-del cell" *ngIf="pageConfig.canEdit" (click)="removeOrderLine(idx)">
 											<ion-icon color="danger" class="min-btn" name="trash-outline"></ion-icon>

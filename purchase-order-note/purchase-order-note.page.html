@@ -167,6 +167,7 @@
 														<td class="cen" [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">{{idx+1}}</td>
 														<td [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">
 															<div class="ten-sp ck"><b *ngIf="i._Item.Code">{{i._Item.Code}}</b><b *ngIf="!i._Item.Code">{{i.IDItem}}</b> - {{i._Item.Name}}</div>
+															<div class="ten-sp ck" *ngIf="i.Remark"><em>{{i.Remark}}</em></div>
 														</td>
 														<td class="num bol" *ngIf="pageConfig.PONShowPackingUoM && !pageConfig.PONShowEACaseOnly"> <span> {{i._PackingUoM}}</span> </td>
 														<ng-container *ngIf="!pageConfig.PONShowEACaseOnly">
@@ -184,7 +185,7 @@
 															{{i.UoMPriceText}} 
 														</td>
 														<td class="num" [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">
-															{{i.TotalBeforeDiscountText}}
+															{{i.TotalAfterTaxText}}
 														</td>
 
 														<!-- <td class="num" [attr.rowspan]="i._SplitUoMs.length" >{{i.TaxRate}}</td>
