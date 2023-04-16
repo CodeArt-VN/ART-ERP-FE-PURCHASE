@@ -24,15 +24,15 @@
 						</ion-list-header>
 					</ion-col>
 					<ion-col size="12" size-sm size-xl="4">
-						<div class="c-control" *ngIf="item.Id">
+						<!-- <div class="c-control" *ngIf="item.Id">
                             <label class="c-label" for="Id"># Id</label>
                             <input class="c-input" id="Id" formControlName="Id" type="number">
-                        </div>
+                        </div> -->
 						
-						<!-- <div class="c-control">
+						<div class="c-control">
 							<label class="c-label" for="Code">{{'erp.app.pages.purchase.purchase-order.po-vendor-code' | translate}} <small *ngIf="item.Id">{{'erp.app.pages.purchase.purchase-order.id' | translate}}: {{item.Id}}</small></label>
 							<input class="c-input" (change)="saveOrder();" id="Code" formControlName="Code" type="text">
-						</div> -->
+						</div>
 
 						<div class="c-control">
 							<label class="c-label" for="IDVendor">{{'erp.app.pages.purchase.purchase-order.vendor-name' | translate}}
@@ -59,12 +59,13 @@
                             <label class="c-label">Ngày lên đơn</label>
                             <input readonly class="c-input" [(ngModel)]="item.OrderDateText" [ngModelOptions]="{standalone: true}">
                         </div> -->
-						<div class="c-control" *ngIf="item.Id">
-							<label class="c-label" for="OrderDate">{{'erp.app.pages.purchase.purchase-order.order-date' | translate}}
-								<span *ngIf="!formGroup.controls.OrderDate.valid && !formGroup.controls.OrderDate.pending && (formGroup.controls.OrderDate.dirty || submitAttempt)" ion-text color="danger">(*)</span>
+						<div class="c-control">
+							<label class="c-label" for="ExpectedReceiptDate">{{'erp.app.pages.purchase.purchase-order.expected-receipt-date-detail' | translate}}
+								<span *ngIf="!formGroup.controls.ExpectedReceiptDate.valid && !formGroup.controls.ExpectedReceiptDate.pending && (formGroup.controls.ExpectedReceiptDate.dirty || submitAttempt)" ion-text color="danger">(*)</span>
 							</label>
-							<input class="c-input" (change)="saveOrder();" id="OrderDate" formControlName="OrderDate" type="datetime-local">
+							<input (change)="saveOrder();" formControlName="ExpectedReceiptDate" class="c-input" id="ExpectedReceiptDate" type="datetime-local">
 						</div>
+						
 						<div class="c-control">
 							<label class="c-label" for="IDStorer">{{'erp.app.pages.purchase.purchase-order.storer-name' | translate}}
 								<span *ngIf="!formGroup.controls.IDStorer.valid && !formGroup.controls.IDStorer.pending && (formGroup.controls.IDStorer.dirty || submitAttempt)" ion-text color="danger">(*)</span>
@@ -278,13 +279,19 @@
 									</div>
 								</ion-col>
 								<ion-col size="12" size-sm size-xl="4">
-									<div class="c-control" *ngIf="item.Id">
+									<div class="c-control" >
+										<label class="c-label" for="OrderDate">{{'erp.app.pages.purchase.purchase-order.order-date' | translate}}
+											<span *ngIf="!formGroup.controls.OrderDate.valid && !formGroup.controls.OrderDate.pending && (formGroup.controls.OrderDate.dirty || submitAttempt)" ion-text color="danger">(*)</span>
+										</label>
+										<input class="c-input" (change)="saveOrder();" id="OrderDate" formControlName="OrderDate" type="datetime-local">
+									</div>
+									<div class="c-control" >
 										<label class="c-label" for="ExpectedReceiptDate">{{'erp.app.pages.purchase.purchase-order.expected-receipt-date-detail' | translate}}
 											<span *ngIf="!formGroup.controls.ExpectedReceiptDate.valid && !formGroup.controls.ExpectedReceiptDate.pending && (formGroup.controls.ExpectedReceiptDate.dirty || submitAttempt)" ion-text color="danger">(*)</span>
 										</label>
 										<input (change)="saveOrder();" formControlName="ExpectedReceiptDate" class="c-input" id="ExpectedReceiptDate" type="datetime-local">
 									</div>
-									<div class="c-control" *ngIf="item.Id">
+									<div class="c-control">
 										<label class="c-label" for="ReceiptedDate">{{'erp.app.pages.purchase.purchase-order.receipt-date-detail' | translate}}
 											<span *ngIf="!formGroup.controls.ReceiptedDate.valid && !formGroup.controls.ReceiptedDate.pending && (formGroup.controls.ReceiptedDate.dirty || submitAttempt)" ion-text color="danger">(*)</span>
 										</label>
