@@ -45,17 +45,17 @@ export class PurchaseOrderDetailPage extends PageBase {
         this.pageConfig.isDetailPage = true;
 
         this.formGroup = formBuilder.group({
-            IDBranch: ['', Validators.required],
-            IDStorer: ['', Validators.required],
-            IDVendor: ['', Validators.required],
+            IDBranch: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
+            IDStorer: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
+            IDVendor: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
             Id: new FormControl({ value: '', disabled: true }),
-            Code: [''],
-            Name: [''],
+            Code: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
+            Name: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
             // ForeignName: [''],
-            Remark: [''],
+            Remark: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
             // ForeignRemark: [''],
             OrderDate: new FormControl({ value: '', disabled: true }),
-            ExpectedReceiptDate: [''],
+            ExpectedReceiptDate: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
             ReceiptedDate: new FormControl({ value: '', disabled: true }),
             Type : ['Regular'],
             Status: new FormControl({ value: 'Draft', disabled: true }),
@@ -136,7 +136,7 @@ export class PurchaseOrderDetailPage extends PageBase {
         });
     }
 
-    loadedData() {
+    loadedData(event) {
         if (this.item) {
             this.item.OrderDateText = lib.dateFormat(this.item.OrderDate, 'hh:MM dd/mm/yyyy');
             if (this.item.OrderLines)
@@ -146,13 +146,10 @@ export class PurchaseOrderDetailPage extends PageBase {
                 this.pageConfig.canEdit = false;
             }
 
-            if ((this.item.Status == 'PORequestApproved' || this.item.Status == 'Submitted') && this.pageConfig.canEditApprovedOrder) {
-                this.pageConfig.canEdit = true;
-            }
-
+          
         }
-
-        super.loadedData();
+        
+        super.loadedData(event, true);
         this.setOrderLines();
     }
 
@@ -180,24 +177,24 @@ export class PurchaseOrderDetailPage extends PageBase {
                     .pipe(catchError(() => of([])), tap(() => group.controls._ItemSearchLoading.setValue(false))))
             )],
             _UoMs: [line._Item ? line._Item.UoMs : ''],
-            _Item: [line._Item, Validators.required],
+            _Item: new FormControl({ value: line._Item, disabled: !this.pageConfig.canEdit }, Validators.required),
             IDOrder: [line.IDOrder],
             Id: [line.Id],
             // Code: [line.Code],
-            Remark: [line.Remark],
+            Remark: new FormControl({ value: line.Remark, disabled: !(this.pageConfig.canEdit || ((this.item.Status == 'PORequestApproved' || this.item.Status == 'Submitted') && this.pageConfig.canEditApprovedOrder)) }),
             // ForeignRemark: [line.ForeignRemark],
             IDItem: [line.IDItem, Validators.required],
-            IDUoM: [line.IDUoM, Validators.required],
-            UoMPrice: [line.UoMPrice],
+            IDUoM: new FormControl({ value: line.IDUoM, disabled: !this.pageConfig.canEdit }, Validators.required),
+            UoMPrice: new FormControl({ value: line.UoMPrice, disabled: !(this.pageConfig.canEdit && this.pageConfig.canEditPrice) }, Validators.required),
             SuggestedQuantity: new FormControl({ value: line.SuggestedQuantity, disabled: true }),
-            UoMQuantityExpected: [line.UoMQuantityExpected, Validators.required],
-            QuantityAdjusted: [line.QuantityAdjusted],
-            IsPromotionItem: [line.IsPromotionItem],
+            UoMQuantityExpected: new FormControl({ value: line.UoMQuantityExpected, disabled: !this.pageConfig.canEdit }, Validators.required),
+            QuantityAdjusted: new FormControl({ value: line.QuantityAdjusted, disabled: !((this.item.Status == 'PORequestApproved' || this.item.Status == 'Submitted') && this.pageConfig.canEditApprovedOrder) }),
+            IsPromotionItem: new FormControl({ value: line.IsPromotionItem, disabled: !this.pageConfig.canEdit }),
             TotalBeforeDiscount: new FormControl({ value: line.TotalBeforeDiscount, disabled: true }),
-            TotalDiscount: [line.TotalDiscount],
+            TotalDiscount: new FormControl({ value: line.TotalDiscount, disabled: !this.pageConfig.canEdit }),
             TotalAfterDiscount: new FormControl({ value: line.TotalAfterDiscount, disabled: true }),
-            TaxRate: [line.TaxRate],
-            Tax: [line.Tax],
+            TaxRate: new FormControl({ value: line.TaxRate, disabled: true }),
+            Tax: new FormControl({ value: line.Tax, disabled: true }), 
             TotalAfterTax: new FormControl({ value: line.TotalAfterTax, disabled: true }),
         });
         groups.push(group);
@@ -238,8 +235,8 @@ export class PurchaseOrderDetailPage extends PageBase {
 
     saveOrder() {
         this.calcTotalLine();
-        //if (this.formGroup.controls.OrderLines.valid)
-        super.saveChange2();
+     
+        this.debounce(() => { super.saveChange2() }, 1000);
     }
 
     calcTotalLine() {
@@ -255,7 +252,7 @@ export class PurchaseOrderDetailPage extends PageBase {
     savedChange(savedItem = null, form = this.formGroup) {
         super.savedChange(savedItem, form);
         this.item = savedItem;
-        this.loadedData();
+        this.loadedData(null);
     }
 
     segmentView = 's1';

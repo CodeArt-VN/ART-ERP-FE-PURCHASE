@@ -112,7 +112,7 @@
 				<form [formGroup]="formGroup">
 					<ng-container formArrayName="OrderLines">
 						<div class="table-contain">
-							<section class="table" style="min-width: 720px;">
+							<section class="table" style="min-width: 940px;">
 								<header class="bold">
 									<div class="col-id cell">#</div>
 									<div class="col-name cell">{{'erp.app.pages.purchase.purchase-order.item-label' | translate}}</div>
@@ -123,9 +123,9 @@
 									<div class="col-discount cell">{{'erp.app.pages.purchase.purchase-order.discount-label' | translate}}</div>
 									<div class="col-promotion cell" title="{{'erp.app.pages.purchase.purchase-order.promotion-label-title' | translate}}">{{'erp.app.pages.purchase.purchase-order.promotion-label' | translate}} </div>
 									<div class="col-price cell">{{'erp.app.pages.purchase.purchase-order.price-label' | translate}}</div>
-									<div class="col-total cell">{{'erp.app.pages.purchase.purchase-order.total-label' | translate}}</div>
 									<div class="col-price cell">{{'erp.app.pages.purchase.purchase-order.vat-label' | translate}}</div>
-									<div class="col-price cell">Ghi chú</div>
+									<div class="col-total cell">{{'erp.app.pages.purchase.purchase-order.total-label' | translate}}</div>
+									<div class="col-remark cell">Ghi chú</div>
 									<div class="col-del cell" *ngIf="pageConfig.canEdit"></div>
 								</header>
 
@@ -133,7 +133,7 @@
 									<ng-container [formGroup]="g">
 										<div class="col-id cell">{{idx+1}}</div>
 										<div class="col-name cell">
-											<ng-select formControlName="_Item" appendTo="#order-detail-page" [readonly]="!pageConfig.canEdit || submitAttempt" class="c-input" (change)="changedIDItem(g, $event)" [labelForId]="'IDItem'+idx" [items]="g.controls._ItemDataSource.value | async" [typeahead]="g.controls._ItemSearchInput.value" [loading]="g.controls._ItemSearchLoading.value" [virtualScroll]="true" bindLabel="Name" placeholder="{{'erp.app.pages.purchase.purchase-order.changeitem-placeholder' | translate}}">
+											<ng-select formControlName="_Item" [clearable]="false" appendTo="#order-detail-page" [readonly]="submitAttempt" class="c-input" (change)="changedIDItem(g, $event)" [labelForId]="'IDItem'+idx" [items]="g.controls._ItemDataSource.value | async" [typeahead]="g.controls._ItemSearchInput.value" [loading]="g.controls._ItemSearchLoading.value" [virtualScroll]="true" bindLabel="Name" placeholder="{{'erp.app.pages.purchase.purchase-order.changeitem-placeholder' | translate}}">
 												<ng-template ng-label-tmp let-i="item">
 													<b *ngIf="i.Code" [title]="i.Id">
 														{{i.Code}}
@@ -149,40 +149,41 @@
 											</ng-select>
 										</div>
 										<div class="col-uom cell">
-											<select formControlName="IDUoM" [attr.disabled]="(!pageConfig.canEdit || submitAttempt)?'':null" class="c-input c-dropdown" (change)="changedIDUoM(g)">
+											<select formControlName="IDUoM" [attr.disabled]="(submitAttempt)?'':null" class="c-input c-dropdown" (change)="changedIDUoM(g)">
 												<option [disabled]="t.Flag" *ngFor="let t of g.controls._UoMs.value" [value]="t.Id">{{t.Name}}</option>
 											</select>
 										</div>
-										<div *ngIf="pageConfig.POShowSuggestedQuantity && item.Type == 'FromPurchaseSuggestion'" [ngClass]="{disable: !pageConfig.canEdit}" class="col-qty cell">
-											<input formControlName="SuggestedQuantity" [readonly]="!pageConfig.canEdit || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" min="0" step="1" max="999999999999999999" onkeydown="return event.keyCode !== 190">
+										<div *ngIf="pageConfig.POShowSuggestedQuantity && item.Type == 'FromPurchaseSuggestion'"  class="col-qty cell">
+											<input formControlName="SuggestedQuantity" [readonly]="submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" min="0" step="1" max="999999999999999999" onkeydown="return event.keyCode !== 190">
 										</div>
-										<div [ngClass]="{disable: !pageConfig.canEdit}" class="col-qty cell">
-											<input formControlName="UoMQuantityExpected" [readonly]="!pageConfig.canEdit || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" min="0" step="1" max="999999999999999999" onkeydown="return event.keyCode !== 190">
+										<div  class="col-qty cell">
+											<input formControlName="UoMQuantityExpected" [readonly]="submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" min="0" step="1" max="999999999999999999" onkeydown="return event.keyCode !== 190">
 										</div>
-										<div *ngIf="pageConfig.POShowAdjustedQuantity" [ngClass]="{disable: !pageConfig.canEdit}" class="col-qty cell">
-											<input formControlName="QuantityAdjusted" [readonly]="!pageConfig.canEdit || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" [min]="-1* g.controls.UoMQuantityExpected.value" onkeydown="return event.keyCode !== 190">
+										<div *ngIf="pageConfig.POShowAdjustedQuantity"  class="col-qty cell">
+											<input formControlName="QuantityAdjusted" [readonly]="submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" [min]="-1* g.controls.UoMQuantityExpected.value" onkeydown="return event.keyCode !== 190">
 										</div>
-										<div [ngClass]="{disable: !pageConfig.canEdit || g.controls.IsPromotionItem.value}" class="col-discount cell">
-											<input formControlName="TotalDiscount" [readonly]="!pageConfig.canEdit || g.controls.IsPromotionItem.value || submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" mask="separator.2" thousandSeparator="," [allowNegativeNumbers]="false" [hiddenInput]="true">
-										</div>
-
-										<div [ngClass]="{disable: !pageConfig.canEdit}" class="col-promotion cell">
-											<input formControlName="IsPromotionItem" [attr.disabled]="(!pageConfig.canEdit || submitAttempt)?'':null" (change)="saveOrder();" class="c-checkbox" type="checkbox">
+										<div class="col-discount cell">
+											<input formControlName="TotalDiscount" [readonly]="submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" mask="separator.2" thousandSeparator="," [allowNegativeNumbers]="false" [hiddenInput]="true">
 										</div>
 
-										<div class="col-price cell disable" [ngClass]="{disable: !pageConfig.canEdit || !pageConfig.canEditPrice}">
+										<div  class="col-promotion cell">
+											<input formControlName="IsPromotionItem" [attr.disabled]="submitAttempt?'':null" (change)="saveOrder();" class="c-checkbox" type="checkbox">
+										</div>
+
+										<div class="col-price cell">
 											<input formControlName="UoMPrice" class="c-input" [readonly]="!(pageConfig.canEdit && pageConfig.canEditPrice && !g.controls.IsPromotionItem.value)" (focus)="$event.target.select()" (change)="saveOrder()" mask="separator.0" thousandSeparator="," [allowNegativeNumbers]="false">
 										</div>
 
 										
 										<div class="col-price cell">
-											<input formControlName="TaxRate" class="c-input" [readonly]="true" (focus)="$event.target.select()" mask="separator.0" thousandSeparator="," [allowNegativeNumbers]="false">
+											<input formControlName="TaxRate" class="c-input" (focus)="$event.target.select()" mask="separator.2" thousandSeparator="," [allowNegativeNumbers]="false">
 										</div>
-										<div class="col-total cell disable">
+										
+										<div class="col-total cell ">
 											<span class="c-input disable">{{(g.controls.IsPromotionItem.value? 0 : (((g.controls.UoMQuantityExpected.value + g.controls.QuantityAdjusted.value) * g.controls.UoMPrice.value - g.controls.TotalDiscount.value)) * ((1+g.controls.TaxRate.value/100))) | number: '1.0-0'}}</span>
 										</div>
-										<div [ngClass]="{disable: !pageConfig.canEdit}" class="col-promotion cell">
-											<input formControlName="Remark" [attr.disabled]="(!pageConfig.canEdit || submitAttempt)?'':null" (change)="saveOrder();" class="c-input" type="text">
+										<div  class="col-remark cell">
+											<input formControlName="Remark" (change)="saveOrder();" class="c-input" type="text">
 										</div>
 										<div class="col-del cell" *ngIf="pageConfig.canEdit" (click)="removeOrderLine(idx)">
 											<ion-icon color="danger" class="min-btn" name="trash-outline"></ion-icon>
@@ -217,6 +218,7 @@
 									<div class="col-price cell disable "></div>
 									<div class="col-total cell disable"></div>
 									<div class="col-price cell disable"><b>{{item.TotalAfterTax | number: '1.0-0'}}</b></div>
+									<div class="col-remark cell disable"></div>
 									<div class="col-del cell" *ngIf="pageConfig.canEdit"></div>
 								</div>
 							</section>
