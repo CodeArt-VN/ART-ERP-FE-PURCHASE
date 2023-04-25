@@ -195,7 +195,7 @@
 													</tr>
 												</ng-container>
 											
-												<!-- <tr style="border-top: dashed 1px #000;" >
+												<tr style="border-top: dashed 1px #000;" >
 													<td [attr.colspan]="pageConfig.PONShowPackingUoM? 6:5" class="num">
 														{{'erp.app.pages.purchase.purchase-order-note.total-before-discount' | translate}}
 													</td>
@@ -212,9 +212,9 @@
 														{{'erp.app.pages.purchase.purchase-order-note.total-after-tax' | translate}}
 													</td>
 													<td class="num"><b>{{o.TotalAfterTaxText}}</b></td>
-												</tr> -->
+												</tr>
 												<!-- <tr style="border-top: dashed 1px #000;" >
-													<td colspan="6" class="num">
+													<td [attr.colspan]="pageConfig.PONShowPackingUoM? 7:6" class="num">
 														{{o.DocTienBangChu}}
 													</td>
 												</tr> -->

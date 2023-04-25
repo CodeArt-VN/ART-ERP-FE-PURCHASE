@@ -33,12 +33,12 @@ export class PurchaseOrderNotePage extends PageBase {
         this.query.Status = 'PORequestApproved';
     }
 
-    
+
     preLoadData(event?: any): void {
         Promise.all([
-            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', {Code: 'PONConvertToLargerUoM', IDBranch: this.env.selectedBranch}).toPromise(),
-            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', {Code: 'PONShowPackingUoM', IDBranch: this.env.selectedBranch}).toPromise(),
-            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', {Code: 'PONShowEACaseOnly', IDBranch: this.env.selectedBranch}).toPromise(),
+            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', { Code: 'PONConvertToLargerUoM', IDBranch: this.env.selectedBranch }).toPromise(),
+            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', { Code: 'PONShowPackingUoM', IDBranch: this.env.selectedBranch }).toPromise(),
+            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', { Code: 'PONShowEACaseOnly', IDBranch: this.env.selectedBranch }).toPromise(),
         ]).then((values: any) => {
             this.pageConfig.PONConvertToLargerUoM = JSON.parse(values[0]['Value']);
             this.pageConfig.PONShowPackingUoM = JSON.parse(values[1]['Value']);
@@ -47,14 +47,14 @@ export class PurchaseOrderNotePage extends PageBase {
         });
     }
 
-    
-    
-    
+
+
+
 
 
     loadedData(event) {
         super.loadedData(event);
-       
+
         this.items.forEach(i => {
             i.OrderDateText = lib.dateFormat(i.OrderDate, 'dd/mm/yy hh:MM');
             i.OrderTimeText = lib.dateFormat(i.OrderDate, 'hh:MM');
