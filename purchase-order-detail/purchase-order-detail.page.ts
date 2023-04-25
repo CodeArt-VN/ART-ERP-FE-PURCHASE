@@ -43,28 +43,7 @@ export class PurchaseOrderDetailPage extends PageBase {
     ) {
         super();
         this.pageConfig.isDetailPage = true;
-
-        this.formGroup = formBuilder.group({
-            IDBranch: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
-            IDStorer: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
-            IDVendor: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
-            Id: new FormControl({ value: '', disabled: true }),
-            Code: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
-            Name: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
-            // ForeignName: [''],
-            Remark: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
-            // ForeignRemark: [''],
-            OrderDate: new FormControl({ value: '', disabled: true }),
-            ExpectedReceiptDate: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
-            ReceiptedDate: new FormControl({ value: '', disabled: true }),
-            Type : ['Regular'],
-            Status: new FormControl({ value: 'Draft', disabled: true }),
-            PaymentStatus: ['WaitForPay', Validators.required],
-            IsDisabled: [''],
-            OrderLines: this.formBuilder.array([]),
-            TotalAfterTax: new FormControl({ value: '', disabled: true })
-        });
-
+        
         Object.assign(pageProvider, {
             importDetail(fileToUpload: File, id) {
                 const formData: FormData = new FormData();
@@ -92,6 +71,29 @@ export class PurchaseOrderDetailPage extends PageBase {
     }
 
     preLoadData(event) {
+
+        this.formGroup = this.formBuilder.group({
+            IDBranch: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
+            IDStorer: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
+            IDVendor: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
+            Id: new FormControl({ value: '', disabled: true }),
+            Code: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
+            Name: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
+            // ForeignName: [''],
+            Remark: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
+            // ForeignRemark: [''],
+            OrderDate: new FormControl({ value: '', disabled: true }),
+            ExpectedReceiptDate: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
+            ReceiptedDate: new FormControl({ value: '', disabled: true }),
+            Type : ['Regular'],
+            Status: new FormControl({ value: 'Draft', disabled: true }),
+            PaymentStatus: ['WaitForPay', Validators.required],
+            IsDisabled: [''],
+            OrderLines: this.formBuilder.array([]),
+            TotalAfterTax: new FormControl({ value: '', disabled: true })
+        });
+
+
         this.branchProvider.read({ Skip: 0, Take: 5000, IDType: 115, AllParent: true, Id: this.env.selectedBranchAndChildren }).then(resp => {
             lib.buildFlatTree(resp['data'], this.branchList).then((result: any) => {
                 this.branchList = result;
