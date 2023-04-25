@@ -185,7 +185,7 @@
 									</ng-container>
 								</div>
 
-								<div class="row" *ngIf="pageConfig.canEdit && item?.OrderLines?.length > 1">
+								<div class="row" *ngIf="item?.OrderLines?.length > 1">
 									<div class="col-id cell" *ngIf="pageConfig.canEdit" (click)="addOrderLine({ IDOrder: item.Id, Id: 0 })">
 										<ion-icon class="min-btn" title="{{'erp.app.pages.purchase.purchase-order.add-order-line' | translate}}" name="add-circle-outline"></ion-icon>
 									</div>
@@ -202,17 +202,19 @@
 									<div class="col-uom cell">
 										<b>{{'erp.app.pages.purchase.purchase-order.total' | translate}}:</b>
 									</div>
-
 									<div class="col-qty cell"></div>
-									<div class="col-discount cell disable">
+									<div class="col-discount cell">
 										<span class="c-input"><b>{{item.TotalDiscount | number: '1.0-0'}}</b></span>
 									</div>
-									<div class="col-promotion cell disable"></div>
-
-									<div class="col-price cell disable "></div>
-									<div class="col-total cell disable"></div>
-									<div class="col-price cell disable"><b>{{item.TotalAfterTax | number: '1.0-0'}}</b></div>
-									<div class="col-remark cell disable"></div>
+									<div class="col-promotion cell"></div>
+									<div class="col-price cell "></div>
+									<div class="col-price cell"></div>
+									<div class="col-total cell">
+										<span class="c-input disable">
+											<b>{{formGroup.controls.TotalAfterTax.value | number: '1.0-0'}}</b>
+										</span>
+									</div>
+									<div class="col-remark cell"></div>
 									<div class="col-del cell" *ngIf="pageConfig.canEdit"></div>
 								</div>
 							</section>
