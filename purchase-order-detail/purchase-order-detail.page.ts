@@ -43,7 +43,7 @@ export class PurchaseOrderDetailPage extends PageBase {
     ) {
         super();
         this.pageConfig.isDetailPage = true;
-        
+
         Object.assign(pageProvider, {
             importDetail(fileToUpload: File, id) {
                 const formData: FormData = new FormData();
@@ -85,11 +85,12 @@ export class PurchaseOrderDetailPage extends PageBase {
             OrderDate: new FormControl({ value: '', disabled: true }),
             ExpectedReceiptDate: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
             ReceiptedDate: new FormControl({ value: '', disabled: true }),
-            Type : ['Regular'],
+            Type: ['Regular'],
             Status: new FormControl({ value: 'Draft', disabled: true }),
             PaymentStatus: ['WaitForPay', Validators.required],
             IsDisabled: [''],
             OrderLines: this.formBuilder.array([]),
+            TotalDiscount: new FormControl({ value: '', disabled: true }),
             TotalAfterTax: new FormControl({ value: '', disabled: true })
         });
 
@@ -110,24 +111,24 @@ export class PurchaseOrderDetailPage extends PageBase {
         this.contactProvider.read({ IsStorer: true, Take: 5000 }).then((resp) => {
             this.storerList = resp['data'];
         });
-        
-        this.env.getStatus('PurchaseOrder').then((data:any)=>{
+
+        this.env.getStatus('PurchaseOrder').then((data: any) => {
             this.statusList = data;
         });
-        this.env.getStatus('POPaymentStatus').then((data:any)=>{
+        this.env.getStatus('POPaymentStatus').then((data: any) => {
             this.paymentStatusList = data;
         });
 
         Promise.all([
-            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', {Code: 'POShowSuggestedQuantity', IDBranch: this.env.selectedBranch}).toPromise(),
-            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', {Code: 'POShowAdjustedQuantity', IDBranch: this.env.selectedBranch}).toPromise(),
+            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', { Code: 'POShowSuggestedQuantity', IDBranch: this.env.selectedBranch }).toPromise(),
+            this.pageProvider.commonService.connect('GET', 'SYS/Config/ConfigByBranch', { Code: 'POShowAdjustedQuantity', IDBranch: this.env.selectedBranch }).toPromise(),
         ]).then((values: any) => {
             this.pageConfig.POShowSuggestedQuantity = JSON.parse(values[0]['Value']);
             this.pageConfig.POShowAdjustedQuantity = JSON.parse(values[1]['Value']);
-            
+
         });
 
-        
+
     }
 
     markNestedNode(ls, Id) {
@@ -148,9 +149,9 @@ export class PurchaseOrderDetailPage extends PageBase {
                 this.pageConfig.canEdit = false;
             }
 
-          
+
         }
-        
+
         super.loadedData(event, true);
         this.setOrderLines();
     }
@@ -163,8 +164,6 @@ export class PurchaseOrderDetailPage extends PageBase {
             })
         // else
         //     this.addOrderLine({ IDOrder: this.item.Id, Id: 0 });
-
-        this.calcTotalLine();
     }
 
     addOrderLine(line) {
@@ -196,7 +195,7 @@ export class PurchaseOrderDetailPage extends PageBase {
             TotalDiscount: new FormControl({ value: line.TotalDiscount, disabled: !this.pageConfig.canEdit }),
             TotalAfterDiscount: new FormControl({ value: line.TotalAfterDiscount, disabled: true }),
             TaxRate: new FormControl({ value: line.TaxRate, disabled: true }),
-            Tax: new FormControl({ value: line.Tax, disabled: true }), 
+            Tax: new FormControl({ value: line.Tax, disabled: true }),
             TotalAfterTax: new FormControl({ value: line.TotalAfterTax, disabled: true }),
         });
         groups.push(group);
@@ -221,9 +220,8 @@ export class PurchaseOrderDetailPage extends PageBase {
                         Ids.push({ Id: groups.controls[index]['controls'].Id.value });
                         this.purchaseOrderDetailProvider.delete(Ids).then(resp => {
                             groups.removeAt(index);
-                            this.calcTotalLine();
                             this.env.publishEvent({ Code: this.pageConfig.pageName });
-                            this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.delete-complete','success');
+                            this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.delete-complete', 'success');
                         });
                     }
                 }
@@ -236,19 +234,14 @@ export class PurchaseOrderDetailPage extends PageBase {
     }
 
     saveOrder() {
-        this.calcTotalLine();
-     
-        this.debounce(() => { super.saveChange2() }, 1000);
+        this.debounce(() => { super.saveChange2() }, 300);
     }
 
-    calcTotalLine() {
-        console.log(this.formGroup.controls.OrderLines);
-        
-        this.item.TotalBeforeDiscount = this.formGroup.controls.OrderLines.value.map(x => x.UoMPrice * (x.UoMQuantityExpected + x.QuantityAdjusted)).reduce((a, b) => (+a) + (+b), 0);
-        this.item.TotalDiscount = this.formGroup.controls.OrderLines.value.map(x => x.TotalDiscount).reduce((a, b) => (+a) + (+b), 0);
-        this.item.TotalAfterDiscount = this.item.TotalBeforeDiscount - this.item.TotalDiscount;
-        this.item.Tax = this.formGroup.controls.OrderLines.value.map(x => x.UoMPrice * (x.UoMQuantityExpected + x.QuantityAdjusted) * (x.TaxRate / 100)).reduce((a, b) => (+a) + (+b), 0);
-        this.item.TotalAfterTax = this.item.TotalAfterDiscount + this.item.Tax;
+    calcTotalDiscount() {
+        return this.formGroup.controls.OrderLines.getRawValue().map(x => x.TotalDiscount).reduce((a, b) => (+a) + (+b), 0)
+    }
+    calcTotalAfterTax() {
+        return this.formGroup.controls.OrderLines.getRawValue().map(x => (x.UoMPrice * (x.UoMQuantityExpected + x.QuantityAdjusted) - x.TotalDiscount) * (1+ x.TaxRate / 100)).reduce((a, b) => (+a) + (+b), 0);
     }
 
     savedChange(savedItem = null, form = this.formGroup) {
@@ -266,8 +259,13 @@ export class PurchaseOrderDetailPage extends PageBase {
         if (e) {
 
             group.controls._UoMs.setValue(e.UoMs);
+
             group.controls.IDItem.setValue(e.Id);
             group.controls.IDItem.markAsDirty();
+
+            group.controls.TaxRate.setValue(e.PurchaseTaxInPercent);
+            group.controls.TaxRate.markAsDirty();
+
             group.controls.IDUoM.setValue(e.PurchasingUoM);
             group.controls.IDUoM.markAsDirty();
 
@@ -276,6 +274,8 @@ export class PurchaseOrderDetailPage extends PageBase {
     }
 
     changedIDUoM(group) {
+        console.log(group);
+
         let selectedUoM = group.controls._UoMs.value.find(d => d.Id == group.controls.IDUoM.value);
 
         if (selectedUoM) {
@@ -333,7 +333,7 @@ export class PurchaseOrderDetailPage extends PageBase {
                         })
                     }
                     else {
-                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.import-complete','success');
+                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.import-complete', 'success');
                         this.env.publishEvent({ Code: this.pageConfig.pageName });
                     }
                 })
@@ -372,32 +372,32 @@ export class PurchaseOrderDetailPage extends PageBase {
                     }).then(alert => {
                         alert.present();
                     })
-                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.create-asn-complete','success');
+                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.create-asn-complete', 'success');
                     this.env.publishEvent({ Code: this.pageConfig.pageName });
 
                 })
                 .catch(err => {
                     console.log(err);
 
-                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-create-asn','danger');
+                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-create-asn', 'danger');
                     if (loading) loading.dismiss();
                 })
         })
     }
 
-    async createInvoice(){
+    async createInvoice() {
         this.env.showLoading('Vui lòng chờ tạo hóa đơn',
-        this.pageProvider.commonService.connect('POST', 'PURCHASE/Order/CreateInvoice/', {Ids:[this.item.Id]}).toPromise()
-        ).then((resp:any)=>{
-            this.env.showPrompt("Bạn có muốn mở hóa đơn vừa tạo?").then(_=>{
+            this.pageProvider.commonService.connect('POST', 'PURCHASE/Order/CreateInvoice/', { Ids: [this.item.Id] }).toPromise()
+        ).then((resp: any) => {
+            this.env.showPrompt("Bạn có muốn mở hóa đơn vừa tạo?").then(_ => {
                 if (resp.length == 1) {
                     this.nav('/ap-invoice/' + resp[0]);
                 }
-                else{
+                else {
                     this.nav('/ap-invoice/');
                 }
-            }).catch(_=>{});
-        }).catch(err=>{
+            }).catch(_ => { });
+        }).catch(err => {
             this.env.showMessage(err)
         });
     }
@@ -434,7 +434,7 @@ export class PurchaseOrderDetailPage extends PageBase {
                         this.env.publishEvent({ Code: this.pageConfig.pageName });
                     }).catch(err => {
                         console.log(err);
-                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-add','danger');
+                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-add', 'danger');
                         if (loading) loading.dismiss();
                     })
             })

@@ -84,7 +84,9 @@
                             <label class="c-label" for="TotalAfterTax">{{'erp.app.pages.purchase.purchase-order.total-after-tax' | translate}}
                                 <span *ngIf="!formGroup.controls.TotalAfterTax.valid && !formGroup.controls.TotalAfterTax.pending && (formGroup.controls.TotalAfterTax.dirty || submitAttempt)" ion-text color="danger">(*)</span>
                             </label>
-                            <input (change)="saveOrder();" mask="separator.2" thousandSeparator="," [allowNegativeNumbers]="true" suffix=" ₫" class="c-input" id="TotalAfterTax" formControlName="TotalAfterTax" type="text">
+							<span class="c-input disable">
+								<b>{{calcTotalAfterTax() | number: '1.0-0'}}</b>
+							</span>
                         </div>
 					</ion-col>
 				</ion-row>
@@ -157,7 +159,7 @@
 											<input formControlName="QuantityAdjusted" [readonly]="submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" [min]="-1* g.controls.UoMQuantityExpected.value" onkeydown="return event.keyCode !== 190">
 										</div>
 										<div class="col-discount cell">
-											<input formControlName="TotalDiscount" [readonly]="submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" mask="separator.2" thousandSeparator="," [allowNegativeNumbers]="false" [hiddenInput]="true">
+											<input formControlName="TotalDiscount" [readonly]="submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" mask="separator.2" thousandSeparator=",">
 										</div>
 
 										<div  class="col-promotion cell">
@@ -165,12 +167,12 @@
 										</div>
 
 										<div class="col-price cell">
-											<input formControlName="UoMPrice" class="c-input" [readonly]="!(pageConfig.canEdit && pageConfig.canEditPrice && !g.controls.IsPromotionItem.value)" (focus)="$event.target.select()" (change)="saveOrder()" mask="separator.0" thousandSeparator="," [allowNegativeNumbers]="false">
+											<input formControlName="UoMPrice" class="c-input" [readonly]="!(pageConfig.canEdit && pageConfig.canEditPrice && !g.controls.IsPromotionItem.value)" (focus)="$event.target.select()" (change)="saveOrder()" mask="separator.2" thousandSeparator="," [allowNegativeNumbers]="false">
 										</div>
 
 										
 										<div class="col-price cell">
-											<input formControlName="TaxRate" class="c-input" (focus)="$event.target.select()" mask="separator.2" thousandSeparator="," [allowNegativeNumbers]="false">
+											<input formControlName="TaxRate" class="c-input">
 										</div>
 										
 										<div class="col-total cell ">
@@ -204,14 +206,14 @@
 									</div>
 									<div class="col-qty cell"></div>
 									<div class="col-discount cell">
-										<span class="c-input"><b>{{item.TotalDiscount | number: '1.0-0'}}</b></span>
+										<span class="c-input disable"><b>{{calcTotalDiscount() | number: '1.0-0'}}</b></span>
 									</div>
 									<div class="col-promotion cell"></div>
 									<div class="col-price cell "></div>
 									<div class="col-price cell"></div>
 									<div class="col-total cell">
 										<span class="c-input disable">
-											<b>{{formGroup.controls.TotalAfterTax.value | number: '1.0-0'}}</b>
+											<b>{{calcTotalAfterTax() | number: '1.0-0'}}</b>
 										</span>
 									</div>
 									<div class="col-remark cell"></div>
