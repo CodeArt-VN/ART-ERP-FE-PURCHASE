@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
-import { PURCHASE_OrderProvider, SYS_StatusProvider } from 'src/app/services/static/services.service';
+import { PURCHASE_OrderProvider } from 'src/app/services/static/services.service';
 import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
@@ -18,7 +18,6 @@ export class PurchaseOrderPage extends PageBase {
 
     constructor(
         public pageProvider: PURCHASE_OrderProvider,
-        public statusProvider: SYS_StatusProvider,
         public modalController: ModalController,
         public popoverCtrl: PopoverController,
         public alertCtrl: AlertController,
@@ -35,15 +34,14 @@ export class PurchaseOrderPage extends PageBase {
             this.sort.Id = 'Id';
             this.sortToggle('Id', true);
         }
-        this.statusProvider.read({ Code_eq: 'PURCHASING', AllChildren: true }).then(resp => {
-            let poStatus = resp['data'].find(d => d.Code == 'PurchaseOrder');
-            this.statusList = resp['data'].filter(d => d.IDParent == poStatus.Id);
-
-            let paymentStatus = resp['data'].find(d => d.Code == 'POPaymentStatus');
-            this.paymentStatusList = resp['data'].filter(d => d.IDParent == paymentStatus.Id);
+        Promise.all([
+            this.env.getStatus('PurchaseOrder'),
+            this.env.getStatus('POPaymentStatus')
+        ]).then(values=>{
+            this.statusList = values[0];
+            this.paymentStatusList = values[1];
             super.preLoadData(event);
-        });
-
+        })
     }
 
     loadedData(event) {

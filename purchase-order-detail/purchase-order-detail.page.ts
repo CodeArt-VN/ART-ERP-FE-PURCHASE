@@ -3,7 +3,7 @@ import { NavController, LoadingController, AlertController, ModalController } fr
 import { PageBase } from 'src/app/page-base';
 import { ActivatedRoute } from '@angular/router';
 import { EnvService } from 'src/app/services/core/env.service';
-import { BRA_BranchProvider, CRM_ContactProvider, PURCHASE_OrderDetailProvider, PURCHASE_OrderProvider, SYS_ConfigProvider, SYS_StatusProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
+import { BRA_BranchProvider, CRM_ContactProvider, PURCHASE_OrderDetailProvider, PURCHASE_OrderProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
 import { lib } from 'src/app/services/static/global-functions';
@@ -30,7 +30,6 @@ export class PurchaseOrderDetailPage extends PageBase {
         public contactProvider: CRM_ContactProvider,
         public branchProvider: BRA_BranchProvider,
         public itemProvider: WMS_ItemProvider,
-        public statusProvider: SYS_StatusProvider,
         public env: EnvService,
         public navCtrl: NavController,
         public route: ActivatedRoute,
