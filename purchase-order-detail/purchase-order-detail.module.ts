@@ -6,9 +6,6 @@ import { IonicModule } from '@ionic/angular';
 import { ShareModule } from 'src/app/share.module';
 import { PurchaseOrderDetailPage } from './purchase-order-detail.page';
 import { FileUploadModule } from 'ng2-file-upload';
-import { NgSelectModule } from '@ng-select/ng-select';
-import { NgOptionHighlightModule } from '@ng-select/ng-option-highlight';
-import { NgxMaskModule } from 'ngx-mask';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
 
 const routes: Routes = [
@@ -25,10 +22,7 @@ const routes: Routes = [
     IonicModule,
     ReactiveFormsModule,
     FileUploadModule,
-    NgSelectModule,
-    NgOptionHighlightModule,
     ShareModule,
-    NgxMaskModule.forRoot(),
     RouterModule.forChild(routes)
   ],
   declarations: [PurchaseOrderDetailPage, SaleOrderPickerModalPage]

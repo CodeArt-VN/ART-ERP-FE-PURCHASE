@@ -180,9 +180,7 @@ export class PurchaseOrderDetailPage extends PageBase {
             _Item: new FormControl({ value: line._Item, disabled: !this.pageConfig.canEdit }, Validators.required),
             IDOrder: [line.IDOrder],
             Id: [line.Id],
-            // Code: [line.Code],
             Remark: new FormControl({ value: line.Remark, disabled: !(this.pageConfig.canEdit || ((this.item.Status == 'PORequestApproved' || this.item.Status == 'Submitted') && this.pageConfig.canEditApprovedOrder)) }),
-            // ForeignRemark: [line.ForeignRemark],
             IDItem: [line.IDItem, Validators.required],
             IDUoM: new FormControl({ value: line.IDUoM, disabled: !this.pageConfig.canEdit }, Validators.required),
             UoMPrice: new FormControl({ value: line.UoMPrice, disabled: !(this.pageConfig.canEdit && this.pageConfig.canEditPrice) }, Validators.required),
@@ -201,35 +199,16 @@ export class PurchaseOrderDetailPage extends PageBase {
     }
 
     removeOrderLine(index) {
-        this.alertCtrl.create({
-            header: 'Xóa sản phẩm',
-            //subHeader: '---',
-            message: 'Bạn chắc muốn xóa sản phẩm?',
-            buttons: [
-                {
-                    text: 'Không',
-                    role: 'cancel',
-                },
-                {
-                    text: 'Đồng ý xóa',
-                    cssClass: 'danger-btn',
-                    handler: () => {
-                        let groups = <FormArray>this.formGroup.controls.OrderLines;
-                        let Ids = [];
-                        Ids.push({ Id: groups.controls[index]['controls'].Id.value });
-                        this.purchaseOrderDetailProvider.delete(Ids).then(resp => {
-                            groups.removeAt(index);
-                            this.env.publishEvent({ Code: this.pageConfig.pageName });
-                            this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.delete-complete', 'success');
-                        });
-                    }
-                }
-            ]
-        }).then(alert => {
-            alert.present();
-        })
-
-
+        this.env.showPrompt('Bạn chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm').then(_ => {
+            let groups = <FormArray>this.formGroup.controls.OrderLines;
+            let Ids = [];
+            Ids.push({ Id: groups.controls[index]['controls'].Id.value });
+            this.purchaseOrderDetailProvider.delete(Ids).then(resp => {
+                groups.removeAt(index);
+                this.env.publishEvent({ Code: this.pageConfig.pageName });
+                this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.delete-complete', 'success');
+            });
+        }).catch(_ => { });
     }
 
     saveOrder() {
@@ -240,7 +219,7 @@ export class PurchaseOrderDetailPage extends PageBase {
         return this.formGroup.controls.OrderLines.getRawValue().map(x => x.TotalDiscount).reduce((a, b) => (+a) + (+b), 0)
     }
     calcTotalAfterTax() {
-        return this.formGroup.controls.OrderLines.getRawValue().map(x => (x.UoMPrice * (x.UoMQuantityExpected + x.QuantityAdjusted) - x.TotalDiscount) * (1+ x.TaxRate / 100)).reduce((a, b) => (+a) + (+b), 0);
+        return this.formGroup.controls.OrderLines.getRawValue().map(x => (x.UoMPrice * (x.UoMQuantityExpected + x.QuantityAdjusted) - x.TotalDiscount) * (1 + x.TaxRate / 100)).reduce((a, b) => (+a) + (+b), 0);
     }
 
     savedChange(savedItem = null, form = this.formGroup) {
