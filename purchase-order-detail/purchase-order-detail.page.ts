@@ -94,7 +94,7 @@ export class PurchaseOrderDetailPage extends PageBase {
         });
 
 
-        this.branchProvider.read({ Skip: 0, Take: 5000, IDType: 115, AllParent: true, Id: this.env.selectedBranchAndChildren }).then(resp => {
+        this.branchProvider.read({ Skip: 0, Take: 5000, Type: 'Warehouse', AllParent: true, Id: this.env.selectedBranchAndChildren }).then(resp => {
             lib.buildFlatTree(resp['data'], this.branchList).then((result: any) => {
                 this.branchList = result;
                 this.branchList.forEach(i => {
@@ -159,25 +159,41 @@ export class PurchaseOrderDetailPage extends PageBase {
         this.formGroup.controls.OrderLines = new FormArray([]);
         if (this.item.OrderLines?.length)
             this.item.OrderLines.forEach(i => {
-                this.addOrderLine(i);
+                this.addLine(i);
             })
         // else
         //     this.addOrderLine({ IDOrder: this.item.Id, Id: 0 });
     }
 
-    addOrderLine(line) {
-        let searchInput$ = new Subject<string>();
+    addLine(line, markAsDirty = false) {
         let groups = <FormArray>this.formGroup.controls.OrderLines;
+        let preLoadItems = this.item._Items;
+        let selectedItem = preLoadItems.find(d => d.Id == line.IDItem);
+
         let group = this.formBuilder.group({
-            _ItemSearchLoading: [false],
-            _ItemSearchInput: [searchInput$],
-            _ItemDataSource: [searchInput$.pipe(distinctUntilChanged(),
-                tap(() => group.controls._ItemSearchLoading.setValue(true)),
-                switchMap(term => this.itemProvider.search({ Take: 20, Skip: 0, Keyword: term, IDPO: this.item.Id })
-                    .pipe(catchError(() => of([])), tap(() => group.controls._ItemSearchLoading.setValue(false))))
-            )],
-            _UoMs: [line._Item ? line._Item.UoMs : ''],
-            _Item: new FormControl({ value: line._Item, disabled: !this.pageConfig.canEdit }, Validators.required),
+            _IDItemDataSource: [{
+                searchProvider: this.itemProvider,
+                loading: false,
+                input$: new Subject<string>(),
+                selected: preLoadItems,
+                items$: null,
+                initSearch() {
+                    this.loading = false;
+                    this.items$ = concat(
+                        of(this.selected),
+                        this.input$.pipe(
+                            distinctUntilChanged(),
+                            tap(() => this.loading = true),
+                            switchMap(term => this.searchProvider.search({ ARSearch: true, IDPO: line.IDOrder, SortBy: ['Id_desc'], Take: 20, Skip: 0, Term: term }).pipe(
+                                catchError(() => of([])), // empty list on error
+                                tap(() => this.loading = false)
+                            ))
+                        )
+                    );
+                }
+            }],
+            _IDUoMDataSource: [selectedItem ? selectedItem.UoMs : ''],
+
             IDOrder: [line.IDOrder],
             Id: [line.Id],
             Remark: new FormControl({ value: line.Remark, disabled: !(this.pageConfig.canEdit || ((this.item.Status == 'PORequestApproved' || this.item.Status == 'Submitted') && this.pageConfig.canEditApprovedOrder)) }),
@@ -196,9 +212,23 @@ export class PurchaseOrderDetailPage extends PageBase {
             TotalAfterTax: new FormControl({ value: line.TotalAfterTax, disabled: true }),
         });
         groups.push(group);
+
+        group.get('_IDItemDataSource').value?.initSearch();
+
+        if (markAsDirty) {
+            group.get('IDOrder').markAsDirty();
+        }
     }
 
-    removeOrderLine(index) {
+    addNewLine() {
+        let newLine: any = {
+            IDOrder: this.item.Id,
+            Id: 0
+        };
+        this.addLine(newLine, true);
+    }
+
+    removeLine(index) {
         this.env.showPrompt('Bạn chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm').then(_ => {
             let groups = <FormArray>this.formGroup.controls.OrderLines;
             let Ids = [];
@@ -233,37 +263,68 @@ export class PurchaseOrderDetailPage extends PageBase {
         this.segmentView = ev.detail.value;
     }
 
-    changedIDItem(group, e) {
+    IDItemChange(e, group) {
         if (e) {
+            if (e.PurchaseTaxInPercent && e.PurchaseTaxInPercent != -99) {
+                group.controls._IDUoMDataSource.setValue(e.UoMs);
 
-            group.controls._UoMs.setValue(e.UoMs);
+                group.controls.IDUoM.setValue(e.PurchasingUoM);
+                group.controls.IDUoM.markAsDirty();
 
-            group.controls.IDItem.setValue(e.Id);
-            group.controls.IDItem.markAsDirty();
+                group.controls.TaxRate.setValue(e.PurchaseTaxInPercent);
+                group.controls.TaxRate.markAsDirty();
 
-            group.controls.TaxRate.setValue(e.PurchaseTaxInPercent);
-            group.controls.TaxRate.markAsDirty();
+                this.IDUoMChange(group);
+                return;
+            }
 
-            group.controls.IDUoM.setValue(e.PurchasingUoM);
-            group.controls.IDUoM.markAsDirty();
-
-            this.changedIDUoM(group);
+            if (e.PurchaseTaxInPercent != -99)
+                this.env.showTranslateMessage('The item has not been set tax');
         }
+
+
+        group.controls.TaxRate.setValue(null);
+        group.controls.TaxRate.markAsDirty();
+
+        group.controls.IDUoM.setValue(null);
+        group.controls.IDUoM.markAsDirty();
+
+        group.controls.UoMPrice.setValue(null);
+        group.controls.UoMPrice.markAsDirty();
     }
 
-    changedIDUoM(group) {
-        console.log(group);
+    IDUoMChange(group) {
+        let idUoM = group.controls.IDUoM.value;
 
-        let selectedUoM = group.controls._UoMs.value.find(d => d.Id == group.controls.IDUoM.value);
+        if (idUoM) {
+            let UoMs = group.controls._IDUoMDataSource.value;
+            let u = UoMs.find(d => d.Id == idUoM);
+            if (u && u.PriceList) {
+                let p = u.PriceList.find(d => d.Type == 'PriceListForVendor');
+                let taxRate = group.controls.TaxRate.value;
+                if (p && taxRate != null) {
+                    let priceBeforeTax = null;
 
-        if (selectedUoM) {
-            let price = selectedUoM.PriceList.find(d => d.Type == 'PriceListForVendor');
-            if (price) {
-                group.controls.UoMPrice.setValue(price.Price);
-                group.controls.UoMPrice.markAsDirty();
-                this.saveOrder();
+                    if (taxRate < 0)
+                        taxRate = 0; //(-1 || -2) In case goods are not taxed
+
+                    if (p.IsTaxIncluded) {
+                        priceBeforeTax = p.Price / (1 + taxRate / 100);
+                    }
+                    else {
+                        priceBeforeTax = p.Price;
+                    }
+
+                    group.controls.UoMPrice.setValue(priceBeforeTax);
+                    group.controls.UoMPrice.markAsDirty();
+
+                    this.saveOrder();
+                    return;
+                }
             }
         }
+        group.controls.UoMPrice.setValue(null);
+        group.controls.UoMPrice.markAsDirty();
     }
 
     importClick() {

@@ -108,7 +108,7 @@
 				<form [formGroup]="formGroup">
 					<ng-container formArrayName="OrderLines">
 						<div class="table-contain">
-							<section class="table" style="min-width: 940px;">
+							<section class="table" style="min-width: 1200px;">
 								<header class="bold">
 									<div class="col-id cell">#</div>
 									<div class="col-name cell">{{'erp.app.pages.purchase.purchase-order.item-label' | translate}}</div>
@@ -129,6 +129,29 @@
 									<ng-container [formGroup]="g">
 										<div class="col-id cell">{{idx+1}}</div>
 										<div class="col-name cell">
+											<ng-select appendTo="#order-detail-page" class="c-input" (change)="IDItemChange($event, g);" labelForId="IDItem" formControlName="IDItem" [items]="g.get('_IDItemDataSource').value.items$ | async" [typeahead]="g.get('_IDItemDataSource').value.input$" [loading]="g.get('_IDItemDataSource').value.loading" [clearable]="true" bindValue="Id" placeholder="{{'Type to search...' | translate}}">
+												<ng-template ng-label-tmp let-i="item">
+													<div *ngIf="i.Id">
+														<a [routerLink]="['/item/'+i.Id]" (mousedown)="$event.stopPropagation()">#{{i.Id}} <ion-icon name="open-outline"></ion-icon></a>
+														<span [title]="i.Name"> <b *ngIf="i.Code" (mousedown)="$event.stopPropagation()">{{i.Code}}</b> {{i.Name}}</span>
+	
+													</div>
+												</ng-template>
+												<ng-template ng-option-tmp let-i="item" let-search="searchTerm">
+													<div *ngIf="i">
+														<div><span [ngOptionHighlight]="search">{{i.Name}}</span></div>
+														<small>#<b><span class="important" [ngOptionHighlight]="search">{{i.Id}} - {{i.Code}}</span></b></small>
+													</div>
+												</ng-template>
+											</ng-select>
+										</div>
+										<div class="col-number cell">
+											<select formControlName="IDUoM" class="c-input c-dropdown" (change)="IDUoMChange(g)">
+												<option [disabled]="t.Flag" *ngFor="let t of g.controls._IDUoMDataSource.value" [value]="t.Id">{{t.Name}}</option>
+											</select>
+										</div>
+
+										<!-- <div class="col-name cell">
 											<ng-select formControlName="_Item" [clearable]="false" appendTo="#order-detail-page" [readonly]="submitAttempt" class="c-input" (change)="changedIDItem(g, $event)" [labelForId]="'IDItem'+idx" [items]="g.controls._ItemDataSource.value | async" [typeahead]="g.controls._ItemSearchInput.value" [loading]="g.controls._ItemSearchLoading.value" [virtualScroll]="true" bindLabel="Name" placeholder="{{'erp.app.pages.purchase.purchase-order.changeitem-placeholder' | translate}}">
 												<ng-template ng-label-tmp let-i="item">
 													<b *ngIf="i.Code" [title]="i.Id">
@@ -148,7 +171,8 @@
 											<select formControlName="IDUoM" [attr.disabled]="(submitAttempt)?'':null" class="c-input c-dropdown" (change)="changedIDUoM(g)">
 												<option [disabled]="t.Flag" *ngFor="let t of g.controls._UoMs.value" [value]="t.Id">{{t.Name}}</option>
 											</select>
-										</div>
+										</div> -->
+
 										<div *ngIf="pageConfig.POShowSuggestedQuantity && item.Type == 'FromPurchaseSuggestion'"  class="col-qty cell">
 											<input formControlName="SuggestedQuantity" [readonly]="submitAttempt" (focus)="$event.target.select()" (change)="saveOrder()" class="c-input" type="number" min="0" step="1" max="999999999999999999" onkeydown="return event.keyCode !== 190">
 										</div>
@@ -181,19 +205,19 @@
 										<div  class="col-remark cell">
 											<input formControlName="Remark" (change)="saveOrder();" class="c-input" type="text">
 										</div>
-										<div class="col-del cell" *ngIf="pageConfig.canEdit" (click)="removeOrderLine(idx)">
+										<div class="col-del cell" *ngIf="pageConfig.canEdit" (click)="removeLine(idx)">
 											<ion-icon color="danger" class="min-btn" name="trash-outline"></ion-icon>
 										</div>
 									</ng-container>
 								</div>
 
 								<div class="row" *ngIf="item?.OrderLines?.length > 1">
-									<div class="col-id cell" *ngIf="pageConfig.canEdit" (click)="addOrderLine({ IDOrder: item.Id, Id: 0 })">
+									<div class="col-id cell" *ngIf="pageConfig.canEdit" (click)="addNewLine()">
 										<ion-icon class="min-btn" title="{{'erp.app.pages.purchase.purchase-order.add-order-line' | translate}}" name="add-circle-outline"></ion-icon>
 									</div>
 									<div class="col-id cell" *ngIf="!pageConfig.canEdit"></div>
 									<div class="col-name cell">
-										<b (click)="addOrderLine({ IDOrder: item.Id, Id: 0 })" *ngIf="pageConfig.canEdit">{{'erp.app.pages.purchase.purchase-order.add-order-line' | translate}}</b>
+										<b (click)="addNewLine()" *ngIf="pageConfig.canEdit">{{'erp.app.pages.purchase.purchase-order.add-order-line' | translate}}</b>
 
 										<ion-button fill="clear" size="small" (click)="showSaleOrderPickerModal()" *ngIf="pageConfig.canEdit">
 											<ion-icon slot="start" name="git-pull-request-outline"></ion-icon>
@@ -226,7 +250,7 @@
 				<div class="table-contain">
 					<div class="row" *ngIf="pageConfig.canEdit && item?.OrderLines?.length <= 1">
 						<div class="cell">
-							<ion-button fill="clear" size="small" (click)="addOrderLine({ IDOrder: item.Id, Id: 0 })">
+							<ion-button fill="clear" size="small" (click)="addNewLine()">
 								<ion-icon slot="start" name="add-circle-outline"></ion-icon>
 								{{'erp.app.pages.purchase.purchase-order.add-order-line' | translate}}
 							</ion-button>
