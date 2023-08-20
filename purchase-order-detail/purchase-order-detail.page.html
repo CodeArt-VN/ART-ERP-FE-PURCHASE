@@ -129,6 +129,8 @@
 									<ng-container [formGroup]="g">
 										<div class="col-id cell">{{idx+1}}</div>
 										<div class="col-name cell">
+											
+
 											<ng-select appendTo="#order-detail-page" class="c-input" (change)="IDItemChange($event, g);" labelForId="IDItem" formControlName="IDItem" [items]="g.get('_IDItemDataSource').value.items$ | async" [typeahead]="g.get('_IDItemDataSource').value.input$" [loading]="g.get('_IDItemDataSource').value.loading" [clearable]="true" bindValue="Id" placeholder="{{'Type to search...' | translate}}">
 												<ng-template ng-label-tmp let-i="item">
 													<div *ngIf="i.Id">
@@ -146,9 +148,7 @@
 											</ng-select>
 										</div>
 										<div class="col-number cell">
-											<select formControlName="IDUoM" class="c-input c-dropdown" (change)="IDUoMChange(g)">
-												<option [disabled]="t.Flag" *ngFor="let t of g.controls._IDUoMDataSource.value" [value]="t.Id">{{t.Name}}</option>
-											</select>
+											<app-input-control [field]="{id:'IDUoM', type : 'select', form : g,  dataSource: g.controls._IDUoMDataSource.value,  bindLabel: 'Name',  bindValue: 'Id' }" (change)="IDUoMChange(g)"></app-input-control>
 										</div>
 
 										<!-- <div class="col-name cell">

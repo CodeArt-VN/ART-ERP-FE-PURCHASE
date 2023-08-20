@@ -47,11 +47,6 @@ export class PurchaseOrderNotePage extends PageBase {
         });
     }
 
-
-
-
-
-
     loadedData(event) {
         super.loadedData(event);
 
@@ -97,14 +92,16 @@ export class PurchaseOrderNotePage extends PageBase {
                         o.QRC = url;
                     })
 
-                    o.OrderLines.sort((a, b) => (parseFloat(a.ItemSort) - parseFloat(b.ItemSort)) || a._Item.Code.localeCompare(b._Item.Code));
+                    
                     o.OrderLines.forEach(l => {
+                        l._Item = o._Items.find(d=>d.Id == l.IDItem);
                         l.UoMPriceText = lib.formatMoney(l.UoMPrice, 0);
                         l.TotalBeforeDiscountText = lib.formatMoney(l.TotalBeforeDiscount, 0);
                         l.TotalDiscountText = lib.formatMoney(l.TotalDiscount, 0);
                         l.TotalAfterDiscountText = lib.formatMoney(l.TotalAfterDiscount, 0);
                         l.TotalAfterTaxText = lib.formatMoney(l.TotalAfterTax, 0);
                     });
+                    o.OrderLines.sort((a, b) => (parseFloat(a.ItemSort) - parseFloat(b.ItemSort)) || a._Item.Code.localeCompare(b._Item.Code));
 
                     o.TotalBeforeDiscountText = lib.formatMoney(o.TotalBeforeDiscount, 0);
                     o.TotalDiscountText = lib.formatMoney(o.TotalDiscount, 0);

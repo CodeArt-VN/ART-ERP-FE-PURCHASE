@@ -87,7 +87,7 @@ export class PurchaseOrderDetailPage extends PageBase {
             Type: ['Regular'],
             Status: new FormControl({ value: 'Draft', disabled: true }),
             PaymentStatus: ['WaitForPay', Validators.required],
-            IsDisabled: [''],
+            IsDisabled: new FormControl({ value: '', disabled: true }),
             OrderLines: this.formBuilder.array([]),
             TotalDiscount: new FormControl({ value: '', disabled: true }),
             TotalAfterTax: new FormControl({ value: '', disabled: true })
