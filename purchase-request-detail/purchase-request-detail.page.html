@@ -24,37 +24,15 @@
 						</ion-list-header>
 					</ion-col>
 					<ion-col size="12" size-sm size-xl="4">
-						<!-- <div class="c-control" *ngIf="item.Id">
-                            <label class="c-label" for="Id"># Id</label>
-                            <input class="c-input" id="Id" formControlName="Id" type="number">
-                        </div> -->
-						<div class="c-control">
-							<label class="c-label" for="IDStorer">{{'erp.app.pages.purchase.purchase-order.storer-name' | translate}}
-								<span *ngIf="!formGroup.controls.IDStorer.valid && !formGroup.controls.IDStorer.pending && (formGroup.controls.IDStorer.dirty || submitAttempt)" ion-text color="danger">(*)</span>
-							</label>
-							<app-input-control [clearable]="true" [virtualScroll]="true" [field]="{id:'IDStorer', label: 'erp.app.pages.purchase.purchase-order.storer-name', type : 'ng-select', form : formGroup,  dataSource: storerList,  bindLabel: 'Name',  bindValue: 'Id' }" (change)="saveOrder()"></app-input-control>
-						</div>
-					
-						<div class="c-control">
-							<label class="c-label" for="IDVendor">{{'erp.app.pages.purchase.purchase-order.vendor-name' | translate}}
-								<span *ngIf="!formGroup.controls.IDVendor.valid && !formGroup.controls.IDVendor.pending && (formGroup.controls.IDVendor.dirty || submitAttempt)" ion-text color="danger">(*)</span>
-							</label>
-							<app-input-control  [clearable]="true" [virtualScroll]="true" [field]="{id:'IDVendor', type : 'ng-select', form : formGroup,  dataSource: vendorList,  bindLabel: 'Name',  bindValue: 'Id' }" (change)="saveOrder()"></app-input-control>
-						</div>
-
-						<div class="c-control">
-							<label class="c-label" for="IDBranch">{{'erp.app.pages.purchase.purchase-order.id-branch' | translate}}
-								<span *ngIf="!formGroup.controls.IDBranch.valid && !formGroup.controls.IDBranch.pending && (formGroup.controls.IDBranch.dirty || submitAttempt)" ion-text color="danger">(*)</span>
-							</label>
-							<app-input-control  [clearable]="true" [virtualScroll]="true" [field]="{id:'IDBranch', type : 'ng-select', form : formGroup,  dataSource: branchList,  bindLabel: 'Name',  bindValue: 'Id' }" (change)="saveOrder()"></app-input-control>
-						</div>
-                        
-
+						<app-form-control [clearable]="true" [virtualScroll]="true" [field]="{id:'IDStorer', label: 'erp.app.pages.purchase.purchase-order.storer-name', type : 'ng-select', form : formGroup,  dataSource: storerList,  bindLabel: 'Name',  bindValue: 'Id' }" (change)="saveOrder()"></app-form-control>
+						<app-form-control [clearable]="true" [virtualScroll]="true" [field]="{id:'IDVendor',label:'erp.app.pages.purchase.purchase-order.vendor-name', type : 'ng-select', form : formGroup,  dataSource: vendorList,  bindLabel: 'Name',  bindValue: 'Id' }" (change)="saveOrder()"></app-form-control>
+						<app-form-control [clearable]="true" [virtualScroll]="true" [field]="{id:'IDBranch', label:'erp.app.pages.purchase.purchase-order.id-branch', type : 'ng-select', form : formGroup,  dataSource: branchList,  bindLabel: 'Name',  bindValue: 'Id' }" (change)="saveOrder()"></app-form-control>
 					</ion-col>
 					<ion-col size="12" size-sm size-xl="4">
 						<div class="c-control">
 							<label class="c-label" for="Code">{{'erp.app.pages.purchase.purchase-order.po-vendor-code' | translate}} <small *ngIf="item.Id">{{'erp.app.pages.purchase.purchase-order.id' | translate}}: {{item.Id}}</small></label>
 							<input class="c-input" (change)="saveOrder();" id="Code" formControlName="Code" type="text">
+							<!-- <app-input-control [clearable]="true"(change)="saveOrder();"[field]="{id:'Code', label: 'Item', type : 'text', form : g" (change)="IDItemChange($event, g);"></app-input-control> -->
 						</div>
 						<div class="c-control">
 							<label class="c-label" for="ExpectedReceiptDate">{{'erp.app.pages.purchase.purchase-order.expected-receipt-date-detail' | translate}}
@@ -111,9 +89,7 @@
 									<ng-container [formGroup]="g">
 										<div class="col-id cell">{{idx+1}}</div>
 										<div class="col-name cell">
-											
-
-											<ng-select appendTo="#order-detail-page" class="c-input" (change)="IDItemChange($event, g);" labelForId="IDItem" formControlName="IDItem" [items]="g.get('_IDItemDataSource').value.items$ | async" [typeahead]="g.get('_IDItemDataSource').value.input$" [loading]="g.get('_IDItemDataSource').value.loading" [clearable]="true" bindValue="Id" placeholder="{{'Type to search...' | translate}}">
+											<!-- <ng-select appendTo="#order-detail-page" class="c-input" (change)="IDItemChange($event, g);" labelForId="IDItem" formControlName="IDItem" [items]="g.get('_IDItemDataSource').value.items$ | async" [typeahead]="g.get('_IDItemDataSource').value.input$" [loading]="g.get('_IDItemDataSource').value.loading" [clearable]="true" bindValue="Id" placeholder="{{'Type to search...' | translate}}">
 												<ng-template ng-label-tmp let-i="item">
 													<div *ngIf="i.Id">
 														<a [routerLink]="['/item/'+i.Id]" (mousedown)="$event.stopPropagation()">#{{i.Id}} <ion-icon name="open-outline"></ion-icon></a>
@@ -127,7 +103,8 @@
 														<small>#<b><span class="important" [ngOptionHighlight]="search">{{i.Id}} - {{i.Code}}</span></b></small>
 													</div>
 												</ng-template>
-											</ng-select>
+											</ng-select> -->
+											<app-input-control [clearable]="true"  appendTo="#order-detail-page" [field]="{id:'IDItem', label: 'Item', type : 'ng-select-item', form : g,  dataSource: g.get('_IDItemDataSource').value,  bindValue: 'Id', clearable: true, placeholder: 'Type to search...' }" (change)="IDItemChange($event, g);"></app-input-control>
 										</div>
 										<div class="col-number cell">
 											<app-input-control [field]="{id:'IDUoM', type : 'select', form : g,  dataSource: g.controls._IDUoMDataSource.value,  bindLabel: 'Name',  bindValue: 'Id' }" (change)="IDUoMChange(g)"></app-input-control>
@@ -189,7 +166,6 @@
 										</div>
 									</ng-container>
 								</div>
-
 
 
 								<div class="row" *ngIf="item?.OrderLines?.length > 1">
@@ -264,38 +240,17 @@
 								
 									<app-form-control (change)="saveOrder();" [field]="{id:'Status', type : 'select', dataSource:statusList, bindLabel:'Name', bindValue:'Code', label:'erp.app.pages.purchase.purchase-order.status', form : formGroup}"></app-form-control>
 									
-									<div class="c-control">
-										<label class="c-label" for="PaymentStatus">{{'erp.app.pages.purchase.purchase-order.payment-status-detail' | translate}}
-											<span *ngIf="!formGroup.controls.PaymentStatus.valid && !formGroup.controls.PaymentStatus.pending && (formGroup.controls.PaymentStatus.dirty || submitAttempt)" ion-text color="danger">(*)</span>
-										</label>
-										<app-input-control (change)="saveOrder();" [field]="{id:'PaymentStatus', type : 'select', dataSource:paymentStatusList, bindLabel:'Name', bindValue:'Code', form : formGroup}"> </app-input-control>
-									</div>
+									<app-form-control (change)="saveOrder();" [field]="{id:'PaymentStatus',label:'erp.app.pages.purchase.purchase-order.payment-status-detail', type : 'select', dataSource:paymentStatusList, bindLabel:'Name', bindValue:'Code', form : formGroup}"></app-form-control>
 
 								</ion-col>
 								<ion-col size="12" size-sm size-xl="4">
-									<div class="c-control" >
-										<label class="c-label" for="OrderDate">{{'erp.app.pages.purchase.purchase-order.order-date' | translate}}
-											<span *ngIf="!formGroup.controls.OrderDate.valid && !formGroup.controls.OrderDate.pending && (formGroup.controls.OrderDate.dirty || submitAttempt)" ion-text color="danger">(*)</span>
-										</label>
-										<app-input-control (change)="saveOrder();" [field]="{id:'OrderDate', type : 'datetime-local',placeholder: 'yyyy-MM-dd', form : formGroup}"> </app-input-control>
-									</div>
+									<app-form-control (change)="saveOrder();" [field]="{id:'OrderDate',label:'erp.app.pages.purchase.purchase-order.order-date', type : 'datetime-local', form : formGroup}"></app-form-control>
 
-									<div class="c-control" >
-										<label class="c-label" for="ExpectedReceiptDate">{{'erp.app.pages.purchase.purchase-order.expected-receipt-date-detail' | translate}}
-											<span *ngIf="!formGroup.controls.ExpectedReceiptDate.valid && !formGroup.controls.ExpectedReceiptDate.pending && (formGroup.controls.ExpectedReceiptDate.dirty || submitAttempt)" ion-text color="danger">(*)</span>
-										</label>
-										<app-input-control (change)="saveOrder();" [field]="{id:'ExpectedReceiptDate', type : 'datetime-local', form : formGroup}"> </app-input-control>
-									</div>
+									<app-form-control (change)="saveOrder();" [field]="{id:'OrderDate',label:'erp.app.pages.purchase.purchase-order.expected-receipt-date-detail', type : 'datetime-local', form : formGroup}"></app-form-control>
 								
-									<div class="c-control">
-										<label class="c-label" for="ReceiptedDate">{{'erp.app.pages.purchase.purchase-order.receipt-date-detail' | translate}}
-											<span *ngIf="!formGroup.controls.ReceiptedDate.valid && !formGroup.controls.ReceiptedDate.pending && (formGroup.controls.ReceiptedDate.dirty || submitAttempt)" ion-text color="danger">(*)</span>
-										</label>
-										<app-input-control (change)="saveOrder();" [field]="{id:'ReceiptedDate', type : 'datetime-local', form : formGroup}"> </app-input-control>
-									</div>
+									<app-form-control (change)="saveOrder();" [field]="{id:'ReceiptedDate',label:'erp.app.pages.purchase.purchase-order.receipt-date-detail', type : 'datetime-local', form : formGroup}"></app-form-control>
 									
 									<app-form-control [field]="{id:'Remark', type : 'textarea', label: 'erp.app.pages.purchase.purchase-order.remark', form : formGroup }" (change)="saveOrder()"></app-form-control>
-							
 								</ion-col>
 							</ion-row>
 						</form>

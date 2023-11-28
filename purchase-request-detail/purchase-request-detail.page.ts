@@ -126,9 +126,7 @@ export class PurchaseRequestDetailPage extends PageBase {
             this.pageConfig.POShowAdjustedQuantity = JSON.parse(values[1]['Value']);
 
         });
-        console.log(this.storerList)
-        console.log(this.vendorList)
-
+       
     }
 
     markNestedNode(ls, Id) {
@@ -167,6 +165,7 @@ export class PurchaseRequestDetailPage extends PageBase {
     }
 
     addLine(line, markAsDirty = false) {
+        debugger
         let groups = <FormArray>this.formGroup.controls.OrderLines;
         let preLoadItems = this.item._Items;
         let selectedItem = preLoadItems.find(d => d.Id == line.IDItem);
@@ -185,7 +184,7 @@ export class PurchaseRequestDetailPage extends PageBase {
                         this.input$.pipe(
                             distinctUntilChanged(),
                             tap(() => this.loading = true),
-                            switchMap(term => this.searchProvider.search({ ARSearch: true, IDPO: line.IDOrder, SortBy: ['Id_desc'], Take: 20, Skip: 0, Term: term }).pipe(
+                            switchMap(term => this.searchProvider.search({ TaxRateARSearch: true, IDPO: line.IDOrder, SortBy: ['Id_desc'], Take: 20, Skip: 0, Term: term }).pipe(
                                 catchError(() => of([])), // empty list on error
                                 tap(() => this.loading = false)
                             ))
@@ -215,7 +214,6 @@ export class PurchaseRequestDetailPage extends PageBase {
         groups.push(group);
 
         group.get('_IDItemDataSource').value?.initSearch();
-
         if (markAsDirty) {
             group.get('IDOrder').markAsDirty();
         }
@@ -444,5 +442,8 @@ export class PurchaseRequestDetailPage extends PageBase {
 
     async showSaleOrderPickerModal() {
       
+    }
+    nav(event){
+        this.navCtrl.navigateForward(event);
     }
 }
