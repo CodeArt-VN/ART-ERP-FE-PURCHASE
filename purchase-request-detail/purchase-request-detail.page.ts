@@ -84,7 +84,7 @@ export class PurchaseRequestDetailPage extends PageBase {
             OrderDate: new FormControl({ value: '', disabled: true }),
             ExpectedReceiptDate: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
             ReceiptedDate: new FormControl({ value: '', disabled: true }),
-            Type: ['Regular'],
+            Type: ['PurchaseRequest'],
             Status: new FormControl({ value: 'Draft', disabled: true }),
             PaymentStatus: ['WaitForPay', Validators.required],
             IsDisabled: new FormControl({ value: '', disabled: true }),
@@ -111,7 +111,7 @@ export class PurchaseRequestDetailPage extends PageBase {
             this.storerList = resp['data'];
         });
 
-        this.env.getStatus('PurchaseRequest').then((data: any) => {
+        this.env.getStatus('PurchaseOrder').then((data: any) => {
             this.statusList = data;
         });
         this.env.getStatus('POPaymentStatus').then((data: any) => {
@@ -126,7 +126,8 @@ export class PurchaseRequestDetailPage extends PageBase {
             this.pageConfig.POShowAdjustedQuantity = JSON.parse(values[1]['Value']);
 
         });
-       
+
+     
     }
 
     markNestedNode(ls, Id) {
@@ -149,9 +150,9 @@ export class PurchaseRequestDetailPage extends PageBase {
 
 
         }
-
         super.loadedData(event, true);
         this.setOrderLines();
+        this.formGroup.get('Type').markAsDirty();
     }
 
     setOrderLines() {
@@ -165,10 +166,9 @@ export class PurchaseRequestDetailPage extends PageBase {
     }
 
     addLine(line, markAsDirty = false) {
-        debugger
         let groups = <FormArray>this.formGroup.controls.OrderLines;
         let preLoadItems = this.item._Items;
-        let selectedItem = preLoadItems.find(d => d.Id == line.IDItem);
+        let selectedItem = preLoadItems?.find(d => d.Id == line.IDItem);
 
         let group = this.formBuilder.group({
             _IDItemDataSource: [{
@@ -184,7 +184,7 @@ export class PurchaseRequestDetailPage extends PageBase {
                         this.input$.pipe(
                             distinctUntilChanged(),
                             tap(() => this.loading = true),
-                            switchMap(term => this.searchProvider.search({ TaxRateARSearch: true, IDPO: line.IDOrder, SortBy: ['Id_desc'], Take: 20, Skip: 0, Term: term }).pipe(
+                            switchMap(term => this.searchProvider.search({ ARSearch: true, IDPO: line.IDOrder, SortBy: ['Id_desc'], Take: 20, Skip: 0, Term: term }).pipe(
                                 catchError(() => of([])), // empty list on error
                                 tap(() => this.loading = false)
                             ))
@@ -214,6 +214,7 @@ export class PurchaseRequestDetailPage extends PageBase {
         groups.push(group);
 
         group.get('_IDItemDataSource').value?.initSearch();
+
         if (markAsDirty) {
             group.get('IDOrder').markAsDirty();
         }
@@ -235,7 +236,7 @@ export class PurchaseRequestDetailPage extends PageBase {
             this.purchaseOrderDetailProvider.delete(Ids).then(resp => {
                 groups.removeAt(index);
                 this.env.publishEvent({ Code: this.pageConfig.pageName });
-                this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.delete-complete', 'success');
+                this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.delete-complete', 'success');
             });
         }).catch(_ => { });
     }
@@ -252,6 +253,7 @@ export class PurchaseRequestDetailPage extends PageBase {
     }
 
     savedChange(savedItem = null, form = this.formGroup) {
+      
         super.savedChange(savedItem, form);
         this.item = savedItem;
         this.loadedData(null);
@@ -371,7 +373,7 @@ export class PurchaseRequestDetailPage extends PageBase {
                         })
                     }
                     else {
-                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.import-complete', 'success');
+                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.import-complete', 'success');
                         this.env.publishEvent({ Code: this.pageConfig.pageName });
                     }
                 })
@@ -410,14 +412,14 @@ export class PurchaseRequestDetailPage extends PageBase {
                     }).then(alert => {
                         alert.present();
                     })
-                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.create-asn-complete', 'success');
+                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.create-asn-complete', 'success');
                     this.env.publishEvent({ Code: this.pageConfig.pageName });
 
                 })
                 .catch(err => {
                     console.log(err);
 
-                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.can-not-create-asn', 'danger');
+                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-create-asn', 'danger');
                     if (loading) loading.dismiss();
                 })
         })
@@ -441,9 +443,41 @@ export class PurchaseRequestDetailPage extends PageBase {
     }
 
     async showSaleOrderPickerModal() {
-      
-    }
-    nav(event){
-        this.navCtrl.navigateForward(event);
+        const modal = await this.modalController.create({
+            component: SaleOrderPickerModalPage,
+            componentProps: {
+                id: this.item.Id
+            },
+            cssClass: 'modal90'
+        });
+
+        await modal.present();
+        const { data } = await modal.onWillDismiss();
+
+        if (data && data.length) {
+            console.log(data);
+            console.log(data.map(i => i.Id));
+
+            const loading = await this.loadingController.create({
+                cssClass: 'my-custom-class',
+                message: 'Vui lòng chờ import dữ liệu'
+            });
+            await loading.present().then(() => {
+                let postData = {
+                    Id: this.item.Id,
+                    SOIds: data.map(i => i.Id)
+                };
+                this.commonService.connect('POST', ApiSetting.apiDomain("PURCHASE/Order/ImportDetailFromSaleOrders/"), postData).toPromise()
+                    .then((data) => {
+                        if (loading) loading.dismiss();
+                        this.refresh();
+                        this.env.publishEvent({ Code: this.pageConfig.pageName });
+                    }).catch(err => {
+                        console.log(err);
+                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-add', 'danger');
+                        if (loading) loading.dismiss();
+                    })
+            })
+        }
     }
 }

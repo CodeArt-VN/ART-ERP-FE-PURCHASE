@@ -30,6 +30,7 @@ export class PurchaseOrderPage extends PageBase {
     }
 
     preLoadData(event) {
+        this.query.Type='Regular';
         if (!this.sort.Id) {
             this.sort.Id = 'Id';
             this.sortToggle('Id', true);
@@ -63,7 +64,6 @@ export class PurchaseOrderPage extends PageBase {
     splitSaleOrder() {
 
     }
-
 
     submitOrdersForApproval() {
         if (!this.pageConfig.canSubmitOrdersForApproval) return;

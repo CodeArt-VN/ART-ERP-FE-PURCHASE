@@ -168,7 +168,7 @@ export class PurchaseOrderDetailPage extends PageBase {
     addLine(line, markAsDirty = false) {
         let groups = <FormArray>this.formGroup.controls.OrderLines;
         let preLoadItems = this.item._Items;
-        let selectedItem = preLoadItems.find(d => d.Id == line.IDItem);
+        let selectedItem = preLoadItems?.find(d => d.Id == line.IDItem);
 
         let group = this.formBuilder.group({
             _IDItemDataSource: [{

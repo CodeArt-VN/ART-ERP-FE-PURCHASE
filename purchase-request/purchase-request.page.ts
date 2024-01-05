@@ -30,12 +30,13 @@ export class PurchaseRequestPage extends PageBase {
     }
 
     preLoadData(event) {
+        this.query.Type = 'PurchaseRequest';
         if (!this.sort.Id) {
             this.sort.Id = 'Id';
             this.sortToggle('Id', true);
         }
         Promise.all([
-            this.env.getStatus('PurchaseRequest'),
+            this.env.getStatus('PurchaseOrder'),
             this.env.getStatus('POPaymentStatus')
         ]).then(values=>{
             this.statusList = values[0];
