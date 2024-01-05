@@ -221,7 +221,7 @@ export class PurchaseRequestPage extends PageBase {
         this.pageProvider.commonService.connect('POST', ApiSetting.apiDomain("PURCHASE/Order/SubmitOrders/"), postDTO).toPromise()
             .then((savedItem: any) => {
                 this.env.publishEvent({ Code: this.pageConfig.pageName });
-                this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.submit-orders-complete','success');
+                this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.submit-requests-complete','success');
                 this.submitAttempt = false;
 
             }).catch(err => {

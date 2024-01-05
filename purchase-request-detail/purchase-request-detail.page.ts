@@ -236,7 +236,7 @@ export class PurchaseRequestDetailPage extends PageBase {
             this.purchaseOrderDetailProvider.delete(Ids).then(resp => {
                 groups.removeAt(index);
                 this.env.publishEvent({ Code: this.pageConfig.pageName });
-                this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.delete-complete', 'success');
+                this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.delete-complete', 'success');
             });
         }).catch(_ => { });
     }
@@ -373,7 +373,7 @@ export class PurchaseRequestDetailPage extends PageBase {
                         })
                     }
                     else {
-                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.import-complete', 'success');
+                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.import-complete', 'success');
                         this.env.publishEvent({ Code: this.pageConfig.pageName });
                     }
                 })
@@ -412,14 +412,14 @@ export class PurchaseRequestDetailPage extends PageBase {
                     }).then(alert => {
                         alert.present();
                     })
-                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.create-asn-complete', 'success');
+                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.create-asn-complete', 'success');
                     this.env.publishEvent({ Code: this.pageConfig.pageName });
 
                 })
                 .catch(err => {
                     console.log(err);
 
-                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-create-asn', 'danger');
+                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.can-not-create-asn', 'danger');
                     if (loading) loading.dismiss();
                 })
         })
@@ -474,7 +474,7 @@ export class PurchaseRequestDetailPage extends PageBase {
                         this.env.publishEvent({ Code: this.pageConfig.pageName });
                     }).catch(err => {
                         console.log(err);
-                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-add', 'danger');
+                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.can-not-add', 'danger');
                         if (loading) loading.dismiss();
                     })
             })
