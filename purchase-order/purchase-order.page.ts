@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
-import { PURCHASE_OrderProvider } from 'src/app/services/static/services.service';
+import { PURCHASE_OrderProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
 import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
@@ -18,6 +18,7 @@ export class PurchaseOrderPage extends PageBase {
 
     constructor(
         public pageProvider: PURCHASE_OrderProvider,
+        public sysConfigProvider: SYS_ConfigProvider,
         public modalController: ModalController,
         public popoverCtrl: PopoverController,
         public alertCtrl: AlertController,
@@ -35,12 +36,20 @@ export class PurchaseOrderPage extends PageBase {
             this.sort.Id = 'Id';
             this.sortToggle('Id', true);
         }
+        let sysConfigQuery = ['POUsedApprovalModule'];
         Promise.all([
             this.env.getStatus('PurchaseOrder'),
-            this.env.getStatus('POPaymentStatus')
+            this.env.getStatus('POPaymentStatus'),
+            this.sysConfigProvider.read({ Code_in: sysConfigQuery })
         ]).then(values=>{
             this.statusList = values[0];
             this.paymentStatusList = values[1];
+            values[2]['data'].forEach(e => {
+                if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
+                    e.Value = e._InheritedConfig.Value;
+                }
+                this.pageConfig[e.Code] = JSON.parse(e.Value);
+            });
             super.preLoadData(event);
         })
     }
@@ -55,6 +64,9 @@ export class PurchaseOrderPage extends PageBase {
             i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
             i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
         });
+        if(this.pageConfig['POUsedApprovalModule']){
+            this.pageConfig['canApprove']=false;
+        }
         super.loadedData(event);
     }
 
