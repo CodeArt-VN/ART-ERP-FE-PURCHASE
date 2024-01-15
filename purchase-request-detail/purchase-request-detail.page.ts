@@ -13,11 +13,11 @@ import { ApiSetting } from 'src/app/services/static/api-setting';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
 
 @Component({
-    selector: 'app-purchase-order-detail',
-    templateUrl: './purchase-order-detail.page.html',
-    styleUrls: ['./purchase-order-detail.page.scss'],
+    selector: 'app-purchase-request-detail',
+    templateUrl: './purchase-request-detail.page.html',
+    styleUrls: ['./purchase-request-detail.page.scss'],
 })
-export class PurchaseOrderDetailPage extends PageBase {
+export class PurchaseRequestDetailPage extends PageBase {
     @ViewChild('importfile') importfile: any;
     branchList = [];
     vendorList = [];
@@ -84,7 +84,7 @@ export class PurchaseOrderDetailPage extends PageBase {
             OrderDate: new FormControl({ value: '', disabled: true }),
             ExpectedReceiptDate: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
             ReceiptedDate: new FormControl({ value: '', disabled: true }),
-            Type: ['Regular'],
+            Type: ['PurchaseRequest'],
             Status: new FormControl({ value: 'Draft', disabled: true }),
             PaymentStatus: ['WaitForPay', Validators.required],
             IsDisabled: new FormControl({ value: '', disabled: true }),
@@ -127,7 +127,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 
         });
 
-
+     
     }
 
     markNestedNode(ls, Id) {
@@ -144,15 +144,15 @@ export class PurchaseOrderDetailPage extends PageBase {
             if (this.item.OrderLines)
                 this.item.OrderLines.sort((a, b) => (a.Id > b.Id) ? 1 : ((b.Id > a.Id) ? -1 : 0));
 
-            if (!(this.item.Status == 'Draft' || this.item.Status == 'Unapproved')) {
+            if (!(this.item.Status == 'Draft' || this.item.Status == 'PORequestUnapproved')) {
                 this.pageConfig.canEdit = false;
             }
 
 
         }
-
         super.loadedData(event, true);
         this.setOrderLines();
+        this.formGroup.get('Type').markAsDirty();
     }
 
     setOrderLines() {
@@ -196,13 +196,13 @@ export class PurchaseOrderDetailPage extends PageBase {
 
             IDOrder: [line.IDOrder],
             Id: [line.Id],
-            Remark: new FormControl({ value: line.Remark, disabled: !(this.pageConfig.canEdit || ((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.pageConfig.canEditApprovedOrder)) }),
+            Remark: new FormControl({ value: line.Remark, disabled: !(this.pageConfig.canEdit || ((this.item.Status == 'PORequestApproved' || this.item.Status == 'Submitted') && this.pageConfig.canEditApprovedOrder)) }),
             IDItem: [line.IDItem, Validators.required],
             IDUoM: new FormControl({ value: line.IDUoM, disabled: !this.pageConfig.canEdit }, Validators.required),
             UoMPrice: new FormControl({ value: line.UoMPrice, disabled: !(this.pageConfig.canEdit && this.pageConfig.canEditPrice) }, Validators.required),
             SuggestedQuantity: new FormControl({ value: line.SuggestedQuantity, disabled: true }),
             UoMQuantityExpected: new FormControl({ value: line.UoMQuantityExpected, disabled: !this.pageConfig.canEdit }, Validators.required),
-            QuantityAdjusted: new FormControl({ value: line.QuantityAdjusted, disabled: !((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.pageConfig.canEditApprovedOrder) }),
+            QuantityAdjusted: new FormControl({ value: line.QuantityAdjusted, disabled: !((this.item.Status == 'PORequestApproved' || this.item.Status == 'Submitted') && this.pageConfig.canEditApprovedOrder) }),
             IsPromotionItem: new FormControl({ value: line.IsPromotionItem, disabled: !this.pageConfig.canEdit }),
             TotalBeforeDiscount: new FormControl({ value: line.TotalBeforeDiscount, disabled: true }),
             TotalDiscount: new FormControl({ value: line.TotalDiscount, disabled: !this.pageConfig.canEdit }),
@@ -236,7 +236,7 @@ export class PurchaseOrderDetailPage extends PageBase {
             this.purchaseOrderDetailProvider.delete(Ids).then(resp => {
                 groups.removeAt(index);
                 this.env.publishEvent({ Code: this.pageConfig.pageName });
-                this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.delete-complete', 'success');
+                this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.delete-complete', 'success');
             });
         }).catch(_ => { });
     }
@@ -253,6 +253,7 @@ export class PurchaseOrderDetailPage extends PageBase {
     }
 
     savedChange(savedItem = null, form = this.formGroup) {
+      
         super.savedChange(savedItem, form);
         this.item = savedItem;
         this.loadedData(null);
@@ -372,7 +373,7 @@ export class PurchaseOrderDetailPage extends PageBase {
                         })
                     }
                     else {
-                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.import-complete', 'success');
+                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.import-complete', 'success');
                         this.env.publishEvent({ Code: this.pageConfig.pageName });
                     }
                 })
@@ -411,14 +412,14 @@ export class PurchaseOrderDetailPage extends PageBase {
                     }).then(alert => {
                         alert.present();
                     })
-                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.create-asn-complete', 'success');
+                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.create-asn-complete', 'success');
                     this.env.publishEvent({ Code: this.pageConfig.pageName });
 
                 })
                 .catch(err => {
                     console.log(err);
 
-                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-create-asn', 'danger');
+                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.can-not-create-asn', 'danger');
                     if (loading) loading.dismiss();
                 })
         })
@@ -473,7 +474,7 @@ export class PurchaseOrderDetailPage extends PageBase {
                         this.env.publishEvent({ Code: this.pageConfig.pageName });
                     }).catch(err => {
                         console.log(err);
-                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-add', 'danger');
+                        this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.can-not-add', 'danger');
                         if (loading) loading.dismiss();
                     })
             })
