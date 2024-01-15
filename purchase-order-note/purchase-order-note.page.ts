@@ -30,7 +30,7 @@ export class PurchaseOrderNotePage extends PageBase {
         this.id = this.route.snapshot.paramMap.get('id');
         //let today = new Date;
         //this.query.OrderDate = lib.dateFormat(today.setDate(today.getDate() + 1), 'yyyy-mm-dd');
-        this.query.Status = 'PORequestApproved';
+        this.query.Status = 'Approved';
     }
 
 
@@ -111,6 +111,8 @@ export class PurchaseOrderNotePage extends PageBase {
                     // o.DocTienBangChu = this.DocTienBangChu(o.TotalAfterTax);
                 };
 
+                console.log(this.sheets);
+                
 
                 this.submitAttempt = false;
                 if (loading) loading.dismiss();
@@ -124,7 +126,7 @@ export class PurchaseOrderNotePage extends PageBase {
                     this.env.showMessage(err.message, 'danger');
                 }
                 else {
-                    this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-create-order', 'danger');
+                    this.env.showTranslateMessage('Cannot create sales order. Please try again', 'danger');
                 }
                 this.submitAttempt = false;
                 if (loading) loading.dismiss();
@@ -324,8 +326,8 @@ export class PurchaseOrderNotePage extends PageBase {
     }
 
     toggleDateFilter() {
-        this.query.Status = this.query.Status == 'PORequestApproved' ? '' : 'PORequestApproved';
-        if (this.query.Status == 'PORequestApproved') {
+        this.query.Status = this.query.Status == 'Approved' ? '' : 'Approved';
+        if (this.query.Status == 'Approved') {
             this.query.OrderDate = '';
         }
         else {

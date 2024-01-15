@@ -144,7 +144,7 @@ export class PurchaseOrderDetailPage extends PageBase {
             if (this.item.OrderLines)
                 this.item.OrderLines.sort((a, b) => (a.Id > b.Id) ? 1 : ((b.Id > a.Id) ? -1 : 0));
 
-            if (!(this.item.Status == 'Draft' || this.item.Status == 'PORequestUnapproved')) {
+            if (!(this.item.Status == 'Draft' || this.item.Status == 'Unapproved')) {
                 this.pageConfig.canEdit = false;
             }
 
@@ -196,13 +196,13 @@ export class PurchaseOrderDetailPage extends PageBase {
 
             IDOrder: [line.IDOrder],
             Id: [line.Id],
-            Remark: new FormControl({ value: line.Remark, disabled: !(this.pageConfig.canEdit || ((this.item.Status == 'PORequestApproved' || this.item.Status == 'Submitted') && this.pageConfig.canEditApprovedOrder)) }),
+            Remark: new FormControl({ value: line.Remark, disabled: !(this.pageConfig.canEdit || ((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.pageConfig.canEditApprovedOrder)) }),
             IDItem: [line.IDItem, Validators.required],
             IDUoM: new FormControl({ value: line.IDUoM, disabled: !this.pageConfig.canEdit }, Validators.required),
             UoMPrice: new FormControl({ value: line.UoMPrice, disabled: !(this.pageConfig.canEdit && this.pageConfig.canEditPrice) }, Validators.required),
             SuggestedQuantity: new FormControl({ value: line.SuggestedQuantity, disabled: true }),
             UoMQuantityExpected: new FormControl({ value: line.UoMQuantityExpected, disabled: !this.pageConfig.canEdit }, Validators.required),
-            QuantityAdjusted: new FormControl({ value: line.QuantityAdjusted, disabled: !((this.item.Status == 'PORequestApproved' || this.item.Status == 'Submitted') && this.pageConfig.canEditApprovedOrder) }),
+            QuantityAdjusted: new FormControl({ value: line.QuantityAdjusted, disabled: !((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.pageConfig.canEditApprovedOrder) }),
             IsPromotionItem: new FormControl({ value: line.IsPromotionItem, disabled: !this.pageConfig.canEdit }),
             TotalBeforeDiscount: new FormControl({ value: line.TotalBeforeDiscount, disabled: true }),
             TotalDiscount: new FormControl({ value: line.TotalDiscount, disabled: !this.pageConfig.canEdit }),
