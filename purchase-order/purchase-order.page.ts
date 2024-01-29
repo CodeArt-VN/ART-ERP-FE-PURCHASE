@@ -81,7 +81,7 @@ export class PurchaseOrderPage extends PageBase {
         if (!this.pageConfig.canSubmitOrdersForApproval) return;
         if (this.submitAttempt) return;
 
-        let itemsCanNotProcess = this.selectedItems.filter(i => !(i.Status == 'Draft' || i.Status == 'PORequestUnapproved'));
+        let itemsCanNotProcess = this.selectedItems.filter(i => !(i.Status == 'Draft' || i.Status == 'Unapproved'));
         if (itemsCanNotProcess.length == this.selectedItems.length) {
             this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-send-approve-new-draft-disapprove-only','warning');
         }
@@ -89,7 +89,7 @@ export class PurchaseOrderPage extends PageBase {
             itemsCanNotProcess.forEach(i => {
                 i.checked = false;
             });
-            this.selectedItems = this.selectedItems.filter(i => (i.Status == 'Draft' || i.Status == 'PORequestUnapproved'));
+            this.selectedItems = this.selectedItems.filter(i => (i.Status == 'Draft' || i.Status == 'Unapproved'));
 
             this.env.showPrompt('Bạn chắc muốn gửi duyệt ' + this.selectedItems.length + ' đơn hàng đang chọn?', null, 'Gửi duyệt ' + this.selectedItems.length + ' mua hàng')
                 .then(_ => {
@@ -120,7 +120,7 @@ export class PurchaseOrderPage extends PageBase {
         if (!this.pageConfig.canApprove) return;
         if (this.submitAttempt) return;
 
-        let itemsCanNotProcess = this.selectedItems.filter(i => !(i.Status == 'PORequestSubmitted'));
+        let itemsCanNotProcess = this.selectedItems.filter(i => !(i.Status == 'Submitted'));
         if (itemsCanNotProcess.length == this.selectedItems.length) {
             this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-approve-pending-only','warning');
         }
@@ -128,7 +128,7 @@ export class PurchaseOrderPage extends PageBase {
             itemsCanNotProcess.forEach(i => {
                 i.checked = false;
             });
-            this.selectedItems = this.selectedItems.filter(i => (i.Status == 'PORequestSubmitted'));
+            this.selectedItems = this.selectedItems.filter(i => (i.Status == 'Submitted'));
             this.env.showPrompt('Bạn chắc muốn DUYỆT ' + this.selectedItems.length + ' đơn hàng đang chọn?', null, 'Duyệt ' + this.selectedItems.length + ' đơn hàng')
                 .then(_ => {
                     this.submitAttempt = true;
@@ -159,7 +159,7 @@ export class PurchaseOrderPage extends PageBase {
         if (!this.pageConfig.canApprove) return;
         if (this.submitAttempt) return;
 
-        let itemsCanNotProcess = this.selectedItems.filter(i => !(i.Status == 'PORequestSubmitted' || i.Status == 'PORequestApproved'));
+        let itemsCanNotProcess = this.selectedItems.filter(i => !(i.Status == 'Submitted' || i.Status == 'Approved'));
         if (itemsCanNotProcess.length == this.selectedItems.length) {
             this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-disapprove-pending-approved-only','warning');
         }
@@ -167,7 +167,7 @@ export class PurchaseOrderPage extends PageBase {
             itemsCanNotProcess.forEach(i => {
                 i.checked = false;
             });
-            this.selectedItems = this.selectedItems.filter(i => (i.Status == 'PORequestSubmitted' || i.Status == 'PORequestApproved'));
+            this.selectedItems = this.selectedItems.filter(i => (i.Status == 'Submitted' || i.Status == 'Approved'));
             this.env.showPrompt('Bạn chắc muốn TRẢ LẠI ' + this.selectedItems.length + ' đơn hàng đang chọn?', null, 'Duyệt ' + this.selectedItems.length + ' đơn hàng')
                 .then(_ => {
                     this.submitAttempt = true;
@@ -191,7 +191,7 @@ export class PurchaseOrderPage extends PageBase {
         if (!this.pageConfig.canCancel) return;
         if (this.submitAttempt) return;
 
-        let itemsCanNotProcess = this.selectedItems.filter(i => !(i.Status == 'Draft' || i.Status == 'PORequestUnapproved'));
+        let itemsCanNotProcess = this.selectedItems.filter(i => !(i.Status == 'Draft' || i.Status == 'Unapproved'));
         if (itemsCanNotProcess.length == this.selectedItems.length) {
             this.env.showTranslateMessage('erp.app.pages.purchase.purchase-order.message.can-not-cancel-pending-draft-only','warning');
         }
@@ -199,7 +199,7 @@ export class PurchaseOrderPage extends PageBase {
             itemsCanNotProcess.forEach(i => {
                 i.checked = false;
             });
-            this.selectedItems = this.selectedItems.filter(i => (i.Status == 'Draft' || i.Status == 'PORequestUnapproved'));
+            this.selectedItems = this.selectedItems.filter(i => (i.Status == 'Draft' || i.Status == 'Unapproved'));
             this.env.showPrompt('Bạn chắc muốn HỦY ' + this.selectedItems.length + ' đơn hàng đang chọn?', null, 'Duyệt ' + this.selectedItems.length + ' đơn hàng')
                 .then(_ => {
                     this.submitAttempt = true;
@@ -224,7 +224,7 @@ export class PurchaseOrderPage extends PageBase {
             return;
         }
 
-        this.selectedItems = this.selectedItems.filter(i => (i.Status == 'PORequestApproved'));
+        this.selectedItems = this.selectedItems.filter(i => (i.Status == 'Approved'));
         this.submitAttempt = true;
         let postDTO = { Ids: [] };
         postDTO.Ids = this.selectedItems.map(e => e.Id);
