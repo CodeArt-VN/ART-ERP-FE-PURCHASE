@@ -104,7 +104,7 @@
 													</div>
 												</ng-template>
 											</ng-select> -->
-											<app-input-control [clearable]="true"  appendTo="#order-detail-page" [field]="{id:'IDItem', label: 'Item', type : 'ng-select-item', form : g,  dataSource: g.get('_IDItemDataSource').value,  bindValue: 'Id', clearable: true, placeholder: 'Type to search...' }" (inputChange)="IDItemChange($event, g);"></app-input-control>
+											<app-input-control [clearable]="true"  appendTo="#order-detail-page" [field]="{id:'IDItem', label: 'Item', type : 'ng-select-item', form : g,  dataSource: g.get('_IDItemDataSource').value,  bindValue: 'Id', clearable: true, placeholder: 'Type to search...' }" (change)="IDItemChange($event, g);"></app-input-control>
 										</div>
 										<div class="col-number cell">
 											<app-input-control [field]="{id:'IDUoM', type : 'select', form : g,  dataSource: g.controls._IDUoMDataSource.value,  bindLabel: 'Name',  bindValue: 'Id' }" (change)="IDUoMChange(g)"></app-input-control>
