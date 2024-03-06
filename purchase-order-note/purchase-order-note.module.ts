@@ -13,8 +13,8 @@ import { ShareModule } from 'src/app/share.module';
     FormsModule,
     ReactiveFormsModule,
     ShareModule,
-    RouterModule.forChild([{ path: '', component: PurchaseOrderNotePage }])
+    RouterModule.forChild([{ path: '', component: PurchaseOrderNotePage }]),
   ],
-  declarations: [PurchaseOrderNotePage]
+  declarations: [PurchaseOrderNotePage],
 })
 export class PurchaseOrderNotePageModule {}

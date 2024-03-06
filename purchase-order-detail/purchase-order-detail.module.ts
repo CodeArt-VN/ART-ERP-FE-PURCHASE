@@ -5,26 +5,17 @@ import { Routes, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ShareModule } from 'src/app/share.module';
 import { PurchaseOrderDetailPage } from './purchase-order-detail.page';
-import { FileUploadModule } from 'ng2-file-upload';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: PurchaseOrderDetailPage
-  }
+    component: PurchaseOrderDetailPage,
+  },
 ];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    ReactiveFormsModule,
-    FileUploadModule,
-    ShareModule,
-    RouterModule.forChild(routes)
-  ],
-  declarations: [PurchaseOrderDetailPage, SaleOrderPickerModalPage]
+  imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule, ShareModule, RouterModule.forChild(routes)],
+  declarations: [PurchaseOrderDetailPage, SaleOrderPickerModalPage],
 })
-export class PurchaseOrderDetailPageModule { }
+export class PurchaseOrderDetailPageModule {}
