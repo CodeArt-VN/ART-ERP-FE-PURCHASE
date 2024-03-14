@@ -462,7 +462,7 @@ export class PurchaseOrderDetailPage extends PageBase {
                     text: 'Có',
                     cssClass: 'success-btn',
                     handler: () => {
-                      this.downloadURLContent(ApiSetting.mainService.base + resp.FileUrl);
+                      this.downloadURLContent(resp.FileUrl);
                     },
                   },
                 ],
@@ -479,7 +479,7 @@ export class PurchaseOrderDetailPage extends PageBase {
         })
         .catch((err) => {
           if (err.statusText == 'Conflict') {
-            this.downloadURLContent(ApiSetting.mainService.base + err._body);
+            this.downloadURLContent(err._body);
           }
           if (loading) loading.dismiss();
         });
