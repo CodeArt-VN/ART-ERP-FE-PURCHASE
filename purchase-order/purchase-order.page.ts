@@ -31,7 +31,7 @@ export class PurchaseOrderPage extends PageBase {
   }
 
   preLoadData(event) {
-    this.query.Type = 'Regular';
+    this.query.Type_ne = 'PurchaseRequest';
     if (!this.sort.Id) {
       this.sort.Id = 'Id';
       this.sortToggle('Id', true);
