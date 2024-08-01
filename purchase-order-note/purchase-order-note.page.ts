@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
-import { NavController, ModalController, AlertController, LoadingController } from '@ionic/angular';
+import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
 import { PURCHASE_OrderProvider } from 'src/app/services/static/services.service';
 import { Location } from '@angular/common';
-import { ApiSetting } from 'src/app/services/static/api-setting';
 import { lib } from 'src/app/services/static/global-functions';
 import QRCode from 'qrcode';
 import { ActivatedRoute } from '@angular/router';
@@ -20,6 +19,7 @@ export class PurchaseOrderNotePage extends PageBase {
     public modalController: ModalController,
     public alertCtrl: AlertController,
     public loadingController: LoadingController,
+    public popoverCtrl: PopoverController,
     public env: EnvService,
     public navCtrl: NavController,
     public location: Location,
