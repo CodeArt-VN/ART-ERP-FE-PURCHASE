@@ -117,10 +117,10 @@
                     class="col-qty cell"
                     *ngIf="pageConfig.POShowSuggestedQuantity && item.Type == 'FromPurchaseSuggestion'"
                   >
-                    Đề nghị
+                    {{'Đề nghị' | translate}}
                   </div>
-                  <div class="col-qty cell">SL đặt</div>
-                  <div class="col-qty cell" *ngIf="pageConfig.POShowAdjustedQuantity">SL đ.chỉnh</div>
+                  <div class="col-qty cell">{{'SL đặt' | translate}}</div>
+                  <div class="col-qty cell" *ngIf="pageConfig.POShowAdjustedQuantity">{{'SL đ.chỉnh' | translate}}</div>
                   <div class="col-discount cell">{{'Discount' | translate}}</div>
                   <div class="col-promotion cell" title="{{'Promotion goods' | translate}}">
                     {{'Promotion' | translate}}
@@ -128,7 +128,7 @@
                   <div class="col-price cell">{{'Unit price' | translate}}</div>
                   <div class="col-price cell">{{'%VAT' | translate}}</div>
                   <div class="col-total cell">{{'Amount' | translate}}</div>
-                  <div class="col-remark cell">Ghi chú</div>
+                  <div class="col-remark cell">{{'Ghi chú' | translate}}</div>
                   <div class="col-del cell" *ngIf="pageConfig.canEdit"></div>
                 </header>
 
