@@ -555,7 +555,7 @@ export class PurchaseOrderDetailPage extends PageBase {
           .catch((_) => {});
       })
       .catch((err) => {
-        this.env.showMessage(err);
+        this.env.showTranslateMessage(err);
       });
   }
 
