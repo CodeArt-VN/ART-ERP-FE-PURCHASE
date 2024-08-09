@@ -319,7 +319,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 
   removeLine(index) {
     this.env
-      .showPrompt('Bạn chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
+      .showPrompt2('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
       .then((_) => {
         let groups = <FormArray>this.formGroup.controls.OrderLines;
         let Ids = [];
@@ -534,7 +534,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 
   async createInvoice() {
     this.env
-      .showLoading(
+      .showLoading2(
         'Vui lòng chờ tạo hóa đơn',
         this.pageProvider.commonService
           .connect('POST', 'PURCHASE/Order/CreateInvoice/', {
@@ -544,7 +544,7 @@ export class PurchaseOrderDetailPage extends PageBase {
       )
       .then((resp: any) => {
         this.env
-          .showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
+          .showPrompt2('Bạn có muốn mở hóa đơn vừa tạo?')
           .then((_) => {
             if (resp.length == 1) {
               this.nav('/ap-invoice/' + resp[0]);
