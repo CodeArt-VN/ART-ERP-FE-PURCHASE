@@ -92,10 +92,13 @@ export class PurchaseRequestPage extends PageBase {
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'PORequestUnapproved');
 
       this.env
-        .showPrompt(
-          'Bạn chắc muốn gửi duyệt ' + this.selectedItems.length + ' đơn hàng đang chọn?',
+        .showPrompt2(
+          {
+            code: 'Bạn có chắc muốn gửi duyệt {{value}} đơn hàng đang chọn?',
+            value: { value: this.selectedItems.length },
+          },
           null,
-          'Gửi duyệt ' + this.selectedItems.length + ' mua hàng',
+          { code: 'Gửi duyệt {{value}} mua hàng', value: { value: this.selectedItems.length } },
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -147,10 +150,10 @@ export class PurchaseRequestPage extends PageBase {
       });
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'PORequestSubmitted');
       this.env
-        .showPrompt(
-          'Bạn chắc muốn DUYỆT ' + this.selectedItems.length + ' đơn hàng đang chọn?',
+        .showPrompt2(
+          { code: 'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?', value: { value: this.selectedItems.length } },
           null,
-          'Duyệt ' + this.selectedItems.length + ' đơn hàng',
+          { code: 'Duyệt {{value}} đơn hàng', value: { value: this.selectedItems.length } },
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -206,10 +209,13 @@ export class PurchaseRequestPage extends PageBase {
         (i) => i.Status == 'PORequestSubmitted' || i.Status == 'PORequestApproved',
       );
       this.env
-        .showPrompt(
-          'Bạn chắc muốn TRẢ LẠI ' + this.selectedItems.length + ' đơn hàng đang chọn?',
+        .showPrompt2(
+          {
+            code: 'Bạn có chắc muốn TRẢ LẠI {{value}} đơn hàng đang chọn?',
+            value: { value: this.selectedItems.length },
+          },
           null,
-          'Duyệt ' + this.selectedItems.length + ' đơn hàng',
+          { code: 'Duyệt {{value}} đơn hàng', value: { value: this.selectedItems.length } },
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -251,10 +257,10 @@ export class PurchaseRequestPage extends PageBase {
       });
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'PORequestUnapproved');
       this.env
-        .showPrompt(
-          'Bạn chắc muốn HỦY ' + this.selectedItems.length + ' đơn hàng đang chọn?',
+        .showPrompt2(
+          {code:'Bạn có chắc muốn HỦY {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
           null,
-          'Duyệt ' + this.selectedItems.length + ' đơn hàng',
+          {code:'Duyệt {{value}} đơn hàng',value:{value:this.selectedItems.length}},
         )
         .then((_) => {
           this.submitAttempt = true;
