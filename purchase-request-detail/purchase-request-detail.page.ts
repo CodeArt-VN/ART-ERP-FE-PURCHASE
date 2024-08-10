@@ -320,7 +320,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 
   removeLine(index) {
     this.env
-      .showPrompt2('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
+      .showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
       .then((_) => {
         let groups = <FormArray>this.formGroup.controls.OrderLines;
         let Ids = [];
@@ -328,7 +328,7 @@ export class PurchaseRequestDetailPage extends PageBase {
         this.purchaseOrderDetailProvider.delete(Ids).then((resp) => {
           groups.removeAt(index);
           this.env.publishEvent({ Code: this.pageConfig.pageName });
-          this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.delete-complete', 'success');
+          this.env.showMessage('erp.app.pages.purchase.purchase-request.message.delete-complete', 'success');
         });
       })
       .catch((_) => {});
@@ -377,7 +377,7 @@ export class PurchaseRequestDetailPage extends PageBase {
         return;
       }
 
-      if (e.PurchaseTaxInPercent != -99) this.env.showTranslateMessage('The item has not been set tax');
+      if (e.PurchaseTaxInPercent != -99) this.env.showMessage('The item has not been set tax');
     }
 
     group.controls.TaxRate.setValue(null);
@@ -431,7 +431,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 
     const loading = await this.loadingController.create({
       cssClass: 'my-custom-class',
-      message: 'Vui lòng chờ import dữ liệu',
+      message: 'Please wait for a few moments',
     });
     await loading.present().then(() => {
       this.pageProvider['importDetail'](event.target.files[0], this.id)
@@ -473,7 +473,7 @@ export class PurchaseRequestDetailPage extends PageBase {
                 alert.present();
               });
           } else {
-            this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.import-complete', 'success');
+            this.env.showMessage('erp.app.pages.purchase.purchase-request.message.import-complete', 'success');
             this.env.publishEvent({
               Code: this.pageConfig.pageName,
             });
@@ -491,7 +491,7 @@ export class PurchaseRequestDetailPage extends PageBase {
   async copyToReceipt() {
     const loading = await this.loadingController.create({
       cssClass: 'my-custom-class',
-      message: 'Vui lòng chờ import dữ liệu',
+      message: 'Please wait for a few moments',
     });
     await loading.present().then(() => {
       this.pageProvider['copyToReceipt'](this.item)
@@ -521,7 +521,7 @@ export class PurchaseRequestDetailPage extends PageBase {
             .then((alert) => {
               alert.present();
             });
-          this.env.showTranslateMessage(
+          this.env.showMessage(
             'erp.app.pages.purchase.purchase-request.message.create-asn-complete',
             'success',
           );
@@ -530,7 +530,7 @@ export class PurchaseRequestDetailPage extends PageBase {
         .catch((err) => {
           console.log(err);
 
-          this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.can-not-create-asn', 'danger');
+          this.env.showMessage('erp.app.pages.purchase.purchase-request.message.can-not-create-asn', 'danger');
           if (loading) loading.dismiss();
         });
     });
@@ -538,8 +538,8 @@ export class PurchaseRequestDetailPage extends PageBase {
 
   async createInvoice() {
     this.env
-      .showLoading2(
-        'Vui lòng chờ tạo hóa đơn',
+      .showLoading(
+        'Please wait for a few moments',
         this.pageProvider.commonService
           .connect('POST', 'PURCHASE/Order/CreateInvoice/', {
             Ids: [this.item.Id],
@@ -548,7 +548,7 @@ export class PurchaseRequestDetailPage extends PageBase {
       )
       .then((resp: any) => {
         this.env
-          .showPrompt2('Bạn có muốn mở hóa đơn vừa tạo?')
+          .showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
           .then((_) => {
             if (resp.length == 1) {
               this.nav('/ap-invoice/' + resp[0]);
@@ -559,7 +559,7 @@ export class PurchaseRequestDetailPage extends PageBase {
           .catch((_) => {});
       })
       .catch((err) => {
-        this.env.showTranslateMessage(err);
+        this.env.showMessage(err);
       });
   }
 
@@ -581,7 +581,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 
       const loading = await this.loadingController.create({
         cssClass: 'my-custom-class',
-        message: 'Vui lòng chờ import dữ liệu',
+        message: 'Please wait for a few moments',
       });
       await loading.present().then(() => {
         let postData = {
@@ -600,7 +600,7 @@ export class PurchaseRequestDetailPage extends PageBase {
           })
           .catch((err) => {
             console.log(err);
-            this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.can-not-add', 'danger');
+            this.env.showMessage('erp.app.pages.purchase.purchase-request.message.can-not-add', 'danger');
             if (loading) loading.dismiss();
           });
       });

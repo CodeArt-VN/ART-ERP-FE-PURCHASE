@@ -149,9 +149,9 @@ export class PurchaseOrderNotePage extends PageBase {
           .catch((err) => {
             console.log(err);
             if (err.message != null) {
-              this.env.showTranslateMessage(err.message, 'danger');
+              this.env.showMessage(err.message, 'danger');
             } else {
-              this.env.showTranslateMessage('Cannot create sales order. Please try again', 'danger');
+              this.env.showMessage('Cannot create sales order. Please try again', 'danger');
             }
             this.submitAttempt = false;
             if (loading) loading.dismiss();

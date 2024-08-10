@@ -81,7 +81,7 @@ export class PurchaseRequestPage extends PageBase {
       (i) => !(i.Status == 'Draft' || i.Status == 'PORequestUnapproved'),
     );
     if (itemsCanNotProcess.length == this.selectedItems.length) {
-      this.env.showTranslateMessage(
+      this.env.showMessage(
         'erp.app.pages.purchase.purchase-request.message.can-not-send-approve-new-draft-disapprove-only',
         'warning',
       );
@@ -92,7 +92,7 @@ export class PurchaseRequestPage extends PageBase {
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'PORequestUnapproved');
 
       this.env
-        .showPrompt2(
+        .showPrompt(
           {
             code: 'Bạn có chắc muốn gửi duyệt {{value}} đơn hàng đang chọn?',
             value: { value: this.selectedItems.length },
@@ -115,13 +115,13 @@ export class PurchaseRequestPage extends PageBase {
               this.submitAttempt = false;
 
               if (savedItem > 0) {
-                this.env.showTranslateMessage(
+                this.env.showMessage(
                   'erp.app.pages.purchase.purchase-request.message.send-to-approve-with-value',
                   'success',
                   savedItem,
                 );
               } else {
-                this.env.showTranslateMessage(
+                this.env.showMessage(
                   'erp.app.pages.purchase.purchase-request.message.check-atleast-one',
                   'warning',
                 );
@@ -140,7 +140,7 @@ export class PurchaseRequestPage extends PageBase {
 
     let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'PORequestSubmitted'));
     if (itemsCanNotProcess.length == this.selectedItems.length) {
-      this.env.showTranslateMessage(
+      this.env.showMessage(
         'erp.app.pages.purchase.purchase-request.message.can-not-approve-pending-only',
         'warning',
       );
@@ -150,7 +150,7 @@ export class PurchaseRequestPage extends PageBase {
       });
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'PORequestSubmitted');
       this.env
-        .showPrompt2(
+        .showPrompt(
           { code: 'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?', value: { value: this.selectedItems.length } },
           null,
           { code: 'Duyệt {{value}} đơn hàng', value: { value: this.selectedItems.length } },
@@ -170,13 +170,13 @@ export class PurchaseRequestPage extends PageBase {
               this.submitAttempt = false;
 
               if (savedItem > 0) {
-                this.env.showTranslateMessage(
+                this.env.showMessage(
                   'erp.app.pages.purchase.purchase-request.message.approved-with-value',
                   'success',
                   savedItem,
                 );
               } else {
-                this.env.showTranslateMessage(
+                this.env.showMessage(
                   'erp.app.pages.purchase.purchase-request.message.check-atleast-one',
                   'warning',
                 );
@@ -197,7 +197,7 @@ export class PurchaseRequestPage extends PageBase {
       (i) => !(i.Status == 'PORequestSubmitted' || i.Status == 'PORequestApproved'),
     );
     if (itemsCanNotProcess.length == this.selectedItems.length) {
-      this.env.showTranslateMessage(
+      this.env.showMessage(
         'erp.app.pages.purchase.purchase-request.message.can-not-disapprove-pending-approved-only',
         'warning',
       );
@@ -209,7 +209,7 @@ export class PurchaseRequestPage extends PageBase {
         (i) => i.Status == 'PORequestSubmitted' || i.Status == 'PORequestApproved',
       );
       this.env
-        .showPrompt2(
+        .showPrompt(
           {
             code: 'Bạn có chắc muốn TRẢ LẠI {{value}} đơn hàng đang chọn?',
             value: { value: this.selectedItems.length },
@@ -229,7 +229,7 @@ export class PurchaseRequestPage extends PageBase {
               this.env.publishEvent({
                 Code: this.pageConfig.pageName,
               });
-              this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.save-complete', 'success');
+              this.env.showMessage('erp.app.pages.purchase.purchase-request.message.save-complete', 'success');
               this.submitAttempt = false;
             })
             .catch((err) => {
@@ -247,7 +247,7 @@ export class PurchaseRequestPage extends PageBase {
       (i) => !(i.Status == 'Draft' || i.Status == 'PORequestUnapproved'),
     );
     if (itemsCanNotProcess.length == this.selectedItems.length) {
-      this.env.showTranslateMessage(
+      this.env.showMessage(
         'erp.app.pages.purchase.purchase-request.message.can-not-cancel-pending-draft-only',
         'warning',
       );
@@ -257,7 +257,7 @@ export class PurchaseRequestPage extends PageBase {
       });
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'PORequestUnapproved');
       this.env
-        .showPrompt2(
+        .showPrompt(
           {code:'Bạn có chắc muốn HỦY {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
           null,
           {code:'Duyệt {{value}} đơn hàng',value:{value:this.selectedItems.length}},
@@ -274,7 +274,7 @@ export class PurchaseRequestPage extends PageBase {
               this.env.publishEvent({
                 Code: this.pageConfig.pageName,
               });
-              this.env.showTranslateMessage('erp.app.pages.purchase.purchase-request.message.save-complete', 'success');
+              this.env.showMessage('erp.app.pages.purchase.purchase-request.message.save-complete', 'success');
               this.submitAttempt = false;
             })
             .catch((err) => {
@@ -299,7 +299,7 @@ export class PurchaseRequestPage extends PageBase {
       .toPromise()
       .then((savedItem: any) => {
         this.env.publishEvent({ Code: this.pageConfig.pageName });
-        this.env.showTranslateMessage(
+        this.env.showMessage(
           'erp.app.pages.purchase.purchase-request.message.submit-requests-complete',
           'success',
         );

@@ -79,7 +79,7 @@ export class PurchaseOrderPage extends PageBase {
 
     let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Draft' || i.Status == 'Unapproved'));
     if (itemsCanNotProcess.length == this.selectedItems.length) {
-      this.env.showTranslateMessage(
+      this.env.showMessage(
         'Your selected invoices cannot be approved. Please select new or draft or disapproved ones',
         'warning',
       );
@@ -90,7 +90,7 @@ export class PurchaseOrderPage extends PageBase {
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'Unapproved');
 
       this.env
-        .showPrompt2(
+        .showPrompt(
           {code:'Bạn có chắc muốn gửi duyệt {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
           null,
           {code:'Gửi duyệt {{value}} mua hàng',value:{value:this.selectedItems.length}}
@@ -110,9 +110,9 @@ export class PurchaseOrderPage extends PageBase {
               this.submitAttempt = false;
 
               if (savedItem > 0) {
-                this.env.showTranslateMessage('{{value}} orders sent for approval', 'success', savedItem);
+                this.env.showMessage('{{value}} orders sent for approval', 'success', savedItem);
               } else {
-                this.env.showTranslateMessage(
+                this.env.showMessage(
                   'Please check again, orders must have at least 1 item to be approved',
                   'warning',
                 );
@@ -131,7 +131,7 @@ export class PurchaseOrderPage extends PageBase {
 
     let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Submitted'));
     if (itemsCanNotProcess.length == this.selectedItems.length) {
-      this.env.showTranslateMessage(
+      this.env.showMessage(
         'Your selected order cannot be approved. Please only select pending for approval order',
         'warning',
       );
@@ -141,7 +141,7 @@ export class PurchaseOrderPage extends PageBase {
       });
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted');
       this.env
-        .showPrompt2(
+        .showPrompt(
           {code:'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
           null,
           {code:'Duyệt {{value}} đơn hàng',value:{value:this.selectedItems.length}},
@@ -161,9 +161,9 @@ export class PurchaseOrderPage extends PageBase {
               this.submitAttempt = false;
 
               if (savedItem > 0) {
-                this.env.showTranslateMessage('{{value}} orders approved', 'success', savedItem);
+                this.env.showMessage('{{value}} orders approved', 'success', savedItem);
               } else {
-                this.env.showTranslateMessage(
+                this.env.showMessage(
                   'Please check again, orders must have at least 1 item to be approved',
                   'warning',
                 );
@@ -182,7 +182,7 @@ export class PurchaseOrderPage extends PageBase {
 
     let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Submitted' || i.Status == 'Approved'));
     if (itemsCanNotProcess.length == this.selectedItems.length) {
-      this.env.showTranslateMessage(
+      this.env.showMessage(
         'Your selected invoices cannot be disaaproved. Please select approved or pending for approval invoice',
         'warning',
       );
@@ -192,7 +192,7 @@ export class PurchaseOrderPage extends PageBase {
       });
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted' || i.Status == 'Approved');
       this.env
-        .showPrompt2(
+        .showPrompt(
           {code:'Bạn có chắc muốn TRẢ LẠI {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
           null,
           {code:'Duyệt {{value}} đơn hàng',value:{value:this.selectedItems.length}},
@@ -209,7 +209,7 @@ export class PurchaseOrderPage extends PageBase {
               this.env.publishEvent({
                 Code: this.pageConfig.pageName,
               });
-              this.env.showTranslateMessage('Saving completed!', 'success');
+              this.env.showMessage('Saving completed!', 'success');
               this.submitAttempt = false;
             })
             .catch((err) => {
@@ -225,7 +225,7 @@ export class PurchaseOrderPage extends PageBase {
 
     let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Draft' || i.Status == 'Unapproved'));
     if (itemsCanNotProcess.length == this.selectedItems.length) {
-      this.env.showTranslateMessage(
+      this.env.showMessage(
         'Your selected invoices cannot be canceled. Please select draft or pending for approval invoice',
         'warning',
       );
@@ -235,7 +235,7 @@ export class PurchaseOrderPage extends PageBase {
       });
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'Unapproved');
       this.env
-        .showPrompt2(
+        .showPrompt(
           {code:'Bạn có chắc muốn HỦY {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
           null,
           {code:'Duyệt {{value}} đơn hàng',value:{value:this.selectedItems.length}},
@@ -252,7 +252,7 @@ export class PurchaseOrderPage extends PageBase {
               this.env.publishEvent({
                 Code: this.pageConfig.pageName,
               });
-              this.env.showTranslateMessage('Saving completed!', 'success');
+              this.env.showMessage('Saving completed!', 'success');
               this.submitAttempt = false;
             })
             .catch((err) => {
@@ -277,7 +277,7 @@ export class PurchaseOrderPage extends PageBase {
       .toPromise()
       .then((savedItem: any) => {
         this.env.publishEvent({ Code: this.pageConfig.pageName });
-        this.env.showTranslateMessage('Purchased ordered', 'success');
+        this.env.showMessage('Purchased ordered', 'success');
         this.submitAttempt = false;
       })
       .catch((err) => {

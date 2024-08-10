@@ -319,7 +319,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 
   removeLine(index) {
     this.env
-      .showPrompt2('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
+      .showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
       .then((_) => {
         let groups = <FormArray>this.formGroup.controls.OrderLines;
         let Ids = [];
@@ -327,7 +327,7 @@ export class PurchaseOrderDetailPage extends PageBase {
         this.purchaseOrderDetailProvider.delete(Ids).then((resp) => {
           groups.removeAt(index);
           this.env.publishEvent({ Code: this.pageConfig.pageName });
-          this.env.showTranslateMessage('Deleted!', 'success');
+          this.env.showMessage('Deleted!', 'success');
         });
       })
       .catch((_) => {});
@@ -376,7 +376,7 @@ export class PurchaseOrderDetailPage extends PageBase {
         return;
       }
 
-      if (e.PurchaseTaxInPercent != -99) this.env.showTranslateMessage('The item has not been set tax');
+      if (e.PurchaseTaxInPercent != -99) this.env.showMessage('The item has not been set tax');
     }
 
     group.controls.TaxRate.setValue(null);
@@ -430,7 +430,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 
     const loading = await this.loadingController.create({
       cssClass: 'my-custom-class',
-      message: 'Vui lòng chờ import dữ liệu',
+      message: 'Please wait for a few moments',
     });
     await loading.present().then(() => {
       this.pageProvider['importDetail'](event.target.files[0], this.id)
@@ -472,7 +472,7 @@ export class PurchaseOrderDetailPage extends PageBase {
                 alert.present();
               });
           } else {
-            this.env.showTranslateMessage('Import completed!', 'success');
+            this.env.showMessage('Import completed!', 'success');
             this.env.publishEvent({
               Code: this.pageConfig.pageName,
             });
@@ -490,7 +490,7 @@ export class PurchaseOrderDetailPage extends PageBase {
   async copyToReceipt() {
     const loading = await this.loadingController.create({
       cssClass: 'my-custom-class',
-      message: 'Vui lòng chờ import dữ liệu',
+      message: 'Please wait for a few moments',
     });
     await loading.present().then(() => {
       this.pageProvider['copyToReceipt'](this.item)
@@ -520,13 +520,13 @@ export class PurchaseOrderDetailPage extends PageBase {
             .then((alert) => {
               alert.present();
             });
-          this.env.showTranslateMessage('ASN created!', 'success');
+          this.env.showMessage('ASN created!', 'success');
           this.env.publishEvent({ Code: this.pageConfig.pageName });
         })
         .catch((err) => {
           console.log(err);
 
-          this.env.showTranslateMessage('Cannot create ASN, please try again later', 'danger');
+          this.env.showMessage('Cannot create ASN, please try again later', 'danger');
           if (loading) loading.dismiss();
         });
     });
@@ -534,8 +534,8 @@ export class PurchaseOrderDetailPage extends PageBase {
 
   async createInvoice() {
     this.env
-      .showLoading2(
-        'Vui lòng chờ tạo hóa đơn',
+      .showLoading(
+        'Please wait for a few moments',
         this.pageProvider.commonService
           .connect('POST', 'PURCHASE/Order/CreateInvoice/', {
             Ids: [this.item.Id],
@@ -544,7 +544,7 @@ export class PurchaseOrderDetailPage extends PageBase {
       )
       .then((resp: any) => {
         this.env
-          .showPrompt2('Bạn có muốn mở hóa đơn vừa tạo?')
+          .showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
           .then((_) => {
             if (resp.length == 1) {
               this.nav('/ap-invoice/' + resp[0]);
@@ -555,7 +555,7 @@ export class PurchaseOrderDetailPage extends PageBase {
           .catch((_) => {});
       })
       .catch((err) => {
-        this.env.showTranslateMessage(err);
+        this.env.showMessage(err);
       });
   }
 
@@ -577,7 +577,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 
       const loading = await this.loadingController.create({
         cssClass: 'my-custom-class',
-        message: 'Vui lòng chờ import dữ liệu',
+        message: 'Please wait for a few moments',
       });
       await loading.present().then(() => {
         let postData = {
@@ -596,7 +596,7 @@ export class PurchaseOrderDetailPage extends PageBase {
           })
           .catch((err) => {
             console.log(err);
-            this.env.showTranslateMessage('Cannot add product. Please try again later.', 'danger');
+            this.env.showMessage('Cannot add product. Please try again later.', 'danger');
             if (loading) loading.dismiss();
           });
       });
