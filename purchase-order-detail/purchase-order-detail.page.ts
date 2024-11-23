@@ -1,7 +1,7 @@
 import { Component, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { NavController, LoadingController, AlertController, ModalController, PopoverController } from '@ionic/angular';
 import { PageBase } from 'src/app/page-base';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, NavigationExtras } from '@angular/router';
 import { EnvService } from 'src/app/services/core/env.service';
 import {
   BRA_BranchProvider,
@@ -116,25 +116,7 @@ export class PurchaseOrderDetailPage extends PageBase {
       TotalDiscount: new FormControl({ value: '', disabled: true }),
       TotalAfterTax: new FormControl({ value: '', disabled: true }),
     });
-
-    this.branchProvider
-      .read({
-        Skip: 0,
-        Take: 5000,
-        Type: 'Warehouse',
-        AllParent: true,
-        Id: this.env.selectedBranchAndChildren,
-      })
-      .then((resp) => {
-        lib.buildFlatTree(resp['data'], this.branchList).then((result: any) => {
-          this.branchList = result;
-          this.branchList.forEach((i) => {
-            i.disabled = true;
-          });
-          this.markNestedNode(this.branchList, this.env.selectedBranch);
-          super.preLoadData(event);
-        });
-      });
+    this.branchList = lib.cloneObject(this.env.branchList)
     this.contactProvider.read({ IsVendor: true, Take: 5000 }).then((resp) => {
       this.vendorList = resp['data'];
     });
@@ -165,6 +147,7 @@ export class PurchaseOrderDetailPage extends PageBase {
     ]).then((values: any) => {
       this.pageConfig.POShowSuggestedQuantity = JSON.parse(values[0]['Value']);
       this.pageConfig.POShowAdjustedQuantity = JSON.parse(values[1]['Value']);
+      super.preLoadData(event);
     });
   }
 
@@ -602,4 +585,45 @@ export class PurchaseOrderDetailPage extends PageBase {
       });
     }
   }
+
+  createOutgoingPayment(){
+    let date = this.formGroup.get('OrderDate').value;
+
+    let navigationExtras: NavigationExtras = {
+      state: {
+           OutgoingPaymentDetails: [{
+            DocumentEntry:this.formGroup.get('Id').value,
+            Id:0,
+            DocumentType:'Order',
+            Amount:  this.formGroup.get('TotalAfterTax').value - this.item.PaidAmount
+           }],
+            _BusinessPartner:this.vendorList.find(d=> d.Id == this.formGroup.get('IDVendor').value),
+          IDBusinessPartner:this.formGroup.get('IDVendor').value,
+          Amount: this.formGroup.get('TotalAfterTax').value - this.item.PaidAmount,
+          DocumentDate: date,
+          PostingDate:date,
+          DueDate: date,
+          
+      }
+    };
+    this.nav('/outgoing-payment/0', 'forward', navigationExtras);
+  }
+  paymentDetailList = [];
+  showSpinnerPayment = false;
+  getPaymentHistory(){
+    this.showSpinnerPayment = true;
+     let queryPayment = {
+      Id:this.formGroup.get('Id').value
+     }
+      this.commonService.connect('GET','AC/APInvoice/GetPaymentHistory/',queryPayment).toPromise()
+      .then((result: any) => {
+        this.paymentDetailList = result;
+          this.paymentDetailList.forEach(i=>{
+            i._Status = this.paymentStatusList.find((d) => d.Code == i.Status);
+        })
+        
+      })
+      .catch(err=> this.env.showMessage(err,'danger'))
+      .finally(()=>{ this.showSpinnerPayment = false});
+    }
 }
