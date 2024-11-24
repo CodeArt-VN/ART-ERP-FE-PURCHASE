@@ -13,6 +13,9 @@
     >
       <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
     </ion-button>
+    <ion-button *ngIf="this.formGroup.get('Status').value == 'Ordered' && pageConfig.canRequestOutgoingPayment" tollbarSelected  title="{{'Create outgoing payment' | translate}}" (click)="createOutgoingPayment()">
+      <ion-icon color="success" name="money-check"></ion-icon>
+    </ion-button>
   </app-detail-toolbar>
 </ion-header>
 
@@ -32,128 +35,34 @@
                             <label class="c-label" for="Id"># Id</label>
                             <input class="c-input" id="Id" formControlName="Id" type="number">
                         </div> -->
-            <div class="c-control">
-              <label class="c-label" for="IDStorer"
-                >{{'Goods owner' | translate}}
-                <span
-                  *ngIf="!formGroup.controls.IDStorer.valid && !formGroup.controls.IDStorer.pending && (formGroup.controls.IDStorer.dirty || submitAttempt)"
-                  ion-text
-                  color="danger"
-                  >(*)</span
-                >
-              </label>
-              <ng-select
-                class="c-input"
-                (change)="saveOrder();"
-                labelForId="IDStorer"
-                formControlName="IDStorer"
-                [items]="storerList"
-                [virtualScroll]="true"
-                bindLabel="Name"
-                bindValue="Id"
-                placeholder="{{'Search' | translate}}"
-              >
-                <ng-template ng-option-tmp let-i="item" let-search="searchTerm">
-                  <div *ngIf="i">
-                    <div>
-                      <span *ngFor="let l of i.levels">&nbsp;&nbsp;&nbsp;</span>
-                      <span [ngOptionHighlight]="search">{{i.Name}}</span>
-                    </div>
-                  </div>
-                </ng-template>
-              </ng-select>
-            </div>
-
-            <div class="c-control">
-              <label class="c-label" for="IDVendor"
-                >{{'Vendor' | translate}}
-                <span
-                  *ngIf="!formGroup.controls.IDVendor.valid && !formGroup.controls.IDVendor.pending && (formGroup.controls.IDVendor.dirty || submitAttempt)"
-                  ion-text
-                  color="danger"
-                  >(*)</span
-                >
-              </label>
-              <ng-select
-                class="c-input"
-                (change)="saveOrder();"
-                labelForId="IDVendor"
-                formControlName="IDVendor"
-                [items]="vendorList"
-                [virtualScroll]="true"
-                bindLabel="Name"
-                bindValue="Id"
-                placeholder="{{'Search' | translate}}"
-              >
-                <ng-template ng-option-tmp let-i="item" let-search="searchTerm">
-                  <div *ngIf="i">
-                    <div>
-                      <span *ngFor="let l of i.levels">&nbsp;&nbsp;&nbsp;</span>
-                      <span [ngOptionHighlight]="search">{{i.Name}}</span>
-                    </div>
-                  </div>
-                </ng-template>
-              </ng-select>
-            </div>
-
-            <div class="c-control">
-              <label class="c-label" for="IDBranch"
-                >{{'Warehouse' | translate}}
-                <span
-                  *ngIf="!formGroup.controls.IDBranch.valid && !formGroup.controls.IDBranch.pending && (formGroup.controls.IDBranch.dirty || submitAttempt)"
-                  ion-text
-                  color="danger"
-                  >(*)</span
-                >
-              </label>
-              <ng-select
-                class="c-input"
-                (change)="saveOrder();"
-                labelForId="IDBranch"
-                formControlName="IDBranch"
-                [items]="branchList"
-                [virtualScroll]="true"
-                bindLabel="Name"
-                bindValue="Id"
-                placeholder="{{'Search' | translate}}"
-              >
-                <ng-template ng-option-tmp let-i="item" let-search="searchTerm">
-                  <div *ngIf="i">
-                    <div>
-                      <span *ngFor="let l of i.levels">&nbsp;&nbsp;&nbsp;</span>
-                      <span [ngOptionHighlight]="search">{{i.Name}}</span>
-                    </div>
-                  </div>
-                </ng-template>
-              </ng-select>
-            </div>
+            <app-form-control (change)="saveOrder()" 
+            [field]="{id:'IDStorer',label:'Goods owner',type:'ng-select',
+              dataSource:storerList ,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
+              form:formGroup}">
+            </app-form-control>
+          
+            <app-form-control (change)="saveOrder()" 
+            [field]="{id:'IDVendor',label:'Vendor',type:'ng-select',
+              dataSource:vendorList ,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
+              form:formGroup}">
+            </app-form-control>
+         
+            <app-form-control (change)="saveOrder()" 
+            [field]="{branchConfig:{showingType:'Warehouse',selectedBranch:this.env.selectedBranch},
+              id:'IDBranch',label:'Warehouse',type:'ng-select-branch',
+              dataSource:branchList,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
+              form:formGroup}">
+            </app-form-control>
+         
           </ion-col>
           <ion-col size="12" size-sm size-xl="4">
-            <div class="c-control">
-              <label class="c-label" for="Code"
-                >{{'PO code (Vendors)' | translate}}
-                <small *ngIf="item.Id">{{'Id' | translate}}: {{item.Id}}</small></label
-              >
-              <input class="c-input" (change)="saveOrder();" id="Code" formControlName="Code" type="text" />
-            </div>
-            <div class="c-control">
-              <label class="c-label" for="ExpectedReceiptDate"
-                >{{'Expected receipt date' | translate}}
-                <span
-                  *ngIf="!formGroup.controls.ExpectedReceiptDate.valid && !formGroup.controls.ExpectedReceiptDate.pending && (formGroup.controls.ExpectedReceiptDate.dirty || submitAttempt)"
-                  ion-text
-                  color="danger"
-                  >(*)</span
-                >
-              </label>
-              <input
-                (change)="saveOrder();"
-                formControlName="ExpectedReceiptDate"
-                class="c-input"
-                id="ExpectedReceiptDate"
-                type="datetime-local"
-              />
-            </div>
+            <app-form-control (change)="saveOrder()" [field]="{id:'Code',label:'PO code (Vendors)',type:'text',form:formGroup}">
+              <small label *ngIf="item.Id">{{'Id' | translate}}: {{item.Id}}</small>
+            </app-form-control>
+         
+            <app-form-control (change)="saveOrder()" [field]="{id:'ExpectedReceiptDate',label:'Expected receipt date',type:'datetime-local',form:formGroup}">
+            </app-form-control>
+         
             <div class="c-control">
               <label class="c-label" for="TotalAfterTax"
                 >{{'Value' | translate}}
@@ -168,6 +77,7 @@
                 <b>{{calcTotalAfterTax() | number: '1.0-0'}}</b>
               </span>
             </div>
+
           </ion-col>
         </ion-row>
       </form>
@@ -179,8 +89,11 @@
           <ion-segment-button value="s1">
             <ion-label>{{'Product list' | translate}}</ion-label>
           </ion-segment-button>
-          <ion-segment-button value="s3">
+          <ion-segment-button value="s2">
             <ion-label>{{'Other information' | translate}}</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="s3">
+            <ion-label>{{'Payment history' | translate}}</ion-label>
           </ion-segment-button>
         </ion-segment>
       </ion-toolbar>
@@ -441,7 +354,7 @@
           </div>
         </div>
       </div>
-      <div *ngIf="segmentView == 's3'">
+      <div *ngIf="segmentView == 's2'">
         <div class="ion-padding">
           <ion-grid fixed>
             <form [formGroup]="formGroup">
@@ -559,6 +472,58 @@
             </form>
           </ion-grid>
         </div>
+      </div>
+      <div class="table responsive" *ngIf="segmentView == 's3'">
+        <app-data-table class="box-shadow responsive" *ngIf ="paymentDetailList" [rows]="paymentDetailList" [(selectedRows)]="selectedItems" [showSpinner]="showSpinnerPayment" >
+          <!-- <datatable-column [checkbox]="true"></datatable-column> -->
+          <datatable-column class="col-id" name="Id" property="Id">
+            <ng-template let-i="row" datatable-cell-template>
+              <a [routerLink]="['/outgoing-payment/'+i.Id]">{{i.Id}}</a>
+            </ng-template>
+          </datatable-column>
+          <!-- <datatable-column class="col-name" name="Warehouse" property="WarehouseName">
+            <ng-template let-i="row" datatable-cell-template>
+              {{i.WarehouseName}}
+              <small class="address" *ngIf="i.WarehouseCode">
+                <ion-text color="dark">{{i.WarehouseCode}}</ion-text>
+              </small>
+            </ng-template>
+          </datatable-column>
+          -->
+          <datatable-column class="col-code"  filterControlType="text" name="Type" property="Type">
+          </datatable-column>
+          <datatable-column class="col-number"  filterControlType="number" name="Amount" property="Amount">
+      
+          </datatable-column>
+          <datatable-column class="col-date"  filterControlType="date" name="Posting date" property="PostingDate">
+            <ng-template let-i="row" datatable-cell-template>
+              {{i.PostingDate | date:'dd/MM/yyyy HH:mm'}}
+              </ng-template>
+          </datatable-column>
+          <datatable-column class="col-date"  filterControlType="date" name="Document date" property="DocumentDate">
+            <ng-template let-i="row" datatable-cell-template>
+              {{i.DocumentDate | date:'dd/MM/yyyy HH:mm'}}
+              </ng-template>
+          </datatable-column>
+          <datatable-column class="col-date"  filterControlType="date" name="Due date" property="DueDate">
+            <ng-template let-i="row" datatable-cell-template>
+              {{i.DueDate | date:'dd/MM/yyyy HH:mm'}}
+              </ng-template>
+          </datatable-column>
+          <!-- <datatable-column class="col-date" filterControlType="date" name="Picked date" property="PickedDate">
+            <ng-template let-i="row" datatable-cell-template>
+              {{i.PickedDate | date:'dd/MM/yyyy HH:mm'}}
+              </ng-template>
+          </datatable-column> -->
+         
+          <datatable-column class="col-status" name="Status" property="Status">
+            <ng-template let-i="row" datatable-cell-template>
+            <ion-badge [color]="i._Status?.Color" [title]="i._Status?.Name">
+              {{i._Status?.Name}}
+            </ion-badge>
+            </ng-template>
+          </datatable-column>
+        </app-data-table>
       </div>
     </div>
   </div>
