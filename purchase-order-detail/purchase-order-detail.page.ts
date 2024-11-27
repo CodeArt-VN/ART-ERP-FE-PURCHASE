@@ -30,6 +30,7 @@ export class PurchaseOrderDetailPage extends PageBase {
   storerList = [];
   statusList = [];
   paymentStatusList = [];
+  paymentFormGroup:FormGroup;
   constructor(
     public pageProvider: PURCHASE_OrderProvider,
     public purchaseOrderDetailProvider: PURCHASE_OrderDetailProvider,
@@ -49,7 +50,12 @@ export class PurchaseOrderDetailPage extends PageBase {
   ) {
     super();
     this.pageConfig.isDetailPage = true;
-
+  
+    this.paymentFormGroup = formBuilder.group({
+      PaymentType: [''],
+      PaymentSubType:[''],
+      PaymentReason : ['']      
+    });
     Object.assign(pageProvider, {
       importDetail(fileToUpload: File, id) {
         const formData: FormData = new FormData();
@@ -170,6 +176,13 @@ export class PurchaseOrderDetailPage extends PageBase {
 
     super.loadedData(event, true);
     this.setOrderLines();
+    if(this.pageConfig.canRequestOutgoingPayment)  this.pageConfig.ShowRequestOutgoingPayment = true;
+    let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved','Paid'];
+    let notShowRequestOutgoingPayment = ['Draft','Submitted', 'Approved',
+      'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled'];
+    if(notShowRequestOutgoingPayment.includes(this.formGroup.get('Status').value) || notShowRequestOutgoingPaymentPaymentStatus.includes(this.formGroup.get('PaymentStatus').value)){
+      this.pageConfig.ShowRequestOutgoingPayment = false
+    }
   }
 
   setOrderLines() {
@@ -342,6 +355,10 @@ export class PurchaseOrderDetailPage extends PageBase {
   segmentView = 's1';
   segmentChanged(ev: any) {
     this.segmentView = ev.detail.value;
+    this.segmentView = ev.detail.value;
+    if(this.segmentView == 's3'){
+      this.getPaymentHistory();
+    }
   }
 
   IDItemChange(e, group) {
@@ -599,6 +616,9 @@ export class PurchaseOrderDetailPage extends PageBase {
            }],
             _BusinessPartner:this.vendorList.find(d=> d.Id == this.formGroup.get('IDVendor').value),
           IDBusinessPartner:this.formGroup.get('IDVendor').value,
+          Name: 'From PO #'+this.formGroup.get('Id').value,
+          IDStaff : this.env.user.StaffID,
+          IDBranch:this.formGroup.get('IDBranch').value,
           Amount: this.formGroup.get('TotalAfterTax').value - this.item.PaidAmount,
           DocumentDate: date,
           PostingDate:date,
@@ -610,20 +630,82 @@ export class PurchaseOrderDetailPage extends PageBase {
   }
   paymentDetailList = [];
   showSpinnerPayment = false;
+  outgoingPaymentStatusList;
   getPaymentHistory(){
     this.showSpinnerPayment = true;
      let queryPayment = {
       Id:this.formGroup.get('Id').value
      }
-      this.commonService.connect('GET','AC/APInvoice/GetPaymentHistory/',queryPayment).toPromise()
+      this.commonService.connect('GET','PURCHASE/Order/GetPaymentHistory/',queryPayment).toPromise()
       .then((result: any) => {
         this.paymentDetailList = result;
+        if(!this.outgoingPaymentStatusList){
+          this.env.getStatus('OutgoingPaymentStatus').then(rs=>{
+            this.outgoingPaymentStatusList = rs;
+            this.paymentDetailList.forEach(i=>{
+                i._Status = this.outgoingPaymentStatusList.find((d) => d.Code == i.Status);
+            })
+          })
+        }else{
           this.paymentDetailList.forEach(i=>{
-            i._Status = this.paymentStatusList.find((d) => d.Code == i.Status);
+            i._Status = this.outgoingPaymentStatusList.find((d) => d.Code == i.Status);
         })
+      }
+        // this.paymentDetailList = result;
+        //   this.paymentDetailList.forEach(i=>{
+        //     i._Status = this.paymentStatusList.find((d) => d.Code == i.Status);
+        // })
         
       })
       .catch(err=> this.env.showMessage(err,'danger'))
       .finally(()=>{ this.showSpinnerPayment = false});
     }
+
+    
+  ngOnDestroy() {
+    this.dismissPopover();
+  }
+  @ViewChild('popover') popover;
+  isOpenPopover = false;
+  dismissPopover(apply: boolean = false) {
+   
+    if (apply) {
+      if (!this.formGroup.get('IDVendor').value) {
+        this.isOpenPopover = false;
+        this.env.showMessage('Vendor not valid!','danger')
+        return;
+      }
+      this.submitAttempt = true;
+      let date = this.formGroup.get('OrderDate').value;
+      let obj ={
+        IDBusinessPartner:this.formGroup.get('IDVendor').value,
+        Name: 'From PO #'+this.formGroup.get('Id').value,
+        IDStaff : this.env.user.StaffID,
+        IDBranch:this.formGroup.get('IDBranch').value,
+        SourceType : 'Order',
+        SubType:this.paymentFormGroup.get('PaymentSubType').value,
+        Type:this.paymentFormGroup.get('PaymentType').value,
+        PaymentReason:this.paymentFormGroup.get('PaymentReason').value,
+        DocumentDate: date,
+        PostingDate:date,
+        DueDate: date,
+        OutgoingPaymentDetails: [this.formGroup.get('Id').value],
+      }
+      this.pageProvider.commonService.connect('POST','BANK/OutgoingPayment/PostFromSource',obj).toPromise().then((rs:any)=>{
+        this.env.showPrompt('Create outgoing payment successfully!','Do you want to navigate to outgoing payment ?').then(d=> {
+          this.nav('outgoing-payment/'+rs.Id, 'forward');
+          this.refresh();
+        })
+      }).catch(err=>{
+        this.env.showMessage(err?.error?.Message?? err,'danger');
+  
+      }).finally(()=> {this.submitAttempt = false});
+    this.isOpenPopover = false;
+    }
+  }
+  presentPopover(event) {
+    this.isOpenPopover = true;
+
+  }
+
 }

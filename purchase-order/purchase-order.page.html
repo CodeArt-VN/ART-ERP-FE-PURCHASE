@@ -47,21 +47,7 @@
           color="primary"
         ></ion-icon>
       </div>
-      <div class="col-status cell" (click)="sortToggle('Status')">
-        {{'Status' | translate}}
-        <ion-icon
-          class="min-btn"
-          *ngIf="sort.Status"
-          [name]="sort.Status == 'Status'?'arrow-down': 'arrow-up'"
-        ></ion-icon>
-        <ion-icon
-          class="min-btn"
-          (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
-          *ngIf="query.Status"
-          name="search"
-          color="primary"
-        ></ion-icon>
-      </div>
+      
       <div class="col-code cell" (click)="sortToggle('OrderDate')">
         {{'Order created date' | translate}}
         <ion-icon
@@ -77,6 +63,7 @@
           color="primary"
         ></ion-icon>
       </div>
+      
       <div class="col-code cell" (click)="sortToggle('ExpectedReceiptDate')">
         {{'Expected date' | translate}}
         <ion-icon
@@ -88,6 +75,21 @@
           class="min-btn"
           (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
           *ngIf="query.ExpectedReceiptDate"
+          name="search"
+          color="primary"
+        ></ion-icon>
+      </div>
+      <div class="col-code cell" (click)="sortToggle('PaymentStatus')">
+        {{'Payment status' | translate}}
+        <ion-icon
+          class="min-btn"
+          *ngIf="sort.PaymentStatus"
+          [name]="sort.PaymentStatus == 'PaymentStatus'?'arrow-down': 'arrow-up'"
+        ></ion-icon>
+        <ion-icon
+          class="min-btn"
+          (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
+          *ngIf="query.PaymentStatus"
           name="search"
           color="primary"
         ></ion-icon>
@@ -148,6 +150,21 @@
           color="primary"
         ></ion-icon>
       </div>
+      <div class="col-status cell" (click)="sortToggle('Status')">
+        {{'Status' | translate}}
+        <ion-icon
+          class="min-btn"
+          *ngIf="sort.Status"
+          [name]="sort.Status == 'Status'?'arrow-down': 'arrow-up'"
+        ></ion-icon>
+        <ion-icon
+          class="min-btn"
+          (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
+          *ngIf="query.Status"
+          name="search"
+          color="primary"
+        ></ion-icon>
+      </div>
     </header>
     <form (submit)="refresh()" action="#">
       <header class="filter" *ngIf="pageConfig.isShowSearch">
@@ -168,25 +185,7 @@
             name="close-circle-outline"
           ></ion-icon>
         </div>
-        <div class="col-status cell">
-          <select
-            (change)="refresh()"
-            class="c-input c-dropdown"
-            [ngModelOptions]="{standalone: true}"
-            [(ngModel)]="query.Status"
-            [ngClass]="{active: query.Status}"
-          >
-            <option value="">{{'All' | translate}}</option>
-            <option disabled value="">----------</option>
-            <option *ngFor="let t of statusList" [value]="t.Code">{{t.Name}}</option>
-          </select>
-          <ion-icon
-            class="min-btn"
-            (click)="query.Status=''; refresh()"
-            *ngIf="query.Status !=''"
-            name="close-circle-outline"
-          ></ion-icon>
-        </div>
+       
         <div class="col-code col-orderDate cell">
           <input
             (change)="refresh()"
@@ -203,6 +202,7 @@
             name="close-circle-outline"
           ></ion-icon>
         </div>
+        
         <div class="col-code col-expectDate cell">
           <input
             (change)="refresh()"
@@ -218,6 +218,22 @@
             *ngIf="query.ExpectedReceiptDate"
             name="close-circle-outline"
           ></ion-icon>
+        </div>
+        <div class="col-code cell">
+          <input
+          (change)="refresh()"
+          [ngModelOptions]="{standalone: true}"
+          [(ngModel)]="query.PaymentStatus"
+          class="c-input"
+          [ngClass]="{active: query.PaymentStatus}"
+          type="text"
+        />
+        <ion-icon
+          class="min-btn"
+          (click)="query.PaymentStatus=''; refresh()"
+          *ngIf="query.PaymentStatus"
+          name="close-circle-outline"
+        ></ion-icon>
         </div>
         <div class="col-name col-owner cell">
           <input
@@ -267,6 +283,26 @@
             *ngIf="query.Code"
             name="close-circle-outline"
           ></ion-icon>
+         
+        </div>
+        <div class="col-status cell">
+          <select
+            (change)="refresh()"
+            class="c-input c-dropdown"
+            [ngModelOptions]="{standalone: true}"
+            [(ngModel)]="query.Status"
+            [ngClass]="{active: query.Status}"
+          >
+            <option value="">{{'All' | translate}}</option>
+            <option disabled value="">----------</option>
+            <option *ngFor="let t of statusList" [value]="t.Code">{{t.Name}}</option>
+          </select>
+          <ion-icon
+            class="min-btn"
+            (click)="query.Status=''; refresh()"
+            *ngIf="query.Status !=''"
+            name="close-circle-outline"
+          ></ion-icon>
         </div>
         <button mat-raised-button type="submit" style="display: none">Search</button>
       </header>
@@ -289,6 +325,27 @@
           <input (click)="changeSelection(i, $event)" class="c-checkbox" [(ngModel)]="i.checked" type="checkbox" />
         </div>
         <div (click)="nav('purchase-order/'+i.Id,'forward')" class="col-id cell">{{i.Id}}</div>
+    
+        <div class="col-code col-orderDate cell" (click)="nav('purchase-order/'+i.Id,'forward')">
+          {{i.OrderDateText}}
+          <small *ngIf="i.OrderTimeText ">{{i.OrderTimeText}}</small>
+        </div>
+        <div class="col-code col-expectDate cell" (click)="nav('purchase-order/'+i.Id,'forward')">
+          {{i.ExpectedReceiptDateText}}
+          <small *ngIf="i.ExpectedReceiptTimeText ">{{i.ExpectedReceiptTimeText}}</small>
+        </div>
+        <div class="col-code cell">
+          <span class="bar-holder">
+            <ng-container *ngFor="let s of paymentStatusList">
+              <ion-text *ngIf="s.Code==i.PaymentStatus" class="bar-title" [color]="s.Color">{{s.Name}}</ion-text>
+            </ng-container>
+          </span>
+      </div>
+        <div class="col-name col-owner cell">{{i.StorerName}}</div>
+
+        <div class="col-name col-vendor cell" (click)="nav('purchase-order/'+i.Id,'forward')">{{i.VendorName}}</div>
+        <div class="col-code cell money">{{i.TotalAfterTaxText}}</div>
+        <div class="col-code col-vendorCode cell" [ngClass]="{'empty-field': !i.Code?.length}">{{i.Code}}</div>
         <div class="col-status cell">
           <span class="bar-holder">
             <ion-text class="bar-title" [color]="i.StatusColor">{{i.StatusText}}</ion-text>
@@ -301,19 +358,6 @@
             ></span>
           </span>
         </div>
-        <div class="col-code col-orderDate cell" (click)="nav('purchase-order/'+i.Id,'forward')">
-          {{i.OrderDateText}}
-          <small *ngIf="i.OrderTimeText ">{{i.OrderTimeText}}</small>
-        </div>
-        <div class="col-code col-expectDate cell" (click)="nav('purchase-order/'+i.Id,'forward')">
-          {{i.ExpectedReceiptDateText}}
-          <small *ngIf="i.ExpectedReceiptTimeText ">{{i.ExpectedReceiptTimeText}}</small>
-        </div>
-        <div class="col-name col-owner cell">{{i.StorerName}}</div>
-
-        <div class="col-name col-vendor cell" (click)="nav('purchase-order/'+i.Id,'forward')">{{i.VendorName}}</div>
-        <div class="col-code cell money">{{i.TotalAfterTaxText}}</div>
-        <div class="col-code col-vendorCode cell" [ngClass]="{'empty-field': !i.Code?.length}">{{i.Code}}</div>
       </div>
     </section>
   </div>
@@ -332,9 +376,15 @@
 			<form [formGroup]="formGroup" (submit)="dismissPopover(true)">
 				<ion-row>
 				<ion-col size="12" size-sm size-xl="12">
-			    <app-form-control
-				  [field]="{ id: 'PaymentType', type: 'ng-select', label: 'Provider', dataSource: paymentTypeList, bindValue: 'Code', bindLabel: 'Name', form: formGroup }"
-				></app-form-control>
+        <app-form-control
+        [field]="{ id: 'PaymentReason', type: 'ng-select', label: 'Reason', dataSource: paymentReasonList, bindValue: 'Code', bindLabel: 'Name', form: formGroup }"
+      ></app-form-control>
+        <app-form-control
+        [field]="{ id: 'PaymentType', type: 'ng-select', label: 'Type', dataSource: paymentTypeList, bindValue: 'Code', bindLabel: 'Name', form: formGroup }"
+      ></app-form-control>
+      <app-form-control
+      [field]="{ id: 'PaymentSubType', type: 'ng-select', label: 'Sub type', dataSource: paymentSubTypeList, bindValue: 'Code', bindLabel: 'Name', form: formGroup }"
+    ></app-form-control>
 				</ion-col>
 			</ion-row>
 			</form>
