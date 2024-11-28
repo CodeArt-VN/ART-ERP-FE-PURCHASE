@@ -13,7 +13,7 @@
     >
       <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
     </ion-button>
-    <ion-button *ngIf="this.formGroup.get('Status').value == 'Ordered' && pageConfig.canRequestOutgoingPayment" tollbarSelected  title="{{'Create outgoing payment' | translate}}" (click)="createOutgoingPayment()">
+    <ion-button *ngIf="pageConfig.ShowRequestOutgoingPayment && pageConfig.canRequestOutgoingPayment" tollbarSelected  title="{{'Create outgoing payment' | translate}}" (click)="presentPopover()">
       <ion-icon color="success" name="money-check"></ion-icon>
     </ion-button>
   </app-detail-toolbar>
@@ -529,4 +529,28 @@
   </div>
   <app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>
   <input class="hide-all" #importfile type="file" accept=".xlsx" (change)="uploadOrderLine($event)" />
+  <ion-popover class="w300" #popover [isOpen]="isOpenPopover" (didDismiss)="dismissPopover()">
+		<ng-template>
+		<ion-content appScrollbarTheme>
+			<ion-grid>
+			<form [formGroup]="paymentFormGroup" (submit)="dismissPopover(true)">
+				<ion-row>
+				<ion-col size="12" size-sm size-xl="12">
+        <app-form-control
+        [field]="{ id: 'PaymentReason', type: 'ng-select', label: 'Reason', dataSource: paymentReasonList, bindValue: 'Code', bindLabel: 'Name', form: paymentFormGroup }"
+      ></app-form-control>
+        <app-form-control
+        [field]="{ id: 'PaymentType', type: 'ng-select', label: 'Type', dataSource: paymentTypeList, bindValue: 'Code', bindLabel: 'Name', form: paymentFormGroup }"
+      ></app-form-control>
+      <app-form-control
+      [field]="{ id: 'PaymentSubType', type: 'ng-select', label: 'Sub type', dataSource: paymentSubTypeList, bindValue: 'Code', bindLabel: 'Name', form: paymentFormGroup }"
+    ></app-form-control>
+				</ion-col>
+			</ion-row>
+			</form>
+		</ion-grid>
+		  </ion-content>
+		  <ion-button class="ion-margin" size="small" expand="block" (click)="dismissPopover(true)">Apply</ion-button>
+		</ng-template>
+	 </ion-popover>
 </ion-content>

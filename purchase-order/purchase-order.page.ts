@@ -17,6 +17,7 @@ export class PurchaseOrderPage extends PageBase {
   statusList = [];
   paymentStatusList = [];
   paymentTypeList = [];
+  paymentReasonList = [];
   showRequestOutgoingPayment = false;
   constructor(
     public pageProvider: PURCHASE_OrderProvider,
@@ -34,7 +35,9 @@ export class PurchaseOrderPage extends PageBase {
     super();
     
     this.formGroup = formBuilder.group({
-      PaymentType: [this.env.selectedBranch],
+      PaymentType: [''],
+      PaymentSubType:[''],
+      PaymentReason : ['']      
     });
   }
 
@@ -49,7 +52,8 @@ export class PurchaseOrderPage extends PageBase {
       this.env.getStatus('PurchaseOrder'),
       this.env.getStatus('POPaymentStatus'),
       this.sysConfigProvider.read({ Code_in: sysConfigQuery }),
-      this.env.getType('PaymentType')
+      this.env.getType('PaymentType'),
+      this.env.getType('OutgoingPaymentReason')
     ]).then((values) => {
       this.statusList = values[0];
       this.paymentStatusList = values[1];
@@ -61,6 +65,10 @@ export class PurchaseOrderPage extends PageBase {
       });
       if(values[3]){
         this.paymentTypeList = values[3].filter((d) => d.Code == 'Cash' || d.Code == 'Card' || d.Code == 'Transfer');
+      }
+      if(values[4]){
+        this.paymentReasonList = values[4];
+        if(values[4].length==0) this.paymentReasonList = [{Name : 'Payment of invoice', Code :'PaymentOfInvoice'},{Name : 'Payment of purchase order', Code :'PaymentOfPO'}]
       }
       super.preLoadData(event);
     });
@@ -154,9 +162,9 @@ export class PurchaseOrderPage extends PageBase {
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted');
       this.env
         .showPrompt(
-          {code:'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
+          {code:'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?',value:this.selectedItems.length},
           null,
-          {code:'Duyệt {{value}} đơn hàng',value:{value:this.selectedItems.length}},
+          {code:'Duyệt {{value}} đơn hàng',value:this.selectedItems.length},
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -205,9 +213,9 @@ export class PurchaseOrderPage extends PageBase {
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted' || i.Status == 'Approved');
       this.env
         .showPrompt(
-          {code:'Bạn có chắc muốn TRẢ LẠI {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
+          {code:'Bạn có chắc muốn TRẢ LẠI {{value}} đơn hàng đang chọn?',value:this.selectedItems.length},
           null,
-          {code:'Duyệt {{value}} đơn hàng',value:{value:this.selectedItems.length}},
+          {code:'Duyệt {{value}} đơn hàng',value:this.selectedItems.length},
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -248,9 +256,9 @@ export class PurchaseOrderPage extends PageBase {
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'Unapproved');
       this.env
         .showPrompt(
-          {code:'Bạn có chắc muốn HỦY {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
+          {code:'Bạn có chắc muốn HỦY {{value}} đơn hàng đang chọn?',value:this.selectedItems.length},
           null,
-          {code:'Duyệt {{value}} đơn hàng',value:{value:this.selectedItems.length}},
+          {code:'Duyệt {{value}} đơn hàng',value:this.selectedItems.length},
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -311,27 +319,27 @@ export class PurchaseOrderPage extends PageBase {
       this.submitAttempt = true;
       let obj = {
         Id:0,
+        IDBranch:this.env.selectedBranch,
         IDBusinessPartner : this.IDBusinessPartner,
-        Status:'Draft',
-        Amount : 0,
+        Name: 'From PO  ['+this.selectedItems.map(d=> d.Id).join(',')+']',
+        SourceType : 'Order',
+        IDStaff : this.env.user.StaffID,
         PostingDate: new Date(),
         DueDate: new Date(),
         DocumentDate: new Date(),
+        SubType:this.formGroup.get('PaymentSubType').value,
         Type:this.formGroup.get('PaymentType').value,
-        OutgoingPaymentDetails : this.selectedItems.map(d=> {
-          return {
-            DocumentEntry : d.Id,
-            DocumentType : "Order",
-            Amount: d.TotalAfterTax - d.Paid,
-          }
-      }),
+        PaymentReason:this.formGroup.get('PaymentReason').value,
+        OutgoingPaymentDetails : this.selectedItems.map(d=> d.Id)
+
     } 
-    obj.Amount = obj.OutgoingPaymentDetails.reduce((sum, detail) => sum + ((detail.Amount) || 0), 0);
-    this.outgoingPaymentProvider.save(obj).then(rs=>{
-      this.env.showMessage('Create outgoing payment successfully!','success');
+    this.outgoingPaymentProvider.commonService.connect('POST','BANK/OutgoingPayment/PostFromSource',obj).toPromise().then((rs:any)=>{
+      this.env.showPrompt('Create outgoing payment successfully!','Do you want to navigate to outgoing payment ?').then(d=> {
+        this.nav('outgoing-payment/'+rs.Id, 'forward');
+      })
       console.log(rs);
     }).catch(err=>{
-      this.env.showMessage(err?.Message?? err,'danger');
+      this.env.showMessage(err?.error?.Message?? err,'danger');
 
     }).finally(()=> {this.submitAttempt = false});
      
@@ -410,7 +418,8 @@ export class PurchaseOrderPage extends PageBase {
 
       let notShowRequestOutgoingPayment = ['Draft','Submitted', 'Approved',
         'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled'];
-      if (notShowRequestOutgoingPayment.indexOf(i.Status) != -1 ) {
+      let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved','Paid'];
+      if (notShowRequestOutgoingPayment.indexOf(i.Status) != -1 || notShowRequestOutgoingPaymentPaymentStatus.includes(i.PaymentStatus)) {
         this.ShowRequestOutgoingPayment = false;
         this.IDBusinessPartner = null;
       }
