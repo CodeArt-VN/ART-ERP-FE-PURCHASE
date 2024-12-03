@@ -36,7 +36,12 @@
     max-width: 90px;
     text-align: right;
     justify-content: flex-end;
-  }
+    ::ng-deep {
+      app-input-control .c-input{
+      text-align: right; 
+        }
+      }
+    }
   .col-qty {
     min-width: 75px;
     max-width: 75px;
@@ -46,6 +51,11 @@
       font-weight: bold;
       color: var(--ion-color-primary);
     }
+    ::ng-deep {
+      app-input-control .c-input{
+      text-align: right; 
+    }
+  }
   }
   .col-discount {
     max-width: 90px;
