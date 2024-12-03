@@ -116,7 +116,7 @@ export class PurchaseOrderDetailPage extends PageBase {
       ReceiptedDate: new FormControl({ value: '', disabled: true }),
       Type: ['Regular'],
       Status: new FormControl({ value: 'Draft', disabled: true }),
-      PaymentStatus: ['WaitForPay', Validators.required],
+      PaymentStatus: new FormControl({ value: 'NotSubmittedYet', disabled: true }),
       IsDisabled: new FormControl({ value: '', disabled: true }),
       OrderLines: this.formBuilder.array([]),
       TotalDiscount: new FormControl({ value: '', disabled: true }),
@@ -616,7 +616,7 @@ export class PurchaseOrderDetailPage extends PageBase {
            }],
             _BusinessPartner:this.vendorList.find(d=> d.Id == this.formGroup.get('IDVendor').value),
           IDBusinessPartner:this.formGroup.get('IDVendor').value,
-          Name: 'From PO #'+this.formGroup.get('Id').value,
+          Name: 'Pay for PO #'+this.formGroup.get('Id').value,
           IDStaff : this.env.user.StaffID,
           IDBranch:this.formGroup.get('IDBranch').value,
           Amount: this.formGroup.get('TotalAfterTax').value - this.item.PaidAmount,
@@ -700,8 +700,8 @@ export class PurchaseOrderDetailPage extends PageBase {
         this.env.showMessage(err?.error?.Message?? err,'danger');
   
       }).finally(()=> {this.submitAttempt = false});
-    this.isOpenPopover = false;
     }
+    this.isOpenPopover = false;
   }
   presentPopover(event) {
     this.isOpenPopover = true;

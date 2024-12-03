@@ -26,10 +26,10 @@
 <app-toolbar
 [page]="this"
 >
-<ion-button *ngIf="ShowSubmitForApproval && pageConfig.canSubmitOrdersForApproval" fill="clear" title="Submit PO"  (click)="submit()" >
+<ion-button *ngIf="selectedItems.length>0 &&ShowSubmitForApproval && pageConfig.canSubmitOrdersForApproval" fill="clear" title="Submit PO"  (click)="submit()" >
   <ion-icon slot="start" name="send-outline"></ion-icon>
 </ion-button>
-<ion-button *ngIf="ShowRequestOutgoingPayment && pageConfig.canRequestOutgoingPayment" fill="clear" title="Create outgoing payment"  (click)="presentPopover($event)" >
+<ion-button *ngIf="selectedItems.length>0 &&ShowRequestOutgoingPayment && pageConfig.canRequestOutgoingPayment" fill="clear" title="Create outgoing payment"  (click)="presentPopover($event)" >
   <ion-icon slot="start" name="money-check"></ion-icon>
 </ion-button>
 </app-toolbar>
@@ -49,7 +49,7 @@
       </div>
       
       <div class="col-code cell" (click)="sortToggle('OrderDate')">
-        {{'Order created date' | translate}}
+        {{'Order date' | translate}}
         <ion-icon
           class="min-btn"
           *ngIf="sort.OrderDate"
