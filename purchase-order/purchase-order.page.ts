@@ -50,10 +50,10 @@ export class PurchaseOrderPage extends PageBase {
     let sysConfigQuery = ['POUsedApprovalModule'];
     Promise.all([
       this.env.getStatus('PurchaseOrder'),
-      this.env.getStatus('POPaymentStatus'),
+      this.env.getStatus('OutgoingPaymentStatus'),
       this.sysConfigProvider.read({ Code_in: sysConfigQuery }),
       this.env.getType('PaymentType'),
-      this.env.getType('OutgoingPaymentReason')
+      this.env.getType('OutgoingPaymentReasonType')
     ]).then((values) => {
       this.statusList = values[0];
       this.paymentStatusList = values[1];
@@ -321,7 +321,7 @@ export class PurchaseOrderPage extends PageBase {
         Id:0,
         IDBranch:this.env.selectedBranch,
         IDBusinessPartner : this.IDBusinessPartner,
-        Name: 'From PO  ['+this.selectedItems.map(d=> d.Id).join(',')+']',
+        Name: 'Pay for PO ['+this.selectedItems.map(d=> d.Id).join(',')+']',
         SourceType : 'Order',
         IDStaff : this.env.user.StaffID,
         PostingDate: new Date(),
@@ -418,7 +418,7 @@ export class PurchaseOrderPage extends PageBase {
 
       let notShowRequestOutgoingPayment = ['Draft','Submitted', 'Approved',
         'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled'];
-      let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved','Paid'];
+      let notShowRequestOutgoingPaymentPaymentStatus = ['Paid'];
       if (notShowRequestOutgoingPayment.indexOf(i.Status) != -1 || notShowRequestOutgoingPaymentPaymentStatus.includes(i.PaymentStatus)) {
         this.ShowRequestOutgoingPayment = false;
         this.IDBusinessPartner = null;

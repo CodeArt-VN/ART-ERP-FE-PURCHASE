@@ -129,7 +129,11 @@
                   <ng-container [formGroup]="g">
                     <div class="col-id cell">{{idx+1}}</div>
                     <div class="col-name cell">
-                      <ng-select
+                      <app-input-control
+                      [field]="{id:'IDItem', label:'Item', type : 'ng-select-item', form : g,  dataSource: g.controls._IDItemDataSource.value,  bindLabel: 'Name',  bindValue: 'Id',clearable:true,  placeholder:'Type to search...'}"
+                      (change)="IDItemChange($event,g)"
+                    ></app-input-control>
+                      <!-- <ng-select
                         appendTo="#order-detail-page"
                         class="c-input"
                         (change)="IDItemChange($event, g);"
@@ -165,11 +169,11 @@
                             >
                           </div>
                         </ng-template>
-                      </ng-select>
+                      </ng-select> -->
                     </div>
                     <div class="col-number cell">
                       <app-input-control
-                        [field]="{id:'IDUoM', type : 'select', form : g,  dataSource: g.controls._IDUoMDataSource.value,  bindLabel: 'Name',  bindValue: 'Id' }"
+                        [field]="{id:'IDUoM', type : 'ng-select', form : g,  dataSource: g.controls._IDUoMDataSource.value,  bindLabel: 'Name',  bindValue: 'Id' }"
                         (change)="IDUoMChange(g)"
                       ></app-input-control>
                     </div>
@@ -261,7 +265,7 @@
                       />
                     </div>
 
-                    <div class="col-price cell">
+                    <!-- <div class="col-price cell">
                       <input
                         formControlName="UoMPrice"
                         class="c-input"
@@ -272,7 +276,14 @@
                         thousandSeparator=","
                         [allowNegativeNumbers]="false"
                       />
-                    </div>
+                    </div> -->
+
+                    <div class="col-price cell">
+                    
+                      <app-input-control (change)="saveOrder()" 
+                      [field]="{id:'UoMPrice',label:'UoM price',type:'number',form:g}">
+                      </app-input-control>
+                  </div>
 
                     <div class="col-price cell">
                       <input formControlName="TaxRate" class="c-input" />
@@ -387,20 +398,10 @@
                       <option *ngFor="let i of statusList" [value]="i.Code">{{i.Name}}</option>
                     </select>
                   </div>
-                  <div class="c-control">
-                    <label class="c-label" for="PaymentStatus"
-                      >{{'Payment status' | translate}}
-                      <span
-                        *ngIf="!formGroup.controls.PaymentStatus.valid && !formGroup.controls.PaymentStatus.pending && (formGroup.controls.PaymentStatus.dirty || submitAttempt)"
-                        ion-text
-                        color="danger"
-                        >(*)</span
-                      >
-                    </label>
-                    <select (change)="saveOrder();" class="c-input c-dropdown" formControlName="PaymentStatus">
-                      <option *ngFor="let i of paymentStatusList" [value]="i.Code">{{i.Name}}</option>
-                    </select>
-                  </div>
+                  <app-form-control
+                  [field]="{ id: 'PaymentStatus', type: 'ng-select', label: 'Payment status', dataSource: paymentStatusList, bindValue: 'Code', bindLabel: 'Name', form: formGroup }"
+                ></app-form-control>
+                 
                 </ion-col>
                 <ion-col size="12" size-sm size-xl="4">
                   <div class="c-control">
