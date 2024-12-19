@@ -19,7 +19,12 @@
 .row .col-seperator {
   display: none;
 }
-
+::ng-deep{
+  ion-avatar{
+    width: 24px;
+    height: 24px;
+  }
+}
 @media screen and (max-width: calc(1164px + 0px)) {
   section > header {
     display: none;

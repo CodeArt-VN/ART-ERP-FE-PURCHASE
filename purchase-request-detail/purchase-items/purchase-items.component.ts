@@ -14,6 +14,7 @@ import { SaleOrderPickerModalPage } from '../../sale-order-picker-modal/sale-ord
   selector: 'app-purchase-items',
   templateUrl: './purchase-items.component.html',
   styleUrls: ['./purchase-items.component.scss'],
+  standalone: false
 })
 export class PurchaseItemsComponent extends PageBase {
   _preloadItems;
