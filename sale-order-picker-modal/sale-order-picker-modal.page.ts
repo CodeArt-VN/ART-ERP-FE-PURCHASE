@@ -9,9 +9,10 @@ import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 
 @Component({
-  selector: 'app-sale-order-picker-modal',
-  templateUrl: './sale-order-picker-modal.page.html',
-  styleUrls: ['./sale-order-picker-modal.page.scss'],
+    selector: 'app-sale-order-picker-modal',
+    templateUrl: './sale-order-picker-modal.page.html',
+    styleUrls: ['./sale-order-picker-modal.page.scss'],
+    standalone: false
 })
 export class SaleOrderPickerModalPage extends PageBase {
   constructor(

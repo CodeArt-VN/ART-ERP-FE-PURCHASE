@@ -9,9 +9,10 @@ import { ApiSetting } from 'src/app/services/static/api-setting';
 import { FormBuilder } from '@angular/forms';
 
 @Component({
-  selector: 'app-purchase-order',
-  templateUrl: 'purchase-order.page.html',
-  styleUrls: ['purchase-order.page.scss'],
+    selector: 'app-purchase-order',
+    templateUrl: 'purchase-order.page.html',
+    styleUrls: ['purchase-order.page.scss'],
+    standalone: false
 })
 export class PurchaseOrderPage extends PageBase {
   statusList = [];

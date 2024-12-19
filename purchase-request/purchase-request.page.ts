@@ -8,9 +8,10 @@ import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 
 @Component({
-  selector: 'app-purchase-request',
-  templateUrl: 'purchase-request.page.html',
-  styleUrls: ['purchase-request.page.scss'],
+    selector: 'app-purchase-request',
+    templateUrl: 'purchase-request.page.html',
+    styleUrls: ['purchase-request.page.scss'],
+    standalone: false
 })
 export class PurchaseRequestPage extends PageBase {
   statusList = [];

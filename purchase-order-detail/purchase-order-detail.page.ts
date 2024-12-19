@@ -19,9 +19,10 @@ import { ApiSetting } from 'src/app/services/static/api-setting';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
 
 @Component({
-  selector: 'app-purchase-order-detail',
-  templateUrl: './purchase-order-detail.page.html',
-  styleUrls: ['./purchase-order-detail.page.scss'],
+    selector: 'app-purchase-order-detail',
+    templateUrl: './purchase-order-detail.page.html',
+    styleUrls: ['./purchase-order-detail.page.scss'],
+    standalone: false
 })
 export class PurchaseOrderDetailPage extends PageBase {
   @ViewChild('importfile') importfile: any;
