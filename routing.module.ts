@@ -13,3 +13,4 @@ export const PURCHASERoutes: Routes = [
     { path: 'purchase-order-note/:id', loadChildren: () => import('./purchase-order-note/purchase-order-note.module').then(m => m.PurchaseOrderNotePageModule), canActivate: [AuthGuard] },
   
 ];
+``

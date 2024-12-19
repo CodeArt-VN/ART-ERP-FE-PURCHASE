@@ -1,0 +1,179 @@
+<div>
+  <form [formGroup]="formGroup">
+    <ng-container formArrayName="OrderLines">
+      <div class="table-contain">
+        <section class="table" style="min-width: 1200px">
+          <header class="bold">
+            <div class="col-id cell">#</div>
+            <div class="col-name cell">{{ 'Product' | translate }}</div>
+            <div class="col-date cell">{{ 'Required date' | translate }}</div>
+            <div class="col-uom cell">{{ 'Unit' | translate }}</div>
+            <div class="col-price cell">{{ 'SL đặt' | translate }}</div>
+            <div class="col-price cell">{{ 'Qty remaining open' | translate }}</div>
+            <div class="col-price cell">{{ 'Discount' | translate }}</div>
+            <div class="col-price cell">{{ 'Unit price' | translate }}</div>
+            <div class="col-price cell">{{ '%VAT' | translate }}</div>
+            <div class="col-price cell">{{ 'Amount' | translate }}</div>
+            <div class="col-remark cell">{{ 'Ghi chú' | translate }}</div>
+            <div class="col-total cell">{{ 'Status' | translate }}</div>
+            <div class="col-del cell" *ngIf="_canEdit"></div>
+          </header>
+
+          <div class="row" *ngFor="let g of formGroup.get('OrderLines')['controls']; let idx = index">
+            <ng-container [formGroup]="g">
+              <div class="col-id cell">{{ idx + 1 }}</div>
+              <div class="col-name cell">
+                <app-input-control
+                  [clearable]="true"
+                  appendTo="#order-detail-page"
+                  [field]="{
+                    id: 'IDItem',
+                    label: 'Item',
+                    type: 'ng-select-item',
+                    form: g,
+                    dataSource: g.get('_IDItemDataSource').value,
+                    bindValue: 'Id',
+                    clearable: true,
+                    placeholder: 'Type to search...'
+                  }"
+                  (change)="IDItemChange($event, g)"
+                ></app-input-control>
+              </div>
+              <div class="col-date cell">
+                <app-input-control
+                  [field]="{ id: 'RequiredDate', type: 'datetime-local', form: g }"
+                  (change)="submitData(g)"
+                >
+                </app-input-control>
+              </div>
+              <div class="col-uom cell">
+                <app-input-control
+                  [field]="{
+                    id: 'IDItemUoM',
+                    type: 'ng-select',
+                    form: g,
+                    dataSource: g.controls._IDUoMDataSource.value,
+                    bindLabel: 'Name',
+                    bindValue: 'Id'
+                  }"
+                  (change)="IDUoMChange(g)"
+                ></app-input-control>
+              </div>
+
+              <div class="col-price cell">
+                <app-input-control
+                  [readonly]="submitAttempt"
+                  (focus)="$event.target.select()"
+                  (change)="submitData(g)"
+                  min="0"
+                  step="1"
+                  max="999999999999999999"
+                  onkeydown="return event.keyCode !== 190"
+                  [field]="{ id: 'Quantity', type: 'number', form: g }"
+                ></app-input-control>
+              </div>
+              <div class="col-price cell">
+                <app-input-control
+                  [readonly]="submitAttempt"
+                  (focus)="$event.target.select()"
+                  (change)="submitData(g)"
+                  min="0"
+                  step="1"
+                  max="999999999999999999"
+                  onkeydown="return event.keyCode !== 190"
+                  [field]="{ id: 'QuantityRemainingOpen', type: 'number', form: g }"
+                ></app-input-control>
+              </div>
+
+              <div class="col-price cell">
+                <app-input-control (change)="submitData(g)" [field]="{ id: 'TotalDiscount', type: 'number', form: g }">
+                </app-input-control>
+              </div>
+
+              <div class="col-price cell">
+                <!-- [readonly]="!(_canEdit && _canEditPrice)" -->
+                <app-input-control
+                  (focus)="$event.target.select()"
+                  (change)="submitData(g)"
+                  mask="separator.2"
+                  thousandSeparator=","
+                  [allowNegativeNumbers]="false"
+                  [field]="{ id: 'UoMPrice', type: 'number', form: g }"
+                >
+                </app-input-control>
+              </div>
+              <div class="col-price cell">
+                <app-input-control [field]="{ id: 'TaxRate', type: 'number', form: g }"></app-input-control>
+              </div>
+              <div class="col-price cell">
+                <span class="c-input disable">{{
+                  g.controls.Quantity.value *
+                    (g.controls.UoMPrice.value - (g.controls.TotalDiscount.value || 0)) *
+                    (1 + g.controls.TaxRate.value / 100) | number: '1.0-0'
+                }}</span>
+              </div>
+              <div class="col-remark cell">
+                <app-input-control
+                  (change)="submitData(g)"
+                  [field]="{ id: 'Remark', label: 'Remark', type: 'text', form: g }"
+                >
+                </app-input-control>
+              </div>
+              <div class="col-total cell">
+                <app-input-control [field]="{ id: 'Status', label: 'Status', type: 'text', form: g }">
+                </app-input-control>
+              </div>
+              <div class="col-del cell" *ngIf="_canEdit" (click)="removeLine(idx)">
+                <ion-icon color="danger" class="min-btn" name="trash-outline"></ion-icon>
+              </div>
+            </ng-container>
+          </div>
+
+          <div class="row">
+            <div class="col-id cell"></div>
+            <div class="col-name cell"></div>
+            <div class="col-date cell">
+            </div>
+            <div class="col-uom cell">
+              <b>{{ 'Total' | translate }}:</b>
+             
+            </div>
+           
+            <div class="col-price cell"></div>
+            <div class="col-price cell"></div>
+            <div class="col-price cell">
+              <span class="c-input disable"
+                ><b>{{ calcTotalDiscount() | number: '1.0-0' }}</b></span
+              >
+            </div>
+            <div class="col-price cell"></div>
+            <div class="col-price cell"></div>
+            <div class="col-price cell">
+              <span class="c-input disable">
+                <b>{{ calcTotalAfterTax() | number: '1.0-0' }}</b>
+              </span>
+            </div>
+            <div class="col-remark cell"></div>
+            <div class="col-total cell"></div>
+            <div class="col-del cell" *ngIf="_canEdit"></div>
+          </div>
+        </section>
+      </div>
+    </ng-container>
+  </form>
+  <div class="table-contain">
+    <div class="row" *ngIf="_canEdit">
+      <div class="cell">
+        <ion-button fill="clear" size="small" (click)="addLine({}, true)">
+          <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+          {{ 'Add product' | translate }}
+        </ion-button>
+
+        <ion-button fill="clear" size="small" (click)="showSaleOrderPickerModal()">
+          <ion-icon slot="start" name="git-pull-request-outline"></ion-icon>
+          {{ 'Add items from SO' | translate }}
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</div>

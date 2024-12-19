@@ -2,10 +2,11 @@ import { Component } from '@angular/core';
 import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
-import { PURCHASE_OrderProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
+import {  PURCHASE_RequestProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
 import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
+import { environment } from 'src/environments/environment';
 
 @Component({
     selector: 'app-purchase-request',
@@ -16,9 +17,12 @@ import { ApiSetting } from 'src/app/services/static/api-setting';
 export class PurchaseRequestPage extends PageBase {
   statusList = [];
   paymentStatusList = [];
-
+  showSubmit = false;
+  showApprove = false;
+  showCancel = false;
+  imgPath ='';
   constructor(
-    public pageProvider: PURCHASE_OrderProvider,
+    public pageProvider: PURCHASE_RequestProvider,
     public sysConfigProvider: SYS_ConfigProvider,
     public modalController: ModalController,
     public popoverCtrl: PopoverController,
@@ -29,6 +33,7 @@ export class PurchaseRequestPage extends PageBase {
     public location: Location,
   ) {
     super();
+    this.imgPath = environment.staffAvatarsServer;
   }
 
   preLoadData(event) {
@@ -37,15 +42,13 @@ export class PurchaseRequestPage extends PageBase {
       this.sort.Id = 'Id';
       this.sortToggle('Id', true);
     }
-    let sysConfigQuery = ['POUsedApprovalModule'];
+    let sysConfigQuery = ['PRUsedApprovalModule'];
     Promise.all([
-      this.env.getStatus('PurchaseOrder'),
-      this.env.getStatus('POPaymentStatus'),
+      this.env.getStatus('PurchaseRequest'),
       this.sysConfigProvider.read({ Code_in: sysConfigQuery }),
     ]).then((values) => {
       this.statusList = values[0];
-      this.paymentStatusList = values[1];
-      values[2]['data'].forEach((e) => {
+      values[1]['data'].forEach((e) => {
         if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
           e.Value = e._InheritedConfig.Value;
         }
@@ -57,49 +60,78 @@ export class PurchaseRequestPage extends PageBase {
 
   loadedData(event) {
     this.items.forEach((i) => {
-      i.TotalAfterTaxText = lib.currencyFormat(i.TotalAfterTax);
-      i.ExpectedReceiptDateText = lib.dateFormat(i.ExpectedReceiptDate, 'dd/mm/yyyy');
-      i.ExpectedReceiptTimeText = lib.dateFormat(i.ExpectedReceiptDate, 'hh:MM');
-      i.OrderDateText = lib.dateFormat(i.OrderDate, 'dd/mm/yyyy');
-      i.OrderTimeText = lib.dateFormat(i.OrderDate, 'hh:MM');
+      i.RequestBranchName = this.env.branchList.find(d=> d.Id == i.IDRequestBranch)?.Name;
       i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
       i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
     });
     super.loadedData(event);
-    if (this.pageConfig['POUsedApprovalModule']) {
+    if (this.pageConfig['PRUsedApprovalModule']) {
       this.pageConfig['canApprove'] = false;
     }
   }
 
-  mergeSaleOrders() {}
-  splitSaleOrder() {}
+  mergeSaleOrders() { }
+  splitSaleOrder() { }
 
-  submitOrdersForApproval() {
+  changeSelection(i, e = null) {
+    super.changeSelection(i, e);
+    this.pageConfig.canSubmit = true;
+    this.showCancel = this.pageConfig.canCancel;
+    this.showApprove = this.pageConfig.canApprove;
+    this.showSubmit = this.pageConfig.canSubmit;
+
+    this.selectedItems?.forEach((i) => {
+      // let ShowSubmit = ['Draft', 'Unapproved'];
+      // let ShowApprove = ['Submitted'];
+      // let ShowCancel = ['Submitted', 'Approved', 'Unapproved'];
+
+      let notShowSubmit = ['Submitted', 'Approved']
+      let notShowApprove = ['Approved', 'Unapproved', 'Draft', 'Cancel'];
+      let notShowCancel = ['Draft']
+
+
+      if (notShowSubmit.indexOf(i.Status) != -1) {
+        this.showSubmit = false;
+      }
+
+      if (notShowApprove.indexOf(i.Status) != -1) {
+        this.showApprove = false;
+      }
+      if (notShowCancel.indexOf(i.Status) != -1) {
+        this.showCancel = false;
+      }
+
+    });
+
+
+
+    if (this.selectedItems?.length == 0) {
+      this.showCancel = this.showApprove = this.showSubmit = false;
+    }
+  }
+
+
+  submit() { // submit PO
     if (!this.pageConfig.canSubmitOrdersForApproval) return;
     if (this.submitAttempt) return;
 
-    let itemsCanNotProcess = this.selectedItems.filter(
-      (i) => !(i.Status == 'Draft' || i.Status == 'PORequestUnapproved'),
-    );
+    let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Draft' || i.Status == 'Unapproved'));
     if (itemsCanNotProcess.length == this.selectedItems.length) {
       this.env.showMessage(
-        'erp.app.pages.purchase.purchase-request.message.can-not-send-approve-new-draft-disapprove-only',
+        'Your selected invoices cannot be approved. Please select new or draft or disapproved ones',
         'warning',
       );
     } else {
       itemsCanNotProcess.forEach((i) => {
         i.checked = false;
       });
-      this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'PORequestUnapproved');
+      this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'Unapproved');
 
       this.env
         .showPrompt(
-          {
-            code: 'Bạn có chắc muốn gửi duyệt {{value}} đơn hàng đang chọn?',
-            value: { value: this.selectedItems.length },
-          },
+          {code:'Bạn có chắc muốn gửi duyệt {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
           null,
-          { code: 'Gửi duyệt {{value}} mua hàng', value: { value: this.selectedItems.length } },
+          {code:'Gửi duyệt {{value}} mua hàng',value:{value:this.selectedItems.length}}
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -107,7 +139,7 @@ export class PurchaseRequestPage extends PageBase {
           postDTO.Ids = this.selectedItems.map((e) => e.Id);
 
           this.pageProvider.commonService
-            .connect('POST', ApiSetting.apiDomain('PURCHASE/Order/SubmitOrdersForApproval/'), postDTO)
+            .connect('POST', ApiSetting.apiDomain('PURCHASE/Request/Submit/'), postDTO)
             .toPromise()
             .then((savedItem: any) => {
               this.env.publishEvent({
@@ -116,14 +148,10 @@ export class PurchaseRequestPage extends PageBase {
               this.submitAttempt = false;
 
               if (savedItem > 0) {
-                this.env.showMessage(
-                  'erp.app.pages.purchase.purchase-request.message.send-to-approve-with-value',
-                  'success',
-                  savedItem,
-                );
+                this.env.showMessage('{{value}} orders sent for approval', 'success', savedItem);
               } else {
                 this.env.showMessage(
-                  'erp.app.pages.purchase.purchase-request.message.check-atleast-one',
+                  'Please check again, orders must have at least 1 item to be approved',
                   'warning',
                 );
               }
@@ -135,26 +163,26 @@ export class PurchaseRequestPage extends PageBase {
         });
     }
   }
-  approveOrders() {
+  approve() {
     if (!this.pageConfig.canApprove) return;
     if (this.submitAttempt) return;
 
-    let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'PORequestSubmitted'));
+    let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Submitted'));
     if (itemsCanNotProcess.length == this.selectedItems.length) {
       this.env.showMessage(
-        'erp.app.pages.purchase.purchase-request.message.can-not-approve-pending-only',
+        'Your selected order cannot be approved. Please only select pending for approval order',
         'warning',
       );
     } else {
       itemsCanNotProcess.forEach((i) => {
         i.checked = false;
       });
-      this.selectedItems = this.selectedItems.filter((i) => i.Status == 'PORequestSubmitted');
+      this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted');
       this.env
         .showPrompt(
-          { code: 'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?', value: { value: this.selectedItems.length } },
+          {code:'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?',value:this.selectedItems.length},
           null,
-          { code: 'Duyệt {{value}} đơn hàng', value: { value: this.selectedItems.length } },
+          {code:'Duyệt {{value}} đơn hàng',value:this.selectedItems.length},
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -162,7 +190,7 @@ export class PurchaseRequestPage extends PageBase {
           postDTO.Ids = this.selectedItems.map((e) => e.Id);
 
           this.pageProvider.commonService
-            .connect('POST', ApiSetting.apiDomain('PURCHASE/Order/ApproveOrders/'), postDTO)
+            .connect('POST', ApiSetting.apiDomain('PURCHASE/Request/Approve/'), postDTO)
             .toPromise()
             .then((savedItem: any) => {
               this.env.publishEvent({
@@ -171,14 +199,10 @@ export class PurchaseRequestPage extends PageBase {
               this.submitAttempt = false;
 
               if (savedItem > 0) {
-                this.env.showMessage(
-                  'erp.app.pages.purchase.purchase-request.message.approved-with-value',
-                  'success',
-                  savedItem,
-                );
+                this.env.showMessage('{{value}} orders approved', 'success', savedItem);
               } else {
                 this.env.showMessage(
-                  'erp.app.pages.purchase.purchase-request.message.check-atleast-one',
+                  'Please check again, orders must have at least 1 item to be approved',
                   'warning',
                 );
               }
@@ -190,33 +214,26 @@ export class PurchaseRequestPage extends PageBase {
         });
     }
   }
-  disapproveOrders() {
+  disapprove() {
     if (!this.pageConfig.canApprove) return;
     if (this.submitAttempt) return;
 
-    let itemsCanNotProcess = this.selectedItems.filter(
-      (i) => !(i.Status == 'PORequestSubmitted' || i.Status == 'PORequestApproved'),
-    );
+    let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Submitted' || i.Status == 'Approved'));
     if (itemsCanNotProcess.length == this.selectedItems.length) {
       this.env.showMessage(
-        'erp.app.pages.purchase.purchase-request.message.can-not-disapprove-pending-approved-only',
+        'Your selected invoices cannot be disaaproved. Please select approved or pending for approval invoice',
         'warning',
       );
     } else {
       itemsCanNotProcess.forEach((i) => {
         i.checked = false;
       });
-      this.selectedItems = this.selectedItems.filter(
-        (i) => i.Status == 'PORequestSubmitted' || i.Status == 'PORequestApproved',
-      );
+      this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted' || i.Status == 'Approved');
       this.env
         .showPrompt(
-          {
-            code: 'Bạn có chắc muốn TRẢ LẠI {{value}} đơn hàng đang chọn?',
-            value: { value: this.selectedItems.length },
-          },
+          {code:'Bạn có chắc muốn TRẢ LẠI {{value}} đơn hàng đang chọn?',value:this.selectedItems.length},
           null,
-          { code: 'Duyệt {{value}} đơn hàng', value: { value: this.selectedItems.length } },
+          {code:'Duyệt {{value}} đơn hàng',value:this.selectedItems.length},
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -224,13 +241,13 @@ export class PurchaseRequestPage extends PageBase {
           postDTO.Ids = this.selectedItems.map((e) => e.Id);
 
           this.pageProvider.commonService
-            .connect('POST', ApiSetting.apiDomain('PURCHASE/Order/DisapproveOrders/'), postDTO)
+            .connect('POST', ApiSetting.apiDomain('PURCHASE/Request/Disapprove/'), postDTO)
             .toPromise()
             .then((savedItem: any) => {
               this.env.publishEvent({
                 Code: this.pageConfig.pageName,
               });
-              this.env.showMessage('erp.app.pages.purchase.purchase-request.message.save-complete', 'success');
+              this.env.showMessage('Saving completed!', 'success');
               this.submitAttempt = false;
             })
             .catch((err) => {
@@ -240,28 +257,26 @@ export class PurchaseRequestPage extends PageBase {
         });
     }
   }
-  cancelOrders() {
+  cancel() {
     if (!this.pageConfig.canCancel) return;
     if (this.submitAttempt) return;
 
-    let itemsCanNotProcess = this.selectedItems.filter(
-      (i) => !(i.Status == 'Draft' || i.Status == 'PORequestUnapproved'),
-    );
+    let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Draft' || i.Status == 'Unapproved'));
     if (itemsCanNotProcess.length == this.selectedItems.length) {
       this.env.showMessage(
-        'erp.app.pages.purchase.purchase-request.message.can-not-cancel-pending-draft-only',
+        'Your selected invoices cannot be canceled. Please select draft or pending for approval invoice',
         'warning',
       );
     } else {
       itemsCanNotProcess.forEach((i) => {
         i.checked = false;
       });
-      this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'PORequestUnapproved');
+      this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'Unapproved');
       this.env
         .showPrompt(
-          {code:'Bạn có chắc muốn HỦY {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
+          {code:'Bạn có chắc muốn HỦY {{value}} đơn hàng đang chọn?',value:this.selectedItems.length},
           null,
-          {code:'Duyệt {{value}} đơn hàng',value:{value:this.selectedItems.length}},
+          {code:'Duyệt {{value}} đơn hàng',value:this.selectedItems.length},
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -269,13 +284,13 @@ export class PurchaseRequestPage extends PageBase {
           postDTO.Ids = this.selectedItems.map((e) => e.Id);
 
           this.pageProvider.commonService
-            .connect('POST', ApiSetting.apiDomain('PURCHASE/Order/CancelOrders/'), postDTO)
+            .connect('POST', ApiSetting.apiDomain('PURCHASE/Request/Cancel/'), postDTO)
             .toPromise()
             .then((savedItem: any) => {
               this.env.publishEvent({
                 Code: this.pageConfig.pageName,
               });
-              this.env.showMessage('erp.app.pages.purchase.purchase-request.message.save-complete', 'success');
+              this.env.showMessage('Saving completed!', 'success');
               this.submitAttempt = false;
             })
             .catch((err) => {
@@ -285,30 +300,5 @@ export class PurchaseRequestPage extends PageBase {
         });
     }
   }
-  submitOrders() {
-    if (this.submitAttempt) {
-      return;
-    }
 
-    this.selectedItems = this.selectedItems.filter((i) => i.Status == 'PORequestApproved');
-    this.submitAttempt = true;
-    let postDTO = { Ids: [] };
-    postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-    this.pageProvider.commonService
-      .connect('POST', ApiSetting.apiDomain('PURCHASE/Order/SubmitOrders/'), postDTO)
-      .toPromise()
-      .then((savedItem: any) => {
-        this.env.publishEvent({ Code: this.pageConfig.pageName });
-        this.env.showMessage(
-          'erp.app.pages.purchase.purchase-request.message.submit-requests-complete',
-          'success',
-        );
-        this.submitAttempt = false;
-      })
-      .catch((err) => {
-        this.submitAttempt = false;
-        console.log(err);
-      });
-  }
 }
