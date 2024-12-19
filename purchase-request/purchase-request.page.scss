@@ -11,6 +11,7 @@
   }
 }
 
+
 .money {
   font-weight: bold;
   color: var(--ion-color-primary) !important;
@@ -71,6 +72,10 @@
     .col-name {
       min-width: 0 !important;
       max-width: 1000px !important;
+    }
+    .requester{
+      min-width: 150px;
+      max-width: 150px;
     }
 
     .money {
@@ -198,6 +203,11 @@
       order: 7;
       font-size: 80%;
       color: var(--ion-color-medium) !important;
+    }
+
+    .requester{
+      min-width: 150px;
+      max-width: 150px;
     }
 
     .empty-field {

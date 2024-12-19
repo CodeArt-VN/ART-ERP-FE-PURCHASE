@@ -1,0 +1,23 @@
+.table-contain {
+    .col-id {
+      max-width: 3rem;
+      min-width: 3rem;
+    }
+    .col-uom {
+      max-width:100px;
+      min-width:100px;
+     }
+    .col-price{
+      justify-content: flex-end;
+      text-align: right;
+    }
+    .col-price:has(> app-input-control){
+     ::ng-deep{
+      input{
+        text-align: right;
+      }
+     }
+    
+     
+    }
+}
