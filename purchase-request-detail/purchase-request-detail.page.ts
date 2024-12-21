@@ -131,7 +131,7 @@ export class PurchaseRequestDetailPage extends PageBase {
       Code: [''],
       Name: [''],
       ForeignName: [''],
-      Remark: ['', Validators.required],
+      Remark: [''],
       ForeignRemark: [''],
       ContentType: ['Item', Validators.required],
       Status: new FormControl({ value: 'Draft', disabled: true }, Validators.required),
@@ -155,7 +155,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 
   preLoadData(event) {
     this.contentTypeList = [
-      { Code: 'Item', Name: 'Item' },
+      { Code: 'Item', Name: 'Items' },
       { Code: 'Service', Name: 'Service' },
     ];
     Promise.all([this.env.getStatus('PurchaseRequest'), this.contactProvider.read({ IsVendor: true, Take: 20 })]).then(
@@ -204,6 +204,10 @@ export class PurchaseRequestDetailPage extends PageBase {
     if (this.item._Vendor) {
       this._currentVendor = this.item._Vendor;
     }
+    this._currentContentType = this.formGroup.controls['ContentType'].value;
+    if(this.item.Status != 'Draft' && this.item.Status != 'Unapproved'){
+      this.formGroup.disable();
+    }
   }
 
   removeItem(Ids) {
@@ -219,6 +223,40 @@ export class PurchaseRequestDetailPage extends PageBase {
 
   saveOrderBack() {
     this.saveChange();
+  }
+  _currentContentType;
+  changeContentType(e){
+    console.log(e);
+    let orderLines = this.formGroup.get('OrderLines') as FormArray;
+    if (orderLines.controls.length > 0) {
+      this.env
+        .showPrompt(
+          'Tất cả hàng hoá trong danh sách sẽ bị xoá khi bạn chọn nhà cung cấp khác. Bạn chắc chắn chứ? ',
+          null,
+          'Thông báo',
+        )
+        .then(() => {
+          let deletedFields = orderLines
+            .getRawValue()
+            .filter((f) => f.Id)
+            .map((o) => o.Id);
+          this.formGroup.get('DeletedFields').setValue(deletedFields);
+          this.formGroup.get('DeletedFields').markAsDirty();
+          orderLines.clear();
+          this.item.OrderLines = [];
+          console.log(orderLines);
+          console.log(this.item.OrderLines);
+          this.saveChange();
+          this._currentContentType = e.Code;
+          return;
+        })
+        .catch(() => {
+          this.formGroup.get('ContentType').setValue(this._currentContentType);
+        });
+    }else{
+      this._currentContentType = e.Code;
+      this.saveChange();
+    }
   }
 
   calcTotalAfterTax() {
@@ -275,6 +313,8 @@ export class PurchaseRequestDetailPage extends PageBase {
         .catch(() => {
           this.formGroup.get('IDVendor').setValue(this._currentVendor?.Id);
         });
+    }else{
+      this.saveChange();
     }
   }
 

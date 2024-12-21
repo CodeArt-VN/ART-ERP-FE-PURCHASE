@@ -163,19 +163,6 @@
         </ng-template>
       </datatable-column>
 
-
-
-      <datatable-column class="col-name  cell" name="Name" property="Name">
-        <ng-template let-i="row" datatable-cell-template>
-          <div *ngIf="i.Name" class="col-name cell" (click)="nav('purchase-request/'+i.Id,'forward')">
-            {{i.Name | translate}}
-          </div>
-        </ng-template>
-      </datatable-column>
-
-
-
-
       <datatable-column class="col-name cell" name="" property="Id">
         <ng-template datatable-header-template>
           <div class="col-code cell" (click)="sortToggle('RequestBranchName')">{{'Department' | translate}}</div>

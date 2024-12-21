@@ -5,6 +5,7 @@
         <section class="table" >
           <header class="bold">
             <div class="col-id cell">#</div>
+            <div *ngIf="!_IDVendor &&  _contentType == 'Item'" class="col-name cell">{{ 'Vendor' | translate }}</div>
             <div class="col-name cell">{{ 'Product' | translate }}</div>
             <div class="col-date cell">{{ 'Required date' | translate }}</div>
             <div class="col-uom cell">{{ 'Unit' | translate }}</div>
@@ -15,18 +16,29 @@
             <div class="col-price cell">{{ '%VAT' | translate }}</div>
             <div class="col-price cell">{{ 'Amount' | translate }}</div>
             <div class="col-remark cell">{{ 'Ghi chú' | translate }}</div>
-            <div *ngIf="!_IDVendor" class="col-name vendor cell">{{ 'Vendor' | translate }}</div>
-            <div class="col-total cell">{{ 'Status' | translate }}</div>
             <div class="col-del cell" *ngIf="_canEdit"></div>
           </header>
 
           <div class="row" *ngFor="let g of formGroup.get('OrderLines')['controls']; let idx = index">
             <ng-container [formGroup]="g">
               <div class="col-id cell">{{ idx + 1 }}</div>
+              <div *ngIf="!_IDVendor && _contentType=='Item'"  class="col-name cell" title="{{ g.controls._Vendor.value?.Name }}">
+                <app-input-control 
+                  (change)="submitData(g)"
+                  [field]="{ id: 'IDVendor', label: 'Vendor', type: 'ng-select'
+                  , form: g ,dataSource :g.controls._Vendors.value,  bindLabel: 'Name',  bindValue: 'Id'}" >
+                </app-input-control>
+              </div>
               <div class="col-name cell">
-                <app-input-control
-                  [clearable]="true"
-                  appendTo="#order-detail-page"
+                <app-input-control *ngIf="this._contentType!='Item'"
+                [field]="{
+                  id: 'Name',
+                  label: 'Item',
+                  form: g,
+                }"
+                (change)="submitData(g)"
+              ></app-input-control>
+                <app-input-control  *ngIf="this._contentType=='Item'"
                   [field]="{
                     id: 'IDItem',
                     label: 'Item',
@@ -64,13 +76,8 @@
               <div class="col-price cell">
                 <app-input-control
                   [readonly]="submitAttempt"
-                  (focus)="$event.target.select()"
                   (change)="submitData(g)"
-                  min="0"
-                  step="1"
-                  max="999999999999999999"
-                  onkeydown="return event.keyCode !== 190"
-                  [field]="{ id: 'Quantity', type: 'number', form: g }"
+                  [field]="{ id: 'Quantity', type: 'number', form: g }" (change)="changeQuantity()"
                 ></app-input-control>
               </div>
               <div class="col-price cell">
@@ -123,18 +130,6 @@
                 >
                 </app-input-control>
               </div>
-              <div *ngIf="!_IDVendor"  class="col-name vendor cell" title="{{ g.controls._Vendor.value?.Name }}">
-                <app-input-control
-                  (change)="submitData(g)"
-                  [field]="{ id: 'IDVendor', label: 'Vendor', type: 'ng-select'
-                  , form: g ,dataSource :g.controls._Vendors.value,  bindLabel: 'Name',  bindValue: 'Id'}"
-                >
-                </app-input-control>
-              </div>
-              <div class="col-total cell">
-                <app-input-control [field]="{ id: 'Status', label: 'Status', type: 'text', form: g }">
-                </app-input-control>
-              </div>
               <div class="col-del cell" *ngIf="_canEdit" (click)="removeLine(idx)">
                 <ion-icon color="danger" class="min-btn" name="trash-outline"></ion-icon>
               </div>
@@ -143,6 +138,7 @@
 
           <div class="row">
             <div class="col-id cell"></div>
+            <div *ngIf="!_IDVendor && _contentType=='Item'" class="col-name cell"></div>
             <div class="col-name cell"></div>
             <div class="col-date cell">
             </div>
@@ -166,8 +162,6 @@
               </span>
             </div>
             <div class="col-remark cell"></div>
-            <div *ngIf="!_IDVendor" class="col-name vendor cell"></div>
-            <div class="col-total cell"></div>
             <div class="col-del cell" *ngIf="_canEdit"></div>
           </div>
         </section>

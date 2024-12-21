@@ -24,7 +24,10 @@ export class PurchaseItemsComponent extends PageBase {
   _canEdit = false;
   _IDPurchaseRequest 
   _IDVendor = '';
-
+  _contentType = 'Item';
+  @Input() set contentType(value){
+    this._contentType = value;
+  }
   @Input() set IDPurchaseRequest(value){
     this._IDPurchaseRequest = value;
     this.formGroup.get('IDPurchaseRequest').setValue(value);
@@ -135,18 +138,24 @@ export class PurchaseItemsComponent extends PageBase {
       _Vendor : [selectedItem ?  selectedItem._Vendors?.find(d => d.Id == line.IDVendor) : ''],
       IDItem: [line.IDItem || 0],
       IDRequest: [line.IDRequest || this._IDPurchaseRequest],//Validators.required
-      IDItemUoM: [line.IDItemUoM,Validators.required],//, Validators.required
+      IDItemUoM:new FormControl(
+        line.IDItemUoM, 
+        this._contentType === 'Item' ? Validators.required : null // Conditional validator
+      ),
       IDBaseUoM: [line.IDBaseUoM],
       IDVendor: [this._IDVendor ? this._IDVendor : line.IDVendor],
       Id: [line.Id],
+      Status: ['Open'],
       Sort: [line.Sort],
       Name: [line.Name],
-      Status: new FormControl({ value: line.Status || 'Open', disabled: true }),
       Remark: [line.Remark],
       RequiredDate: [line.RequiredDate],//,Validators.required
       UoMPrice: [line.UoMPrice],
       UoMName: [line.UoMName],
-      Quantity: [line.Quantity, Validators.required],
+      Quantity: new FormControl(
+        line.Quantity, 
+        this._contentType === 'Item' ? Validators.required : null // Conditional validator
+      ),
       QuantityRemainingOpen: new FormControl({value:line.QuantityRemainingOpen,disabled:true}),
       UoMSwap: [line.UoMSwap],
       UoMSwapAlter: [line.UoMSwapAlter],
@@ -290,51 +299,10 @@ export class PurchaseItemsComponent extends PageBase {
       .map((x) => (x.UoMPrice * ( x.Quantity) - x.TotalDiscount) * (1 + x.TaxRate / 100))
       .reduce((a, b) => +a + +b, 0);
   }
-  async showSaleOrderPickerModal() {
-    const modal = await this.modalController.create({
-      component: SaleOrderPickerModalPage,
-      componentProps: {
-      },
-      cssClass: 'modal90',
-    });
 
-    await modal.present();
-    const { data } = await modal.onWillDismiss();
-
-    if (data && data.length) {
-      console.log(data);
-      console.log(data.map((i) => i.Id));
-
-      const loading = await this.loadingController.create({
-        cssClass: 'my-custom-class',
-        message: 'Please wait for a few moments',
-      });
-      await loading.present().then(() => {
-        let postData = {
-          Id: this.formGroup.get('IDPurchaseRequest').value,
-          SOIds: data.map((i) => i.Id),
-        };
-        this.pageProvider.commonService .connect('POST', 'PURCHASE/Request/CopyFromSO/', postData) .toPromise()
-          .then((resp: any) => {
-            if (loading) loading.dismiss();
-            if (this.formGroup.get('IDPurchaseRequest').value) {
-              // this.refresh();
-              this.onRefresh.emit(true)
-            } else {
-              resp.forEach(d => {
-                this.addLine(d, true);
-              });
-            }
-          
-            // if (!this.canEdit) this.formGroup.disable();
-            // this.renderFormArray.emit(this.formGroup.controls.OrderLines);
-          })
-          .catch((err) => {
-            console.log(err);
-            this.env.showMessage('erp.app.pages.purchase.purchase-request.message.can-not-add', 'danger');
-            if (loading) loading.dismiss();
-          });
-      });
-    }
+  changeQuantity(){
+    this.formGroup.get('QuantityRemainingOpen').setValue(this.formGroup.get('Quantity').value);
+    this.formGroup.get('QuantityRemainingOpen').markAsDirty();
   }
+  
 }

@@ -1,8 +1,7 @@
 <ion-header>
   <app-toolbar [page]="this">
   
-    <ion-button (click)="createPO()" title="{{'Create PO' | translate}}" >
-      <!-- *ngIf="pageConfig.canCopyToPO" -->
+    <ion-button *ngIf="formGroup.get('Status')?.value == 'Approved' && formGroup.get('ContentType').value != 'Service'" (click)="createPO()" title="{{'Create PO' | translate}}" >
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
     </ion-button>
   </app-toolbar>
@@ -26,13 +25,13 @@
               type:'text',form:formGroup}">
             </app-form-control>
      
-            <app-form-control [clearable]="true" 
+            <app-form-control
               [field]="{id:'IDVendor',label:'Vendor', type : 'ng-select-bp', form : formGroup,  dataSource: _vendorDataSource,  bindLabel: 'Name',  bindValue: 'Id',clearable:true }"
               (change)="changeVendor($event)"></app-form-control>
            
             <app-form-control [field]="{id :'ContentType', label:'Content type' ,
                type:'ng-select',dataSource:contentTypeList,
-               bindLabel:'Name',bindValue:'Code' ,form:formGroup}">
+               bindLabel:'Name',bindValue:'Code' ,form:formGroup}" (change)="changeContentType($event)">
             </app-form-control>
             <app-form-control (change)="saveChange();"
             [field]="{id:'Status', type : 'ng-select', dataSource:statusList, bindLabel:'Name', bindValue:'Code', label:'Status', form : formGroup}">
@@ -93,7 +92,8 @@
       </ion-toolbar>
       <div *ngIf="segmentView == 's1'">
         <app-purchase-items (renderFormArray)="renderFormArray($event)"
-        [IDPurchaseRequest] = "formGroup.get('Id').value"
+        [contentType]="_currentContentType"
+        [IDPurchaseRequest]="formGroup.get('Id').value"
         [canEdit]="pageConfig.canEdit" (onChange)="saveChange()"
         [IDVendor]="formGroup.get('IDVendor').value"
         [orderLines]="item.OrderLines"
