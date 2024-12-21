@@ -1,6 +1,7 @@
 <ion-header>
   <app-toolbar [page]="this">
-    <ion-button (click)="copyToPO()" title="{{'Copy to PO' | translate}}" >
+  
+    <ion-button (click)="createPO()" title="{{'Create PO' | translate}}" >
       <!-- *ngIf="pageConfig.canCopyToPO" -->
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
     </ion-button>
@@ -26,8 +27,8 @@
             </app-form-control>
      
             <app-form-control [clearable]="true" 
-              [field]="{id:'IDVendor',label:'Vendor', type : 'ng-select-bp', form : formGroup,  dataSource: _vendorDataSource,  bindLabel: 'Name',  bindValue: 'Id' }"
-              (change)="_vendorDataSource.addSelectedItem($event);saveChange()"></app-form-control>
+              [field]="{id:'IDVendor',label:'Vendor', type : 'ng-select-bp', form : formGroup,  dataSource: _vendorDataSource,  bindLabel: 'Name',  bindValue: 'Id',clearable:true }"
+              (change)="changeVendor($event)"></app-form-control>
            
             <app-form-control [field]="{id :'ContentType', label:'Content type' ,
                type:'ng-select',dataSource:contentTypeList,
@@ -94,6 +95,7 @@
         <app-purchase-items (renderFormArray)="renderFormArray($event)"
         [IDPurchaseRequest] = "formGroup.get('Id').value"
         [canEdit]="pageConfig.canEdit" (onChange)="saveChange()"
+        [IDVendor]="formGroup.get('IDVendor').value"
         [orderLines]="item.OrderLines"
          (removeItem)="removeItem($event)"
          (onRefresh)="refresh()">

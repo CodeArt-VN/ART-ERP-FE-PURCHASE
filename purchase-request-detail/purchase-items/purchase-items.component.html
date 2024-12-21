@@ -2,7 +2,7 @@
   <form [formGroup]="formGroup">
     <ng-container formArrayName="OrderLines">
       <div class="table-contain">
-        <section class="table" style="min-width: 1200px">
+        <section class="table" >
           <header class="bold">
             <div class="col-id cell">#</div>
             <div class="col-name cell">{{ 'Product' | translate }}</div>
@@ -15,6 +15,7 @@
             <div class="col-price cell">{{ '%VAT' | translate }}</div>
             <div class="col-price cell">{{ 'Amount' | translate }}</div>
             <div class="col-remark cell">{{ 'Ghi chú' | translate }}</div>
+            <div *ngIf="!_IDVendor" class="col-name vendor cell">{{ 'Vendor' | translate }}</div>
             <div class="col-total cell">{{ 'Status' | translate }}</div>
             <div class="col-del cell" *ngIf="_canEdit"></div>
           </header>
@@ -105,8 +106,11 @@
               <div class="col-price cell">
                 <app-input-control [field]="{ id: 'TaxRate', type: 'number', form: g }"></app-input-control>
               </div>
-              <div class="col-price cell">
-                <span class="c-input disable">{{
+              <div class="col-price cell" title="{{
+              g.controls.Quantity.value *
+              (g.controls.UoMPrice.value - (g.controls.TotalDiscount.value || 0)) *
+              (1 + g.controls.TaxRate.value / 100) | number: '1.0-0'}}">
+                <span  class="c-input disable ellipsis">{{
                   g.controls.Quantity.value *
                     (g.controls.UoMPrice.value - (g.controls.TotalDiscount.value || 0)) *
                     (1 + g.controls.TaxRate.value / 100) | number: '1.0-0'
@@ -116,6 +120,14 @@
                 <app-input-control
                   (change)="submitData(g)"
                   [field]="{ id: 'Remark', label: 'Remark', type: 'text', form: g }"
+                >
+                </app-input-control>
+              </div>
+              <div *ngIf="!_IDVendor"  class="col-name vendor cell" title="{{ g.controls._Vendor.value?.Name }}">
+                <app-input-control
+                  (change)="submitData(g)"
+                  [field]="{ id: 'IDVendor', label: 'Vendor', type: 'ng-select'
+                  , form: g ,dataSource :g.controls._Vendors.value,  bindLabel: 'Name',  bindValue: 'Id'}"
                 >
                 </app-input-control>
               </div>
@@ -148,12 +160,13 @@
             </div>
             <div class="col-price cell"></div>
             <div class="col-price cell"></div>
-            <div class="col-price cell">
-              <span class="c-input disable">
+            <div class="col-price cell" title="{{ calcTotalAfterTax() | number: '1.0-0' }}">
+              <span class="c-input ellipsis disable">
                 <b>{{ calcTotalAfterTax() | number: '1.0-0' }}</b>
               </span>
             </div>
             <div class="col-remark cell"></div>
+            <div *ngIf="!_IDVendor" class="col-name vendor cell"></div>
             <div class="col-total cell"></div>
             <div class="col-del cell" *ngIf="_canEdit"></div>
           </div>

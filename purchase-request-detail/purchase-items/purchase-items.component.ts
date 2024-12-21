@@ -19,8 +19,12 @@ import { SaleOrderPickerModalPage } from '../../sale-order-picker-modal/sale-ord
 export class PurchaseItemsComponent extends PageBase {
   _preloadItems;
 
+
+
   _canEdit = false;
   _IDPurchaseRequest 
+  _IDVendor = '';
+
   @Input() set IDPurchaseRequest(value){
     this._IDPurchaseRequest = value;
     this.formGroup.get('IDPurchaseRequest').setValue(value);
@@ -30,16 +34,24 @@ export class PurchaseItemsComponent extends PageBase {
     this._canEdit = value;
   };
 
+  @Input() set IDVendor(value:any){
+    this._IDVendor = value;
+  }
   @Input() set orderLines(value: any) {
     this.items = value;
     this.setOrderLines();
   };
+
+
 
   @Output() onChange = new EventEmitter<any>();
   @Output() onRefresh = new EventEmitter<any>();
 
   @Output() renderFormArray = new EventEmitter<any>();
   @Output() removeItem = new EventEmitter<any>();
+
+
+
   constructor(
     public pageProvider: PROD_ItemInVendorProvider,
     public itemProvider: WMS_ItemProvider,
@@ -87,6 +99,8 @@ export class PurchaseItemsComponent extends PageBase {
           input$: new Subject<string>(),
           selected:selectedItem? [selectedItem]:[],
           items$: null,
+          idVendor : this._IDVendor,
+          isVendorSearch : this._IDVendor ? true : false,
           initSearch() {
             this.loading = false;
             this.items$ = concat(
@@ -103,6 +117,8 @@ export class PurchaseItemsComponent extends PageBase {
                       Take: 20,
                       Skip: 0,
                       Term: term,
+                      IDVendor : this.idVendor,
+                      IsVendorSearch: this.isVendorSearch
                     })
                     .pipe(
                       catchError(() => of([])), // empty list on error
@@ -114,12 +130,14 @@ export class PurchaseItemsComponent extends PageBase {
           },
         },
       ],
-      _IDUoMDataSource: [selectedItem ? selectedItem.UoMs : ''],
+      _IDUoMDataSource: [selectedItem ? selectedItem.UoMs : []],
+      _Vendors: [selectedItem ? selectedItem._Vendors : []],
+      _Vendor : [selectedItem ?  selectedItem._Vendors?.find(d => d.Id == line.IDVendor) : ''],
       IDItem: [line.IDItem || 0],
       IDRequest: [line.IDRequest || this._IDPurchaseRequest],//Validators.required
       IDItemUoM: [line.IDItemUoM,Validators.required],//, Validators.required
       IDBaseUoM: [line.IDBaseUoM],
-      IDVendor: [line.IDVendor],
+      IDVendor: [this._IDVendor ? this._IDVendor : line.IDVendor],
       Id: [line.Id],
       Sort: [line.Sort],
       Name: [line.Name],
@@ -142,6 +160,7 @@ export class PurchaseItemsComponent extends PageBase {
       TotalDiscount: [line.TotalDiscount],
 
       TotalAfterDiscount: [line.TotalAfterDiscount],
+      _Item :[line._Item],
       Tax: new FormControl({ value: line.Tax, disabled: true }),
       IsDeleted: [line.IsDeleted],
       CreatedBy: [line.CreatedBy],
@@ -188,14 +207,20 @@ export class PurchaseItemsComponent extends PageBase {
 
         group.controls.IDItemUoM.setValue(e.PurchasingUoM);
         group.controls.IDItemUoM.markAsDirty();
-
+        var baseUoM = e.UoMs.find((d) => d.IsBaseUoM);
+        if(baseUoM) { 
+          group.controls.IDBaseUoM.setValue(baseUoM.Id);
+          group.controls.IDItemUoM.markAsDirty();
+        }
         group.controls.TaxRate.setValue(e.PurchaseTaxInPercent);
         group.controls.TaxRate.markAsDirty();
+        group.controls._Item.setValue(e._Item);
+
+        group.controls._Vendors.setValue(e._Vendors)
         
         this.IDUoMChange(group);
         return;
       }
-      group.controls._Item.setValue(e);
       if (e.PurchaseTaxInPercent != -99) this.env.showMessage('The item has not been set tax');
     }
   }
@@ -218,7 +243,11 @@ export class PurchaseItemsComponent extends PageBase {
           } else {
             priceBeforeTax = p.Price;
           }
-
+          let baseUOM = UoMs.find((d) => d.IsBaseUoM);
+          if(baseUOM) {
+            group.controls.IDBaseUoM.setValue(baseUOM.Id);
+            group.controls.IDBaseUoM.markAsDirty();
+          }
           group.controls.UoMPrice.setValue(priceBeforeTax);
           group.controls.UoMPrice.markAsDirty();
 
@@ -227,8 +256,12 @@ export class PurchaseItemsComponent extends PageBase {
         }
       }
     }
-    group.controls.UoMPrice.setValue(null);
-    group.controls.UoMPrice.markAsDirty();
+    else{
+      group.controls.UoMPrice.setValue(null);
+      group.controls.UoMPrice.markAsDirty();
+      group.controls.IDBaseUoM.setValue(null);
+      group.controls.IDBaseUoM.markAsDirty();
+    }
   }
 
 
@@ -240,6 +273,7 @@ export class PurchaseItemsComponent extends PageBase {
         let invalidControlsTranslated = values;
         this.env.showMessage('Please recheck control(s): {{value}}', 'warning', invalidControlsTranslated.join(' | '));
         });
+      g._Vendor = g.controls._Vendors.value.find(d => d.Id == g.controls.IDVendor.value);
     }
     else{
       this.onChange.emit();
