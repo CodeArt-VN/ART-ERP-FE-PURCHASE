@@ -1,0 +1,36 @@
+.table-contain {
+    .col-id {
+      max-width: 3rem;
+      min-width: 3rem;
+    }
+    .col-uom {
+      max-width:100px;
+      min-width:100px;
+     }
+    .col-price{
+      justify-content: flex-end;
+      text-align: right;
+    }
+    .col-price:has(> app-input-control){
+     ::ng-deep{
+      input{
+        text-align: right;
+      }
+     }
+    
+     
+    }
+
+    .ellipsis {
+      white-space: nowrap;          /* Ngăn không cho văn bản xuống dòng */
+      overflow: hidden;             /* Ẩn phần văn bản vượt quá kích thước của phần tử */
+      text-overflow: ellipsis;      /* Hiển thị dấu '...' khi văn bản bị cắt bớt */
+      max-width: 80px;                 /* Đặt độ rộng tối đa cho phần tử */
+      display: inline-block;        /* Đảm bảo phần tử là inline-block để áp dụng các thuộc tính */
+    }
+
+    .vendor{
+      min-width: 120px; 
+    }
+
+}

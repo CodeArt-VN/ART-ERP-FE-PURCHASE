@@ -6,8 +6,9 @@ import { EnvService } from 'src/app/services/core/env.service';
 import {
   BRA_BranchProvider,
   CRM_ContactProvider,
-  PURCHASE_OrderDetailProvider,
-  PURCHASE_OrderProvider,
+  HRM_StaffProvider,
+  PURCHASE_RequestDetailProvider,
+  PURCHASE_RequestProvider,
   WMS_ItemProvider,
 } from 'src/app/services/static/services.service';
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
@@ -17,23 +18,91 @@ import { concat, of, Subject } from 'rxjs';
 import { catchError, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
+import { ItemInVendorModalPage } from 'src/app/modals/item-in-vendor-modal/item-in-vendor-modal.component';
+import { PurchaseOrderModalPage } from '../purchase-order-modal/purchase-order-modal.page';
 
 @Component({
-    selector: 'app-purchase-request-detail',
-    templateUrl: './purchase-request-detail.page.html',
-    styleUrls: ['./purchase-request-detail.page.scss'],
-    standalone: false
+  selector: 'app-purchase-request-detail',
+  templateUrl: './purchase-request-detail.page.html',
+  styleUrls: ['./purchase-request-detail.page.scss'],
+  standalone: false,
 })
 export class PurchaseRequestDetailPage extends PageBase {
   @ViewChild('importfile') importfile: any;
-  branchList = [];
-  vendorList = [];
-  storerList = [];
   statusList = [];
-  paymentStatusList = [];
+  contentTypeList = [];
+  markAsPristine = false;
+  _currentVendor;
+  _isVendorSearch = false;
+  _vendorDataSource = {
+    searchProvider: this.contactProvider,
+    loading: false,
+    input$: new Subject<string>(),
+    selected: [],
+    items$: null,
+    that: this,
+    initSearch() {
+      this.loading = false;
+      this.items$ = concat(
+        of(this.selected),
+        this.input$.pipe(
+          distinctUntilChanged(),
+          tap(() => (this.loading = true)),
+          switchMap((term) => {
+            if (!term) {
+              this.loading = false;
+              return of(this.selected);
+            } else {
+              return this.searchProvider
+                .search({
+                  Term: term,
+                  SortBy: ['Id_desc'],
+                  Take: 20,
+                  Skip: 0,
+                  IsVendor: true,
+                  SkipAddress: true,
+                })
+                .pipe(
+                  catchError(() => of([])), // empty list on error
+                  tap(() => (this.loading = false)),
+                );
+            }
+          }),
+        ),
+      );
+    },
+    addSelectedItem(items) {
+      this.selected = [...items];
+    },
+  };
+
+  _staffDataSource = {
+    searchProvider: this.staffProvider,
+    loading: false,
+    input$: new Subject<string>(),
+    selected: [],
+    items$: null,
+    initSearch() {
+      this.loading = false;
+      this.items$ = concat(
+        of(this.selected),
+        this.input$.pipe(
+          distinctUntilChanged(),
+          tap(() => (this.loading = true)),
+          switchMap((term) =>
+            this.searchProvider.search({ Take: 20, Skip: 0, Term: term }).pipe(
+              catchError(() => of([])), // empty list on error
+              tap(() => (this.loading = false)),
+            ),
+          ),
+        ),
+      );
+    },
+  };
+
   constructor(
-    public pageProvider: PURCHASE_OrderProvider,
-    public purchaseOrderDetailProvider: PURCHASE_OrderDetailProvider,
+    public pageProvider: PURCHASE_RequestProvider,
+    public purchaseRequestDetailProvider: PURCHASE_RequestDetailProvider,
     public contactProvider: CRM_ContactProvider,
     public branchProvider: BRA_BranchProvider,
     public itemProvider: WMS_ItemProvider,
@@ -47,561 +116,339 @@ export class PurchaseRequestDetailPage extends PageBase {
     public cdr: ChangeDetectorRef,
     public loadingController: LoadingController,
     public commonService: CommonService,
+    public staffProvider: HRM_StaffProvider,
   ) {
     super();
     this.pageConfig.isDetailPage = true;
 
-    Object.assign(pageProvider, {
-      importDetail(fileToUpload: File, id) {
-        const formData: FormData = new FormData();
-        formData.append('fileKey', fileToUpload, fileToUpload.name);
-        return new Promise((resolve, reject) => {
-          this.commonService
-            .connect('UPLOAD', ApiSetting.apiDomain('PURCHASE/Order/ImportDetailFile/' + id), formData)
-            .toPromise()
-            .then((data) => {
-              resolve(data);
-            })
-            .catch((err) => {
-              reject(err);
-            });
-        });
-      },
-      copyToReceipt(item) {
-        return new Promise((resolve, reject) => {
-          this.commonService
-            .connect('POST', ApiSetting.apiDomain('PURCHASE/Order/CopyToReceipt/'), item)
-            .toPromise()
-            .then((data) => {
-              resolve(data);
-            })
-            .catch((err) => {
-              reject(err);
-            });
-        });
-      },
+    this.formGroup = this.formBuilder.group({
+      IDBranch: [this.env.selectedBranch, Validators.required],
+      IDRequester: [''],
+      IDRequestBranch: [''],
+      //  IDStorer: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
+      IDVendor: [''],
+      Id: new FormControl({ value: '', disabled: true }),
+      Code: [''],
+      Name: [''],
+      ForeignName: [''],
+      Remark: [''],
+      ForeignRemark: [''],
+      ContentType: ['Item', Validators.required],
+      Status: new FormControl({ value: 'Draft', disabled: true }, Validators.required),
+      RequiredDate: [''],
+      PostingDate: [''],
+      DueDate: [''],
+      DocumentDate: [''],
+      IsDisabled: new FormControl({ value: '', disabled: true }),
+      IsDeleted: new FormControl({ value: '', disabled: true }),
+      CreatedBy: new FormControl({ value: '', disabled: true }),
+      ModifiedBy: new FormControl({ value: '', disabled: true }),
+      CreatedDate: new FormControl({ value: '', disabled: true }),
+      ModifiedDate: new FormControl({ value: '', disabled: true }),
+
+      OrderLines: this.formBuilder.array([]),
+      TotalDiscount: new FormControl({ value: '', disabled: true }),
+      TotalAfterTax: new FormControl({ value: '', disabled: true }),
+      DeletedFields: [''],
     });
   }
 
   preLoadData(event) {
-    this.formGroup = this.formBuilder.group({
-      IDBranch: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
-      IDStorer: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
-      IDVendor: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
-      Id: new FormControl({ value: '', disabled: true }),
-      Code: new FormControl({
-        value: '',
-        disabled: !this.pageConfig.canEdit,
-      }),
-      Name: new FormControl({
-        value: '',
-        disabled: !this.pageConfig.canEdit,
-      }),
-      // ForeignName: [''],
-      Remark: new FormControl({
-        value: '',
-        disabled: !this.pageConfig.canEdit,
-      }),
-      // ForeignRemark: [''],
-      OrderDate: new FormControl({ value: '', disabled: true }),
-      ExpectedReceiptDate: new FormControl({
-        value: '',
-        disabled: !this.pageConfig.canEdit,
-      }),
-      ReceiptedDate: new FormControl({ value: '', disabled: true }),
-      Type: ['PurchaseRequest'],
-      Status: new FormControl({ value: 'Draft', disabled: true }),
-      PaymentStatus: ['WaitForPay', Validators.required],
-      IsDisabled: new FormControl({ value: '', disabled: true }),
-      OrderLines: this.formBuilder.array([]),
-      TotalDiscount: new FormControl({ value: '', disabled: true }),
-      TotalAfterTax: new FormControl({ value: '', disabled: true }),
-    });
-
-    this.branchProvider
-      .read({
-        Skip: 0,
-        Take: 5000,
-        Type: 'Warehouse',
-        AllParent: true,
-        Id: this.env.selectedBranchAndChildren,
-      })
-      .then((resp) => {
-        lib.buildFlatTree(resp['data'], this.branchList).then((result: any) => {
-          this.branchList = result;
-          this.branchList.forEach((i) => {
-            i.disabled = true;
-          });
-          this.markNestedNode(this.branchList, this.env.selectedBranch);
-          super.preLoadData(event);
-        });
-      });
-    this.contactProvider.read({ IsVendor: true, Take: 5000 }).then((resp) => {
-      this.vendorList = resp['data'];
-    });
-    this.contactProvider.read({ IsStorer: true, Take: 5000 }).then((resp) => {
-      this.storerList = resp['data'];
-    });
-
-    this.env.getStatus('PurchaseOrder').then((data: any) => {
-      this.statusList = data;
-    });
-    this.env.getStatus('POPaymentStatus').then((data: any) => {
-      this.paymentStatusList = data;
-    });
-
-    Promise.all([
-      this.pageProvider.commonService
-        .connect('GET', 'SYS/Config/ConfigByBranch', {
-          Code: 'POShowSuggestedQuantity',
-          IDBranch: this.env.selectedBranch,
-        })
-        .toPromise(),
-      this.pageProvider.commonService
-        .connect('GET', 'SYS/Config/ConfigByBranch', {
-          Code: 'POShowAdjustedQuantity',
-          IDBranch: this.env.selectedBranch,
-        })
-        .toPromise(),
-    ]).then((values: any) => {
-      this.pageConfig.POShowSuggestedQuantity = JSON.parse(values[0]['Value']);
-      this.pageConfig.POShowAdjustedQuantity = JSON.parse(values[1]['Value']);
-    });
-  }
-
-  markNestedNode(ls, Id) {
-    ls.filter((d) => d.IDParent == Id).forEach((i) => {
-      if (i.Type == 'Warehouse') i.disabled = false;
-      this.markNestedNode(ls, i.Id);
-    });
+    this.contentTypeList = [
+      { Code: 'Item', Name: 'Items' },
+      { Code: 'Service', Name: 'Service' },
+    ];
+    Promise.all([this.env.getStatus('PurchaseRequest'), this.contactProvider.read({ IsVendor: true, Take: 20 })]).then(
+      (values: any) => {
+        if (values[0]) this.statusList = values[0];
+        if (values[1] && values[1].data) {
+          this._vendorDataSource.selected.push(...values[1].data);
+        }
+        super.preLoadData(event);
+      },
+    );
   }
 
   loadedData(event) {
     if (this.item) {
-      this.item.OrderDateText = lib.dateFormat(this.item.OrderDate, 'hh:MM dd/mm/yyyy');
-      if (this.item.OrderLines) this.item.OrderLines.sort((a, b) => (a.Id > b.Id ? 1 : b.Id > a.Id ? -1 : 0));
-
-      if (!(this.item.Status == 'Draft' || this.item.Status == 'PORequestUnapproved')) {
+      if (!(this.item.Status == 'Draft')) {
         this.pageConfig.canEdit = false;
       }
     }
+    //this.setOrderLines();
+    // this.formGroup.get('Type').markAsDirty();
+    if (!this.item.Id) {
+      this.item.IDRequester = this.env.user.StaffID;
+      this.item._Requester = {
+        Id: this.env.user.StaffID,
+        FullName: this.env.user.FullName,
+      };
+    }
     super.loadedData(event, true);
-    this.setOrderLines();
-    this.formGroup.get('Type').markAsDirty();
-  }
+    if (this.item?._Vendor) {
+      this._vendorDataSource.selected = [...this._vendorDataSource.selected, ...[this.item?._Vendor]];
+    }
 
-  setOrderLines() {
-    this.formGroup.controls.OrderLines = new FormArray([]);
-    if (this.item.OrderLines?.length)
-      this.item.OrderLines.forEach((i) => {
-        this.addLine(i);
-      });
-    // else
-    //     this.addOrderLine({ IDOrder: this.item.Id, Id: 0 });
-  }
+    if (this.item._Requester) {
+      this._staffDataSource.selected.push(lib.cloneObject(this.item._Requester));
+    }
 
-  addLine(line, markAsDirty = false) {
-    let groups = <FormArray>this.formGroup.controls.OrderLines;
-    let preLoadItems = this.item._Items;
-    let selectedItem = preLoadItems?.find((d) => d.Id == line.IDItem);
+    this._staffDataSource.initSearch();
+    this._vendorDataSource.initSearch();
 
-    let group = this.formBuilder.group({
-      _IDItemDataSource: [
-        {
-          searchProvider: this.itemProvider,
-          loading: false,
-          input$: new Subject<string>(),
-          selected: preLoadItems,
-          items$: null,
-          initSearch() {
-            this.loading = false;
-            this.items$ = concat(
-              of(this.selected),
-              this.input$.pipe(
-                distinctUntilChanged(),
-                tap(() => (this.loading = true)),
-                switchMap((term) =>
-                  this.searchProvider
-                    .search({
-                      ARSearch: true,
-                      IDPO: line.IDOrder,
-                      SortBy: ['Id_desc'],
-                      Take: 20,
-                      Skip: 0,
-                      Term: term,
-                    })
-                    .pipe(
-                      catchError(() => of([])), // empty list on error
-                      tap(() => (this.loading = false)),
-                    ),
-                ),
-              ),
-            );
-          },
-        },
-      ],
-      _IDUoMDataSource: [selectedItem ? selectedItem.UoMs : ''],
-
-      IDOrder: [line.IDOrder],
-      Id: [line.Id],
-      Remark: new FormControl({
-        value: line.Remark,
-        disabled: !(
-          this.pageConfig.canEdit ||
-          ((this.item.Status == 'PORequestApproved' || this.item.Status == 'Submitted') &&
-            this.pageConfig.canEditApprovedOrder)
-        ),
-      }),
-      IDItem: [line.IDItem, Validators.required],
-      IDUoM: new FormControl({ value: line.IDUoM, disabled: !this.pageConfig.canEdit }, Validators.required),
-      UoMPrice: new FormControl(
-        {
-          value: line.UoMPrice,
-          disabled: !(this.pageConfig.canEdit && this.pageConfig.canEditPrice),
-        },
-        Validators.required,
-      ),
-      SuggestedQuantity: new FormControl({
-        value: line.SuggestedQuantity,
-        disabled: true,
-      }),
-      UoMQuantityExpected: new FormControl(
-        {
-          value: line.UoMQuantityExpected,
-          disabled: !this.pageConfig.canEdit,
-        },
-        Validators.required,
-      ),
-      QuantityAdjusted: new FormControl({
-        value: line.QuantityAdjusted,
-        disabled: !(
-          (this.item.Status == 'PORequestApproved' || this.item.Status == 'Submitted') &&
-          this.pageConfig.canEditApprovedOrder
-        ),
-      }),
-      IsPromotionItem: new FormControl({
-        value: line.IsPromotionItem,
-        disabled: !this.pageConfig.canEdit,
-      }),
-      TotalBeforeDiscount: new FormControl({
-        value: line.TotalBeforeDiscount,
-        disabled: true,
-      }),
-      TotalDiscount: new FormControl({
-        value: line.TotalDiscount,
-        disabled: !this.pageConfig.canEdit,
-      }),
-      TotalAfterDiscount: new FormControl({
-        value: line.TotalAfterDiscount,
-        disabled: true,
-      }),
-      TaxRate: new FormControl({ value: line.TaxRate, disabled: true }),
-      Tax: new FormControl({ value: line.Tax, disabled: true }),
-      TotalAfterTax: new FormControl({
-        value: line.TotalAfterTax,
-        disabled: true,
-      }),
-    });
-    groups.push(group);
-
-    group.get('_IDItemDataSource').value?.initSearch();
-
-    if (markAsDirty) {
-      group.get('IDOrder').markAsDirty();
+    if (!this.item.Id) {
+      this.formGroup.controls['IDRequester'].markAsDirty();
+      this.formGroup.controls['ContentType'].markAsDirty();
+    }
+    this.calcTotalAfterTax();
+    if (this.item._Vendor) {
+      this._currentVendor = this.item._Vendor;
+    }
+    this._currentContentType = this.formGroup.controls['ContentType'].value;
+    if(this.item.Status != 'Draft' && this.item.Status != 'Unapproved'){
+      this.formGroup.disable();
     }
   }
 
-  addNewLine() {
-    let newLine: any = {
-      IDOrder: this.item.Id,
-      Id: 0,
-    };
-    this.addLine(newLine, true);
+  removeItem(Ids) {
+    this.purchaseRequestDetailProvider.delete(Ids).then((resp) => {
+      this.env.publishEvent({ Code: this.pageConfig.pageName });
+      this.env.showMessage('Deleted!', 'success');
+    });
   }
 
-  removeLine(index) {
-    this.env
-      .showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
-      .then((_) => {
-        let groups = <FormArray>this.formGroup.controls.OrderLines;
-        let Ids = [];
-        Ids.push({ Id: groups.controls[index]['controls'].Id.value });
-        this.purchaseOrderDetailProvider.delete(Ids).then((resp) => {
-          groups.removeAt(index);
-          this.env.publishEvent({ Code: this.pageConfig.pageName });
-          this.env.showMessage('erp.app.pages.purchase.purchase-request.message.delete-complete', 'success');
+  renderFormArray(e) {
+    this.formGroup.controls.OrderLines = e;
+  }
+
+  saveOrderBack() {
+    this.saveChange();
+  }
+  _currentContentType;
+  changeContentType(e){
+    console.log(e);
+    let orderLines = this.formGroup.get('OrderLines') as FormArray;
+    if (orderLines.controls.length > 0) {
+      this.env
+        .showPrompt(
+          'Tất cả hàng hoá trong danh sách sẽ bị xoá khi bạn chọn nhà cung cấp khác. Bạn chắc chắn chứ? ',
+          null,
+          'Thông báo',
+        )
+        .then(() => {
+          let deletedFields = orderLines
+            .getRawValue()
+            .filter((f) => f.Id)
+            .map((o) => o.Id);
+          this.formGroup.get('DeletedFields').setValue(deletedFields);
+          this.formGroup.get('DeletedFields').markAsDirty();
+          orderLines.clear();
+          this.item.OrderLines = [];
+          console.log(orderLines);
+          console.log(this.item.OrderLines);
+          this.saveChange();
+          this._currentContentType = e.Code;
+          return;
+        })
+        .catch(() => {
+          this.formGroup.get('ContentType').setValue(this._currentContentType);
         });
-      })
-      .catch((_) => {});
+    }else{
+      this._currentContentType = e.Code;
+      this.saveChange();
+    }
   }
 
-  saveOrder() {
-    this.debounce(() => {
-      super.saveChange2();
-    }, 300);
-  }
-
-  calcTotalDiscount() {
-    return this.formGroup.controls.OrderLines.getRawValue()
-      .map((x) => x.TotalDiscount)
-      .reduce((a, b) => +a + +b, 0);
-  }
   calcTotalAfterTax() {
-    return this.formGroup.controls.OrderLines.getRawValue()
-      .map((x) => (x.UoMPrice * (x.UoMQuantityExpected + x.QuantityAdjusted) - x.TotalDiscount) * (1 + x.TaxRate / 100))
-      .reduce((a, b) => +a + +b, 0);
+    if (this.formGroup.get('OrderLines').getRawValue()) {
+      return this.formGroup
+        .get('OrderLines')
+        .getRawValue()
+        .map((x) => (x.UoMPrice * x.Quantity - x.TotalDiscount) * (1 + x.TaxRate / 100))
+        .reduce((a, b) => +a + +b, 0);
+    } else {
+      return 0;
+    }
+  }
+
+  changeDate(e) {
+    if (!this.formGroup.get('DocumentDate').value) {
+      this.formGroup.get('DocumentDate').setValue(e.target.value);
+      this.formGroup.get('DocumentDate').markAsDirty();
+    }
+    if (!this.formGroup.get('PostingDate').value) {
+      this.formGroup.get('PostingDate').setValue(e.target.value);
+      this.formGroup.get('PostingDate').markAsDirty();
+    }
+    if (!this.formGroup.get('DueDate').value) {
+      this.formGroup.get('DueDate').setValue(e.target.value);
+      this.formGroup.get('DueDate').markAsDirty();
+    }
+    this.saveChange();
+  }
+
+  changeVendor(e) {
+    let orderLines = this.formGroup.get('OrderLines') as FormArray;
+    if (orderLines.controls.length > 0) {
+      this.env
+        .showPrompt(
+          'Tất cả hàng hoá trong danh sách sẽ bị xoá khi bạn chọn nhà cung cấp khác. Bạn chắc chắn chứ? ',
+          null,
+          'Thông báo',
+        )
+        .then(() => {
+          let deletedFields = orderLines
+            .getRawValue()
+            .filter((f) => f.Id)
+            .map((o) => o.Id);
+          this.formGroup.get('DeletedFields').setValue(deletedFields);
+          this.formGroup.get('DeletedFields').markAsDirty();
+          orderLines.clear();
+          this.item.OrderLines = [];
+          console.log(orderLines);
+          console.log(this.item.OrderLines);
+          this.saveChange();
+          this._currentVendor = e;
+        })
+        .catch(() => {
+          this.formGroup.get('IDVendor').setValue(this._currentVendor?.Id);
+        });
+    }else{
+      this.saveChange();
+    }
+  }
+
+  changeRequiredDate() {
+    let orderLines = this.formGroup.get('OrderLines') as FormArray;
+    orderLines.controls.forEach((o) => {
+      if (!o.get('RequiredDate').value) {
+        o.get('RequiredDate').setValue(this.formGroup.get('RequiredDate').value);
+        o.get('RequiredDate').markAsDirty();
+      }
+    });
+    this.saveChange();
+  }
+
+  async copyToPO() {
+    const loading = await this.loadingController.create({
+      cssClass: 'my-custom-class',
+      message: 'Please wait for a few moments',
+    });
+    await loading.present().then(() => {
+      this.commonService
+        .connect('POST', ApiSetting.apiDomain('PURCHASE/Request/CopyToPO/'), this.item.Id)
+        .toPromise()
+        .then((resp: any) => {
+          if (loading) loading.dismiss();
+          this.env.publishEvent({
+            Code: this.pageConfig.pageName,
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          this.env.showMessage('erp.app.pages.purchase.purchase-request.message.can-not-add', 'danger');
+          if (loading) loading.dismiss();
+        });
+    });
+  }
+
+  
+  async saveChange() {
+    super.saveChange2();
   }
 
   savedChange(savedItem = null, form = this.formGroup) {
-    super.savedChange(savedItem, form);
-    this.item = savedItem;
-    this.loadedData(null);
+    if (savedItem) {
+      this.item = savedItem;
+      if (form.controls.Id && savedItem.Id && form.controls.Id.value != savedItem.Id)
+        form.controls.Id.setValue(savedItem.Id);
+      if (this.pageConfig.isDetailPage && form == this.formGroup && this.id == 0) {
+        this.id = savedItem.Id;
+        if (window.location.hash.endsWith('/0')) {
+          let newURL = window.location.hash.substring(0, window.location.hash.length - 1) + savedItem.Id;
+          history.pushState({}, null, newURL);
+        }
+      }
+    }
+    form.markAsPristine();
+    this.cdr.detectChanges();
+    this.submitAttempt = false;
+    this.env.showMessage('Saving completed!', 'success');
   }
-
   segmentView = 's1';
   segmentChanged(ev: any) {
     this.segmentView = ev.detail.value;
   }
 
-  IDItemChange(e, group) {
-    if (e) {
-      if (e.PurchaseTaxInPercent && e.PurchaseTaxInPercent != -99) {
-        group.controls._IDUoMDataSource.setValue(e.UoMs);
+  async createPO() {
+    let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
+    // .map(o => {
+    //   let price = o._IDItemDataSource.selected;
+    //   console.log(price);
+    // //   return{
+    //       IDItem: o.IDItem,
+    //       IDUoM: o.IDItemUoM,
 
-        group.controls.IDUoM.setValue(e.PurchasingUoM);
-        group.controls.IDUoM.markAsDirty();
+    //       Remark: o.Remark,
+    //       UoMPrice: [line.UoMPrice,Validators.required],
+    //       UoMQuantityExpected: [line.UoMQuantityExpected],
+    //       IsPromotionItem: [line.IsPromotionItem],
+    //       TotalBeforeDiscount: [],
+    //       TotalDiscount: [],
+    //       TotalAfterDiscount: [],
+    //       TaxRate: new FormControl({ value: line.TaxRate, disabled: true }),
+    //       Tax: new FormControl({ value: line.Tax, disabled: true }),
 
-        group.controls.TaxRate.setValue(e.PurchaseTaxInPercent);
-        group.controls.TaxRate.markAsDirty();
-
-        this.IDUoMChange(group);
-        return;
-      }
-
-      if (e.PurchaseTaxInPercent != -99) this.env.showMessage('The item has not been set tax');
-    }
-
-    group.controls.TaxRate.setValue(null);
-    group.controls.TaxRate.markAsDirty();
-
-    group.controls.IDUoM.setValue(null);
-    group.controls.IDUoM.markAsDirty();
-
-    group.controls.UoMPrice.setValue(null);
-    group.controls.UoMPrice.markAsDirty();
-  }
-
-  IDUoMChange(group) {
-    let idUoM = group.controls.IDUoM.value;
-
-    if (idUoM) {
-      let UoMs = group.controls._IDUoMDataSource.value;
-      let u = UoMs.find((d) => d.Id == idUoM);
-      if (u && u.PriceList) {
-        let p = u.PriceList.find((d) => d.Type == 'PriceListForVendor');
-        let taxRate = group.controls.TaxRate.value;
-        if (p && taxRate != null) {
-          let priceBeforeTax = null;
-
-          if (taxRate < 0) taxRate = 0; //(-1 || -2) In case goods are not taxed
-
-          if (p.IsTaxIncluded) {
-            priceBeforeTax = p.Price / (1 + taxRate / 100);
-          } else {
-            priceBeforeTax = p.Price;
-          }
-
-          group.controls.UoMPrice.setValue(priceBeforeTax);
-          group.controls.UoMPrice.markAsDirty();
-
-          this.saveOrder();
-          return;
-        }
-      }
-    }
-    group.controls.UoMPrice.setValue(null);
-    group.controls.UoMPrice.markAsDirty();
-  }
-
-  importClick() {
-    this.importfile.nativeElement.value = '';
-    this.importfile.nativeElement.click();
-  }
-  async uploadOrderLine(event) {
-    if (event.target.files.length == 0) return;
-
-    const loading = await this.loadingController.create({
-      cssClass: 'my-custom-class',
-      message: 'Please wait for a few moments',
-    });
-    await loading.present().then(() => {
-      this.pageProvider['importDetail'](event.target.files[0], this.id)
-        .then((resp: any) => {
-          this.refresh();
-          if (loading) loading.dismiss();
-
-          if (resp.ErrorList && resp.ErrorList.length) {
-            let message = '';
-            for (let i = 0; i < resp.ErrorList.length && i <= 5; i++)
-              if (i == 5) message += '<br> Còn nữa...';
-              else {
-                const e = resp.ErrorList[i];
-                message += '<br> ' + e.Id + '. Tại dòng ' + e.Line + ': ' + e.Message;
-              }
-
-            this.alertCtrl
-              .create({
-                header: 'Có lỗi import dữ liệu',
-                subHeader: 'Bạn có muốn xem lại các mục bị lỗi?',
-                message: 'Có ' + resp.ErrorList.length + ' lỗi khi import:' + message,
-                cssClass: 'alert-text-left',
-                buttons: [
-                  {
-                    text: 'Không',
-                    role: 'cancel',
-                    handler: () => {},
-                  },
-                  {
-                    text: 'Có',
-                    cssClass: 'success-btn',
-                    handler: () => {
-                      this.downloadURLContent(resp.FileUrl);
-                    },
-                  },
-                ],
-              })
-              .then((alert) => {
-                alert.present();
-              });
-          } else {
-            this.env.showMessage('erp.app.pages.purchase.purchase-request.message.import-complete', 'success');
-            this.env.publishEvent({
-              Code: this.pageConfig.pageName,
-            });
-          }
-        })
-        .catch((err) => {
-          if (err.statusText == 'Conflict') {
-            this.downloadURLContent(err._body);
-          }
-          if (loading) loading.dismiss();
-        });
-    });
-  }
-
-  async copyToReceipt() {
-    const loading = await this.loadingController.create({
-      cssClass: 'my-custom-class',
-      message: 'Please wait for a few moments',
-    });
-    await loading.present().then(() => {
-      this.pageProvider['copyToReceipt'](this.item)
-        .then((resp: any) => {
-          if (loading) loading.dismiss();
-          this.alertCtrl
-            .create({
-              header: 'Đã tạo ASN/Receipt',
-
-              message: 'Bạn có muốn di chuyển đến ASN mới tạo?',
-              cssClass: 'alert-text-left',
-              buttons: [
-                {
-                  text: 'Không',
-                  role: 'cancel',
-                  handler: () => {},
-                },
-                {
-                  text: 'Có',
-                  cssClass: 'success-btn',
-                  handler: () => {
-                    this.nav('/receipt/' + resp);
-                  },
-                },
-              ],
-            })
-            .then((alert) => {
-              alert.present();
-            });
-          this.env.showMessage(
-            'erp.app.pages.purchase.purchase-request.message.create-asn-complete',
-            'success',
-          );
-          this.env.publishEvent({ Code: this.pageConfig.pageName });
-        })
-        .catch((err) => {
-          console.log(err);
-
-          this.env.showMessage('erp.app.pages.purchase.purchase-request.message.can-not-create-asn', 'danger');
-          if (loading) loading.dismiss();
-        });
-    });
-  }
-
-  async createInvoice() {
-    this.env
-      .showLoading(
-        'Please wait for a few moments',
-        this.pageProvider.commonService
-          .connect('POST', 'PURCHASE/Order/CreateInvoice/', {
-            Ids: [this.item.Id],
-          })
-          .toPromise(),
-      )
-      .then((resp: any) => {
-        this.env
-          .showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
-          .then((_) => {
-            if (resp.length == 1) {
-              this.nav('/ap-invoice/' + resp[0]);
-            } else {
-              this.nav('/ap-invoice/');
-            }
-          })
-          .catch((_) => {});
-      })
-      .catch((err) => {
-        this.env.showMessage(err);
-      });
-  }
-
-  async showSaleOrderPickerModal() {
+    //       IDItem: o.IDItem,
+    //       IDItem: o.IDItem,
+    //       IDItem: o.IDItem,
+    // }
+    // })
     const modal = await this.modalController.create({
-      component: SaleOrderPickerModalPage,
+      component: PurchaseOrderModalPage,
       componentProps: {
-        id: this.item.Id,
+        orderLines: orderLines,
+        defaultVendor: this._currentVendor,
       },
+
       cssClass: 'modal90',
     });
 
     await modal.present();
     const { data } = await modal.onWillDismiss();
 
-    if (data && data.length) {
-      console.log(data);
-      console.log(data.map((i) => i.Id));
-
+    if (data && data.IDVendor && data.OrderLines.length > 0) {
       const loading = await this.loadingController.create({
         cssClass: 'my-custom-class',
-        message: 'Please wait for a few moments',
+        message: 'Xin vui lòng chờ tạo PO...',
       });
       await loading.present().then(() => {
         let postData = {
-          Id: this.item.Id,
-          SOIds: data.map((i) => i.Id),
+          // SelectedRecommendations: this.items.filter((d) => d.checked).map((m) => ({ Id: m.Id, IDVendor: m.VendorId })),
+          IDVendor: data.IDVendor,
+          IDOrderlines: data.OrderLines.map((o) => o.Id),
         };
         this.commonService
-          .connect('POST', ApiSetting.apiDomain('PURCHASE/Order/ImportDetailFromSaleOrders/'), postData)
+          .connect('POST', 'PURCHASE/Request/CopyToPO/' + this.formGroup.get('Id').value, postData)
           .toPromise()
-          .then((data) => {
-            if (loading) loading.dismiss();
-            this.refresh();
-            this.env.publishEvent({
-              Code: this.pageConfig.pageName,
-            });
+          .then((resp: any) => {
+            if (resp) {
+              if (loading) loading.dismiss();
+              this.env.showMessage('PO created!', 'success');
+              this.env
+                .showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order ?')
+                .then((d) => {
+                  this.nav('/purchase-order/' + resp.Id, 'forward');
+                });
+              this.refresh();
+              this.env.publishEvent({
+                Code: this.pageConfig.pageName,
+              });
+            }
           })
           .catch((err) => {
             console.log(err);
-            this.env.showMessage('erp.app.pages.purchase.purchase-request.message.can-not-add', 'danger');
+            this.env.showMessage('Cannot create PO, please try again later', 'danger');
             if (loading) loading.dismiss();
           });
       });
