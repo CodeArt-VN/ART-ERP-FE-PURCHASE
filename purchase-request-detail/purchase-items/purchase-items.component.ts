@@ -8,7 +8,6 @@ import { PROD_ItemInVendorProvider, WMS_ItemProvider } from 'src/app/services/st
 
 import { concat, of, Subject } from 'rxjs';
 import { catchError, distinctUntilChanged, mergeMap, switchMap, tap } from 'rxjs/operators';
-import { SaleOrderPickerModalPage } from '../../sale-order-picker-modal/sale-order-picker-modal.page';
 
 @Component({
   selector: 'app-purchase-items',
@@ -18,9 +17,6 @@ import { SaleOrderPickerModalPage } from '../../sale-order-picker-modal/sale-ord
 })
 export class PurchaseItemsComponent extends PageBase {
   _preloadItems;
-
-
-
   _canEdit = false;
   _IDPurchaseRequest 
   _IDVendor = '';

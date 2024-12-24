@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { ShareModule } from 'src/app/share.module';
 import { PurchaseRequestDetailPage } from './purchase-request-detail.page';
 import { PurchaseOrderModalPage } from '../purchase-order-modal/purchase-order-modal.page';
+import { PurchaseItemsComponentPageModule } from './purchase-items/purchase-items.component.module';
 
 const routes: Routes = [
   {
@@ -15,7 +16,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [CommonModule, FormsModule,IonicModule,ReactiveFormsModule, ShareModule, RouterModule.forChild(routes)],
+  imports: [CommonModule, FormsModule,IonicModule,ReactiveFormsModule, PurchaseItemsComponentPageModule,ShareModule, RouterModule.forChild(routes)],
   declarations: [PurchaseRequestDetailPage,PurchaseOrderModalPage],
   exports : [PurchaseOrderModalPage]
 })
