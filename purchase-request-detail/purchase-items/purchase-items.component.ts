@@ -91,44 +91,11 @@ export class PurchaseItemsComponent extends PageBase {
     let selectedItem = line._Item;
 
     let group = this.formBuilder.group({
-      _IDItemDataSource: [
-        {
-          searchProvider: this.itemProvider,
-          loading: false,
-          input$: new Subject<string>(),
-          selected:selectedItem? [selectedItem]:[],
-          items$: null,
-          idVendor : this._IDVendor,
-          isVendorSearch : this._IDVendor ? true : false,
-          initSearch() {
-            this.loading = false;
-            this.items$ = concat(
-              of(this.selected),
-              this.input$.pipe(
-                distinctUntilChanged(),
-                tap(() => (this.loading = true)),
-                switchMap((term) =>
-                  this.searchProvider
-                    .search({
-                      ARSearch: true,
-                      IDPO: line.IDOrder,
-                      SortBy: ['Id_desc'],
-                      Take: 20,
-                      Skip: 0,
-                      Term: term,
-                      IDVendor : this.idVendor,
-                      IsVendorSearch: this.isVendorSearch
-                    })
-                    .pipe(
-                      catchError(() => of([])), // empty list on error
-                      tap(() => (this.loading = false)),
-                    ),
-                ),
-              ),
-            );
-          },
-        },
-      ],
+      _IDItemDataSource:this.buildSelectDataSource((term) => {
+        return this.itemProvider.search({   IsVendorSearch: this._IDVendor ? true : false,
+           IDVendor : this._IDVendor,ARSearch: true, IDPO: line.IDOrder,
+           SortBy: ['Id_desc'],Take: 20, Skip: 0, Term: term });
+      }),
       _IDUoMDataSource: [selectedItem ? selectedItem.UoMs : []],
       _Vendors: [selectedItem ? selectedItem._Vendors : []],
       _Vendor : [selectedItem ?  selectedItem._Vendors?.find(d => d.Id == line.IDVendor) : ''],
@@ -173,7 +140,7 @@ export class PurchaseItemsComponent extends PageBase {
       CreatedDate: [line.CreatedDate],
     });
     groups.push(group);
-
+    if(selectedItem)  group.get('_IDItemDataSource').value.selected.push(selectedItem);
     group.get('_IDItemDataSource').value?.initSearch();
     
     if (markAsDirty) {
@@ -194,8 +161,7 @@ export class PurchaseItemsComponent extends PageBase {
       .showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
       .then((_) => {
         let Ids = [];
-        Ids.push({Id :groups.controls[index].get('Id').value});
-        groups.removeAt(index);
+        Ids.push(groups.controls[index].get('Id').value);
         this.removeItem.emit(Ids);
       })
       .catch((_) => { });

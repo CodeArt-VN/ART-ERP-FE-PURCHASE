@@ -17,8 +17,6 @@ import { lib } from 'src/app/services/static/global-functions';
 import { concat, of, Subject } from 'rxjs';
 import { catchError, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { ApiSetting } from 'src/app/services/static/api-setting';
-import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
-import { ItemInVendorModalPage } from 'src/app/modals/item-in-vendor-modal/item-in-vendor-modal.component';
 import { PurchaseOrderModalPage } from '../purchase-order-modal/purchase-order-modal.page';
 
 @Component({
@@ -34,71 +32,14 @@ export class PurchaseRequestDetailPage extends PageBase {
   markAsPristine = false;
   _currentVendor;
   _isVendorSearch = false;
-  _vendorDataSource = {
-    searchProvider: this.contactProvider,
-    loading: false,
-    input$: new Subject<string>(),
-    selected: [],
-    items$: null,
-    that: this,
-    initSearch() {
-      this.loading = false;
-      this.items$ = concat(
-        of(this.selected),
-        this.input$.pipe(
-          distinctUntilChanged(),
-          tap(() => (this.loading = true)),
-          switchMap((term) => {
-            if (!term) {
-              this.loading = false;
-              return of(this.selected);
-            } else {
-              return this.searchProvider
-                .search({
-                  Term: term,
-                  SortBy: ['Id_desc'],
-                  Take: 20,
-                  Skip: 0,
-                  IsVendor: true,
-                  SkipAddress: true,
-                })
-                .pipe(
-                  catchError(() => of([])), // empty list on error
-                  tap(() => (this.loading = false)),
-                );
-            }
-          }),
-        ),
-      );
-    },
-    addSelectedItem(items) {
-      this.selected = [...items];
-    },
-  };
+  _vendorDataSource = this.buildSelectDataSource((term) => {
+    return this.contactProvider.search({  SkipAddress: true, IsVendor: true, SortBy: ['Id_desc'],Take: 20, Skip: 0, Term: term });
+  });
+  
 
-  _staffDataSource = {
-    searchProvider: this.staffProvider,
-    loading: false,
-    input$: new Subject<string>(),
-    selected: [],
-    items$: null,
-    initSearch() {
-      this.loading = false;
-      this.items$ = concat(
-        of(this.selected),
-        this.input$.pipe(
-          distinctUntilChanged(),
-          tap(() => (this.loading = true)),
-          switchMap((term) =>
-            this.searchProvider.search({ Take: 20, Skip: 0, Term: term }).pipe(
-              catchError(() => of([])), // empty list on error
-              tap(() => (this.loading = false)),
-            ),
-          ),
-        ),
-      );
-    },
-  };
+  _staffDataSource = this.buildSelectDataSource((term) => {
+    return this.staffProvider.search({  Take: 20, Skip: 0, Term: term });
+  });
 
   constructor(
     public pageProvider: PURCHASE_RequestProvider,
@@ -149,7 +90,7 @@ export class PurchaseRequestDetailPage extends PageBase {
       OrderLines: this.formBuilder.array([]),
       TotalDiscount: new FormControl({ value: '', disabled: true }),
       TotalAfterTax: new FormControl({ value: '', disabled: true }),
-      DeletedFields: [''],
+      DeletedLines: [''],
     });
   }
 
@@ -170,11 +111,6 @@ export class PurchaseRequestDetailPage extends PageBase {
   }
 
   loadedData(event) {
-    if (this.item) {
-      if (!(this.item.Status == 'Draft')) {
-        this.pageConfig.canEdit = false;
-      }
-    }
     //this.setOrderLines();
     // this.formGroup.get('Type').markAsDirty();
     if (!this.item.Id) {
@@ -205,16 +141,24 @@ export class PurchaseRequestDetailPage extends PageBase {
       this._currentVendor = this.item._Vendor;
     }
     this._currentContentType = this.formGroup.controls['ContentType'].value;
-    if(this.item.Status != 'Draft' && this.item.Status != 'Unapproved'){
+    if(this.formGroup.get('Id').value && this.formGroup.get('Status').value != 'Draft' && this.formGroup.get('Status').value != 'Unapproved'){
       this.formGroup.disable();
+      this.pageConfig.canEdit = false;
     }
   }
 
   removeItem(Ids) {
-    this.purchaseRequestDetailProvider.delete(Ids).then((resp) => {
-      this.env.publishEvent({ Code: this.pageConfig.pageName });
-      this.env.showMessage('Deleted!', 'success');
-    });
+    let groups = <FormArray>this.formGroup.controls.OrderLines;
+    if(Ids && Ids.length>0){
+      this.formGroup.get('DeletedLines').setValue(Ids);
+      this.formGroup.get('DeletedLines').markAsDirty();
+      this.saveChange().then(s=>{
+        Ids.forEach(id=>{
+          let index = groups.controls.findIndex((x) => x.get('Id').value == id);
+          if(index >= 0) groups.removeAt(index);
+        });
+      });
+    }
   }
 
   renderFormArray(e) {
@@ -236,12 +180,12 @@ export class PurchaseRequestDetailPage extends PageBase {
           'Thông báo',
         )
         .then(() => {
-          let deletedFields = orderLines
+          let DeletedLines = orderLines
             .getRawValue()
             .filter((f) => f.Id)
             .map((o) => o.Id);
-          this.formGroup.get('DeletedFields').setValue(deletedFields);
-          this.formGroup.get('DeletedFields').markAsDirty();
+          this.formGroup.get('DeletedLines').setValue(DeletedLines);
+          this.formGroup.get('DeletedLines').markAsDirty();
           orderLines.clear();
           this.item.OrderLines = [];
           console.log(orderLines);
@@ -297,12 +241,12 @@ export class PurchaseRequestDetailPage extends PageBase {
           'Thông báo',
         )
         .then(() => {
-          let deletedFields = orderLines
+          let DeletedLines = orderLines
             .getRawValue()
             .filter((f) => f.Id)
             .map((o) => o.Id);
-          this.formGroup.get('DeletedFields').setValue(deletedFields);
-          this.formGroup.get('DeletedFields').markAsDirty();
+          this.formGroup.get('DeletedLines').setValue(DeletedLines);
+          this.formGroup.get('DeletedLines').markAsDirty();
           orderLines.clear();
           this.item.OrderLines = [];
           console.log(orderLines);
@@ -354,7 +298,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 
   
   async saveChange() {
-    super.saveChange2();
+    return super.saveChange2();
   }
 
   savedChange(savedItem = null, form = this.formGroup) {
@@ -382,28 +326,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 
   async createPO() {
     let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
-    // .map(o => {
-    //   let price = o._IDItemDataSource.selected;
-    //   console.log(price);
-    // //   return{
-    //       IDItem: o.IDItem,
-    //       IDUoM: o.IDItemUoM,
-
-    //       Remark: o.Remark,
-    //       UoMPrice: [line.UoMPrice,Validators.required],
-    //       UoMQuantityExpected: [line.UoMQuantityExpected],
-    //       IsPromotionItem: [line.IsPromotionItem],
-    //       TotalBeforeDiscount: [],
-    //       TotalDiscount: [],
-    //       TotalAfterDiscount: [],
-    //       TaxRate: new FormControl({ value: line.TaxRate, disabled: true }),
-    //       Tax: new FormControl({ value: line.Tax, disabled: true }),
-
-    //       IDItem: o.IDItem,
-    //       IDItem: o.IDItem,
-    //       IDItem: o.IDItem,
-    // }
-    // })
+    
     const modal = await this.modalController.create({
       component: PurchaseOrderModalPage,
       componentProps: {
