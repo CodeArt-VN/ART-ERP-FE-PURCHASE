@@ -90,7 +90,7 @@
           </ion-segment-button>
         </ion-segment>
       </ion-toolbar>
-      <div *ngIf="segmentView == 's1'">
+      <div *ngIf="segmentView == 's1'" >
         <app-purchase-items (renderFormArray)="renderFormArray($event)"
         [contentType]="_currentContentType"
         [IDPurchaseRequest]="formGroup.get('Id').value"
@@ -102,6 +102,8 @@
         </app-purchase-items>
       </div>
       <div *ngIf="segmentView == 's2'">
+        <div class="ion-padding">
+          <ion-grid fixed>
 				<ion-row class="hr-group" *ngIf="item?.Id">
 					<ion-col size="12" size-sm="12" size-md="12" size-xl="3">
 						<ion-list-header class="ion-no-padding">
@@ -118,6 +120,8 @@
 						<app-form-control [field]="{id:'IDBranch', type : 'branch-breadcrumbs', label: 'Branch', form : formGroup, dataSource:env.branchList }"></app-form-control>
 					</ion-col>
 				</ion-row>
+        </ion-grid>
+        </div>
 			</div>
       
     </div>

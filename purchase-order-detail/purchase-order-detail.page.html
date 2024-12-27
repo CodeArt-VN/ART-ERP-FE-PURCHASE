@@ -41,8 +41,8 @@
               form:formGroup}">
             </app-form-control>
           
-            <app-form-control (change)="saveOrder()" 
-            [field]="{id:'IDVendor',label:'Vendor',type:'ng-select',
+            <app-form-control (change)="changeVendor()" 
+            [field]="{id:'IDVendor',label:'Vendor',type:'ng-select-bp',
               dataSource:_vendorDataSource ,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
               form:formGroup}">
             </app-form-control>

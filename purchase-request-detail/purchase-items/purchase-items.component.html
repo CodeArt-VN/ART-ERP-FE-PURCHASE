@@ -2,7 +2,7 @@
   <form [formGroup]="formGroup">
     <ng-container formArrayName="OrderLines">
       <div class="table-contain">
-        <section class="table" >
+        <section class="table" style="min-width: 1200px">
           <header class="bold">
             <div class="col-id cell">#</div>
             <div *ngIf="!_IDVendor &&  _contentType == 'Item'" class="col-name cell">{{ 'Vendor' | translate }}</div>
@@ -76,9 +76,8 @@
 
               <div class="col-price cell">
                 <app-input-control
-                  [readonly]="submitAttempt"
-                  (change)="submitData(g)"
-                  [field]="{ id: 'Quantity', type: 'number', form: g }" (change)="changeQuantity()"
+                  (change)="changeQuantity(g)"
+                  [field]="{ id: 'Quantity', type: 'number', form: g }"
                 ></app-input-control>
               </div>
               <div class="col-price cell">

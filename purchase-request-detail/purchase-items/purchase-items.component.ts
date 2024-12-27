@@ -93,7 +93,7 @@ export class PurchaseItemsComponent extends PageBase {
     let group = this.formBuilder.group({
       _IDItemDataSource:this.buildSelectDataSource((term) => {
         return this.itemProvider.search({   IsVendorSearch: this._IDVendor ? true : false,
-           IDVendor : this._IDVendor,ARSearch: true, IDPO: line.IDOrder,
+           IDVendor : this._IDVendor, IDPO: line.IDOrder,
            SortBy: ['Id_desc'],Take: 20, Skip: 0, Term: term });
       }),
       _IDUoMDataSource: [selectedItem ? selectedItem.UoMs : []],
@@ -171,17 +171,22 @@ export class PurchaseItemsComponent extends PageBase {
 
   IDItemChange(e, group) {
     if (e) {
+      if(e._Vendors?.length == 0){
+        this.env.showMessage('The item do not have vendors');
+        return;
+      }
       if (e.PurchaseTaxInPercent && e.PurchaseTaxInPercent != -99) {
         group.controls._IDUoMDataSource.setValue(e.UoMs);
         group.controls.IDTax.setValue(e.IDPurchaseTaxDefinition);
         group.controls.IDTax.markAsDirty();
-
-        group.controls.IDItemUoM.setValue(e.PurchasingUoM);
-        group.controls.IDItemUoM.markAsDirty();
-        var baseUoM = e.UoMs.find((d) => d.IsBaseUoM);
-        if(baseUoM) { 
-          group.controls.IDBaseUoM.setValue(baseUoM.Id);
+        if(e.UoMs?.length>0){
+          group.controls.IDItemUoM.setValue(e.PurchasingUoM);
           group.controls.IDItemUoM.markAsDirty();
+          var baseUoM = e.UoMs.find((d) => d.IsBaseUoM);
+          if(baseUoM) { 
+            group.controls.IDBaseUoM.setValue(baseUoM.Id);
+            group.controls.IDItemUoM.markAsDirty();
+          }
         }
         group.controls.TaxRate.setValue(e.PurchaseTaxInPercent);
         group.controls.TaxRate.markAsDirty();
@@ -262,9 +267,10 @@ export class PurchaseItemsComponent extends PageBase {
       .reduce((a, b) => +a + +b, 0);
   }
 
-  changeQuantity(){
-    this.formGroup.get('QuantityRemainingOpen').setValue(this.formGroup.get('Quantity').value);
-    this.formGroup.get('QuantityRemainingOpen').markAsDirty();
+  changeQuantity(g){
+   g.get('QuantityRemainingOpen').setValue(g.get('Quantity').value);
+    g.get('QuantityRemainingOpen').markAsDirty();
+    this.submitData(g);
   }
   
 }
