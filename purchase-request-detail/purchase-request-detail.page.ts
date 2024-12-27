@@ -233,31 +233,36 @@ export class PurchaseRequestDetailPage extends PageBase {
 
   changeVendor(e) {
     let orderLines = this.formGroup.get('OrderLines') as FormArray;
-    if (orderLines.controls.length > 0) {
-      this.env
-        .showPrompt(
-          'Tất cả hàng hoá trong danh sách sẽ bị xoá khi bạn chọn nhà cung cấp khác. Bạn chắc chắn chứ? ',
-          null,
-          'Thông báo',
-        )
-        .then(() => {
-          let DeletedLines = orderLines
-            .getRawValue()
-            .filter((f) => f.Id)
-            .map((o) => o.Id);
-          this.formGroup.get('DeletedLines').setValue(DeletedLines);
-          this.formGroup.get('DeletedLines').markAsDirty();
-          orderLines.clear();
-          this.item.OrderLines = [];
-          console.log(orderLines);
-          console.log(this.item.OrderLines);
-          this.saveChange();
+    
+      if (orderLines.controls.length > 0) {
+        if(e){
+        this.env
+          .showPrompt(
+            'Tất cả hàng hoá trong danh sách khác với nhà cung cấp được chọn sẽ bị xoá. Bạn có muốn tiếp tục ? ',
+            null,
+            'Thông báo',
+          )
+          .then(() => {
+            let DeletedLines = orderLines
+              .getRawValue()
+              .filter((f) => f.Id && (f.IDVendor != e.Id && !(f._Vendors?.map(v => v.Id)?.includes(e.Id))))
+              .map((o) => o.Id);
+            this.formGroup.get('DeletedLines').setValue(DeletedLines);
+            this.formGroup.get('DeletedLines').markAsDirty();
+            this.saveChange();
+            this._currentVendor = e;
+          })
+          .catch(() => {
+            this.formGroup.get('IDVendor').setValue(this._currentVendor?.Id);
+          })
+        }
+        else {
           this._currentVendor = e;
-        })
-        .catch(() => {
-          this.formGroup.get('IDVendor').setValue(this._currentVendor?.Id);
-        });
-    }else{
+          this.saveChange()
+        };;
+    }
+    else{
+      this._currentVendor = e;
       this.saveChange();
     }
   }
@@ -304,6 +309,7 @@ export class PurchaseRequestDetailPage extends PageBase {
   savedChange(savedItem = null, form = this.formGroup) {
     if (savedItem) {
       this.item = savedItem;
+      this.formGroup.patchValue(savedItem);
       if (form.controls.Id && savedItem.Id && form.controls.Id.value != savedItem.Id)
         form.controls.Id.setValue(savedItem.Id);
       if (this.pageConfig.isDetailPage && form == this.formGroup && this.id == 0) {

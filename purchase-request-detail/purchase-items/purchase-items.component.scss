@@ -1,4 +1,7 @@
 .table-contain {
+  max-width: 1440px;
+  margin: auto;
+
     .col-id {
       max-width: 3rem;
       min-width: 3rem;
@@ -17,7 +20,6 @@
         text-align: right;
       }
      }
-    
      
     }
 

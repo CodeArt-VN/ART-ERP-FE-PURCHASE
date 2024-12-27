@@ -27,10 +27,12 @@ import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-
 export class PurchaseOrderDetailPage extends PageBase {
   @ViewChild('importfile') importfile: any;
   branchList = [];
-  vendorList = [];
   storerList = [];
   statusList = [];
   paymentStatusList = [];
+  _vendorDataSource = this.buildSelectDataSource((term) => {
+    return this.contactProvider.search({  SkipAddress: true, IsVendor: true, SortBy: ['Id_desc'],Take: 20, Skip: 0, Term: term });
+  });
   paymentFormGroup:FormGroup;
   constructor(
     public pageProvider: PURCHASE_OrderProvider,
@@ -124,9 +126,6 @@ export class PurchaseOrderDetailPage extends PageBase {
       TotalAfterTax: new FormControl({ value: '', disabled: true }),
     });
     this.branchList = lib.cloneObject(this.env.branchList)
-    this.contactProvider.read({ IsVendor: true, Take: 5000 }).then((resp) => {
-      this.vendorList = resp['data'];
-    });
     this.contactProvider.read({ IsStorer: true, Take: 5000 }).then((resp) => {
       this.storerList = resp['data'];
     });
@@ -184,6 +183,11 @@ export class PurchaseOrderDetailPage extends PageBase {
     if(notShowRequestOutgoingPayment.includes(this.formGroup.get('Status').value) || notShowRequestOutgoingPaymentPaymentStatus.includes(this.formGroup.get('PaymentStatus').value)){
       this.pageConfig.ShowRequestOutgoingPayment = false
     }
+    if(this.item?._Vendor){
+      this._vendorDataSource.selected = [...this._vendorDataSource.selected, ...[this.item?._Vendor]];
+      this._currentBusinessPartner = this.item._Vendor;
+    }
+    this._vendorDataSource.initSearch();
   }
 
   setOrderLines() {
@@ -335,7 +339,10 @@ export class PurchaseOrderDetailPage extends PageBase {
       super.saveChange2();
     }, 300);
   }
-
+  changeVendor(e){
+    this._currentBusinessPartner = e;
+    this.saveOrder();
+  }
   calcTotalDiscount() {
     return this.formGroup.controls.OrderLines.getRawValue()
       .map((x) => x.TotalDiscount)
@@ -603,7 +610,7 @@ export class PurchaseOrderDetailPage extends PageBase {
       });
     }
   }
-
+  _currentBusinessPartner;
   createOutgoingPayment(){
     let date = this.formGroup.get('OrderDate').value;
 
@@ -615,7 +622,7 @@ export class PurchaseOrderDetailPage extends PageBase {
             DocumentType:'Order',
             Amount:  this.formGroup.get('TotalAfterTax').value - this.item.PaidAmount
            }],
-            _BusinessPartner:this.vendorList.find(d=> d.Id == this.formGroup.get('IDVendor').value),
+            _BusinessPartner:this._currentBusinessPartner,
           IDBusinessPartner:this.formGroup.get('IDVendor').value,
           Name: 'Pay for PO #'+this.formGroup.get('Id').value,
           IDStaff : this.env.user.StaffID,
