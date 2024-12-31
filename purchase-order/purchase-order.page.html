@@ -33,6 +33,10 @@
   <ion-icon slot="start" name="money-check"></ion-icon>
 </ion-button>
 </app-toolbar>
+ 
+</ion-header>
+
+<ion-content appScrollbarTheme class="header-table"  scroll-x="true">
   <section class="table">
     <header class="bold">
       <div class="col-checkbox cell"></div>
@@ -308,10 +312,9 @@
       </header>
     </form>
   </section>
-</ion-header>
 
-<ion-content appScrollbarTheme class="header-table">
   <app-page-message [itemsLength]="items.length" [showSpinner]="pageConfig.showSpinner"></app-page-message>
+  
   <div *ngIf="items.length && pageConfig.showSpinner==false">
     <section class="table">
       <div

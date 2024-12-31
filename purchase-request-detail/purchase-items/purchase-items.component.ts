@@ -89,7 +89,6 @@ export class PurchaseItemsComponent extends PageBase {
   addLine(line, markAsDirty = false) {
     let groups = <FormArray>this.formGroup.controls.OrderLines;
     let selectedItem = line._Item;
-
     let group = this.formBuilder.group({
       _IDItemDataSource:this.buildSelectDataSource((term) => {
         return this.itemProvider.search({   IsVendorSearch: this._IDVendor ? true : false,
@@ -144,13 +143,9 @@ export class PurchaseItemsComponent extends PageBase {
     group.get('_IDItemDataSource').value?.initSearch();
     
     if (markAsDirty) {
+      group.get('IDVendor').markAsDirty();
       group.get('Status').markAsDirty();
-      group.get('Status').markAsDirty();
-      Object.keys(line).forEach(k=>{
-        if(line[k] != null && line[k] != undefined &&  group.get(k)){
-          group.get(k).markAsDirty();
-        }
-      })
+     
     }
   }
 
@@ -171,10 +166,6 @@ export class PurchaseItemsComponent extends PageBase {
 
   IDItemChange(e, group) {
     if (e) {
-      if(e._Vendors?.length == 0){
-        this.env.showMessage('The item do not have vendors');
-        return;
-      }
       if (e.PurchaseTaxInPercent && e.PurchaseTaxInPercent != -99) {
         group.controls._IDUoMDataSource.setValue(e.UoMs);
         group.controls.IDTax.setValue(e.IDPurchaseTaxDefinition);
@@ -192,6 +183,11 @@ export class PurchaseItemsComponent extends PageBase {
         group.controls.TaxRate.markAsDirty();
         group.controls._Item.setValue(e._Item);
 
+        if(!e._Vendors.some(o => o.Id == group.get('IDVendor').value))
+          {
+            group.get('IDVendor').setValue(null);
+            group.get('IDVendor').markAsDirty();
+          }
         group.controls._Vendors.setValue(e._Vendors)
         
         this.IDUoMChange(group);

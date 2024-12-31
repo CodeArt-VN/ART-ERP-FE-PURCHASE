@@ -11,7 +11,7 @@
         <app-input-control
         [field]="{ id:'IDVendor',label:'Vendor',type:'ng-select-bp',
         dataSource:_vendorDataSource,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
-        form:formGroup}"(change)="changeVendor($event)">
+        form:formGroup}"(change)="_vendorDataSource.addSelectedItem(preloadVendors);  changeVendor($event)">
       </app-input-control>
     </div>
       </ion-buttons>

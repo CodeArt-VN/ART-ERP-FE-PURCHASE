@@ -16,8 +16,10 @@ import { catchError, distinctUntilChanged, switchMap, tap } from 'rxjs/operators
 export class PurchaseOrderModalPage extends PageBase {
   storerList = [];
   branchList = [];
+  preloadIDVendors : any;
+  preloadVendors = [];
   defaultVendor ;
-  orderLines
+  orderLines;
   _vendorDataSource = {
     searchProvider: this.contactProvider,
     loading: false,
@@ -55,8 +57,11 @@ export class PurchaseOrderModalPage extends PageBase {
         ),
       );
     },
-
+    addSelectedItem(items) {
+      this.selected = [ ...this.selected,...items.filter(d=>!this.selected.map(s=> s.Id).includes( d.Id))];
+    },
   };
+
   constructor(
     public pageProvider: PURCHASE_OrderProvider,
     public contactProvider: CRM_ContactProvider,
@@ -82,12 +87,14 @@ export class PurchaseOrderModalPage extends PageBase {
 
   preLoadData(event?: any): void {
     this.id = 0;
-    this.loadedData(event);
-  }
+			this._vendorDataSource.selected = [...this.preloadVendors];
+
+      this.loadedData(event);
+    }
   loadedData(event){
     super.loadedData(event);
     this.orderLines = [...this.orderLines]
-    if(this.defaultVendor){
+    if(this.defaultVendor?.Id){
       this._vendorDataSource.selected = [...this._vendorDataSource.selected ,this.defaultVendor];
       this.formGroup.get('IDVendor').setValue(this.defaultVendor.Id);
       this.orderLines.forEach(i=>{
@@ -114,25 +121,30 @@ export class PurchaseOrderModalPage extends PageBase {
 
   isAllChecked = false;
   toggleSelectAll() {
+    this.isAllChecked = !this.isAllChecked;
+    this.selectedItems = [];
     // let groups = this.formGroup.get('OrderLines') as FormArray;
-    this.items.forEach((i) =>{
+    this.orderLines.forEach((i) =>{
       if( this.isAllChecked){
         if(i.IDVendor == this.formGroup.get('IDVendor').value){
           i.checked = this.isAllChecked;
-        }
+        } 
       }
       else i.checked = this.isAllChecked;
+      super.changeSelection(i);
     })
-    this.selectedItems = this.isAllChecked ? [...this.items] : [];
-    this.changeSelection({});
+    // this.selectedItems = this.isAllChecked ? [...this.items.filter(d=> d.checked)] : [];
   }
  changeVendor(e){
   this.orderLines.forEach(i=>{
     i.disabled = i.IDVendor != e.Id;
     i.checked = i.IDVendor == e.Id;
-    this.changeSelection(i);
+    super.changeSelection(i);
 
   });
  }
-
+ changeSelection(i, e = null){
+  i.checked = !i.checked;
+  super.changeSelection(i);
+ }
 }

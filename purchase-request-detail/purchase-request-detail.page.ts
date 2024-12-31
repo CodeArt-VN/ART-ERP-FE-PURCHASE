@@ -233,7 +233,6 @@ export class PurchaseRequestDetailPage extends PageBase {
 
   changeVendor(e) {
     let orderLines = this.formGroup.get('OrderLines') as FormArray;
-    
       if (orderLines.controls.length > 0) {
         if(e){
         this.env
@@ -247,10 +246,17 @@ export class PurchaseRequestDetailPage extends PageBase {
               .getRawValue()
               .filter((f) => f.Id && (f.IDVendor != e.Id && !(f._Vendors?.map(v => v.Id)?.includes(e.Id))))
               .map((o) => o.Id);
+
+              orderLines.controls.filter((f) => f.get('_Vendors').value.map(v => v.Id).includes(e.Id)).forEach((o) => {
+                o.get('IDVendor').setValue(e.Id);
+                o.get('IDVendor').markAsDirty();
+                });
             this.formGroup.get('DeletedLines').setValue(DeletedLines);
             this.formGroup.get('DeletedLines').markAsDirty();
-            this.saveChange();
+
+
             this._currentVendor = e;
+            this.saveChange();
           })
           .catch(() => {
             this.formGroup.get('IDVendor').setValue(this._currentVendor?.Id);
@@ -332,12 +338,15 @@ export class PurchaseRequestDetailPage extends PageBase {
 
   async createPO() {
     let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
+	  let vendorList = [] ;
+    this.formGroup.get('OrderLines').value.forEach(o=> vendorList = [...vendorList, ...o._Vendors.filter(v=> !vendorList.some(vd => v.Id == vd.Id ))]);
     
     const modal = await this.modalController.create({
       component: PurchaseOrderModalPage,
       componentProps: {
         orderLines: orderLines,
         defaultVendor: this._currentVendor,
+        preloadVendors : vendorList,
       },
 
       cssClass: 'modal90',
@@ -365,8 +374,8 @@ export class PurchaseRequestDetailPage extends PageBase {
               if (loading) loading.dismiss();
               this.env.showMessage('PO created!', 'success');
               this.env
-                .showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order ?')
-                .then((d) => {
+               .showPrompt('Do you want to navigate to purchase order ?', 'Create purchase order successfully!')
+               .then((d) => {
                   this.nav('/purchase-order/' + resp.Id, 'forward');
                 });
               this.refresh();

@@ -2,11 +2,12 @@
   <form [formGroup]="formGroup">
     <ng-container formArrayName="OrderLines">
       <div class="table-contain">
-        <section class="table" style="min-width: 1200px">
+        <section class="table">
+          <div id="ng-select-table" style="position: absolute; z-index: 30005"></div>
           <header class="bold">
             <div class="col-id cell">#</div>
-            <div *ngIf="!_IDVendor &&  _contentType == 'Item'" class="col-name cell">{{ 'Vendor' | translate }}</div>
             <div class="col-name cell">{{ 'Product' | translate }}</div>
+            <div *ngIf="!_IDVendor &&  _contentType == 'Item'" class="col-name cell">{{ 'Vendor' | translate }}</div>
             <div class="col-date cell">{{ 'Required date' | translate }}</div>
             <div class="col-uom cell">{{ 'Unit' | translate }}</div>
             <div class="col-price cell">{{ 'SL đặt' | translate }}</div>
@@ -22,13 +23,7 @@
           <div class="row" *ngFor="let g of formGroup.get('OrderLines')['controls']; let idx = index">
             <ng-container [formGroup]="g">
               <div class="col-id cell">{{ idx + 1 }}</div>
-              <div *ngIf="!_IDVendor && _contentType=='Item'"  class="col-name cell" title="{{ g.controls._Vendor.value?.Name }}">
-                <app-input-control 
-                  (change)="submitData(g)"
-                  [field]="{ id: 'IDVendor', label: 'Vendor', type: 'ng-select'
-                  , form: g ,dataSource :g.controls._Vendors.value,  bindLabel: 'Name',  bindValue: 'Id'}" >
-                </app-input-control>
-              </div>
+             
               <div class="col-name cell">
                 <app-input-control *ngIf="this._contentType!='Item'"
                 [field]="{
@@ -48,10 +43,18 @@
                     bindValue: 'Id',
                     bindLabel: 'Name',
                     clearable: true,
-                    placeholder: 'Type to search...'
+                    placeholder: 'Type to search...',
+                    appendTo: '#ng-select-table'
                   }"
                   (change)="IDItemChange($event, g)"
                 ></app-input-control>
+              </div>
+              <div *ngIf="!_IDVendor && _contentType=='Item'"  class="col-name cell" title="{{ g.controls._Vendor.value?.Name }}">
+                <app-input-control 
+                  (change)="submitData(g)"
+                  [field]="{ id: 'IDVendor', label: 'Vendor', type: 'ng-select'
+                  , form: g ,dataSource :g.controls._Vendors.value,  bindLabel: 'Name',  bindValue: 'Id',clearable:true, appendTo: '#ng-select-table'}" >
+                </app-input-control>
               </div>
               <div class="col-date cell">
                 <app-input-control
@@ -68,7 +71,8 @@
                     form: g,
                     dataSource: g.controls._IDUoMDataSource.value,
                     bindLabel: 'Name',
-                    bindValue: 'Id'
+                    bindValue: 'Id',
+                    appendTo: '#ng-select-table'
                   }"
                   (change)="IDUoMChange(g)"
                 ></app-input-control>
@@ -82,13 +86,7 @@
               </div>
               <div class="col-price cell">
                 <app-input-control
-                  [readonly]="submitAttempt"
-                  (focus)="$event.target.select()"
                   (change)="submitData(g)"
-                  min="0"
-                  step="1"
-                  max="999999999999999999"
-                  onkeydown="return event.keyCode !== 190"
                   [field]="{ id: 'QuantityRemainingOpen', type: 'number', form: g }"
                 ></app-input-control>
               </div>
@@ -101,11 +99,7 @@
               <div class="col-price cell">
                 <!-- [readonly]="!(_canEdit && _canEditPrice)" -->
                 <app-input-control
-                  (focus)="$event.target.select()"
                   (change)="submitData(g)"
-                  mask="separator.2"
-                  thousandSeparator=","
-                  [allowNegativeNumbers]="false"
                   [field]="{ id: 'UoMPrice', type: 'number', form: g }"
                 >
                 </app-input-control>
@@ -174,11 +168,6 @@
         <ion-button fill="clear" size="small" (click)="addLine({}, true)">
           <ion-icon slot="start" name="add-circle-outline"></ion-icon>
           {{ 'Add product' | translate }}
-        </ion-button>
-
-        <ion-button fill="clear" size="small" (click)="showSaleOrderPickerModal()">
-          <ion-icon slot="start" name="git-pull-request-outline"></ion-icon>
-          {{ 'Add items from SO' | translate }}
         </ion-button>
       </div>
     </div>
