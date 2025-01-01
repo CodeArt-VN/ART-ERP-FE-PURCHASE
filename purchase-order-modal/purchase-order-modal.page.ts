@@ -16,47 +16,12 @@ import { catchError, distinctUntilChanged, switchMap, tap } from 'rxjs/operators
 export class PurchaseOrderModalPage extends PageBase {
   storerList = [];
   branchList = [];
+  preloadIDVendors : any;
   defaultVendor ;
-  orderLines
-  _vendorDataSource = {
-    searchProvider: this.contactProvider,
-    loading: false,
-    input$: new Subject<string>(),
-    selected: [],
-    items$: null,
-    that: this,
-    initSearch() {
-      this.loading = false;
-      this.items$ = concat(
-        of(this.selected),
-        this.input$.pipe(
-          distinctUntilChanged(),
-          tap(() => (this.loading = true)),
-          switchMap((term) => {
-            if (!term) {
-              this.loading = false;
-              return of(this.selected);
-            } else {
-              return this.searchProvider
-                .search({
-                  Term: term,
-                  SortBy: ['Id_desc'],
-                  Take: 20,
-                  Skip: 0,
-                  IsVendor: true,
-                  SkipAddress: true,
-                })
-                .pipe(
-                  catchError(() => of([])), // empty list on error
-                  tap(() => (this.loading = false)),
-                );
-            }
-          }),
-        ),
-      );
-    },
+  orderLines;
+  vendorList = [];
+  
 
-  };
   constructor(
     public pageProvider: PURCHASE_OrderProvider,
     public contactProvider: CRM_ContactProvider,
@@ -82,13 +47,13 @@ export class PurchaseOrderModalPage extends PageBase {
 
   preLoadData(event?: any): void {
     this.id = 0;
-    this.loadedData(event);
-  }
+
+      this.loadedData(event);
+    }
   loadedData(event){
     super.loadedData(event);
     this.orderLines = [...this.orderLines]
-    if(this.defaultVendor){
-      this._vendorDataSource.selected = [...this._vendorDataSource.selected ,this.defaultVendor];
+    if(this.defaultVendor?.Id){
       this.formGroup.get('IDVendor').setValue(this.defaultVendor.Id);
       this.orderLines.forEach(i=>{
         i.disabled = i.IDVendor != this.defaultVendor.Id;
@@ -97,7 +62,6 @@ export class PurchaseOrderModalPage extends PageBase {
 
       });
     }
-    this._vendorDataSource.initSearch();
   };
   
   submit() {
@@ -114,25 +78,30 @@ export class PurchaseOrderModalPage extends PageBase {
 
   isAllChecked = false;
   toggleSelectAll() {
+    this.isAllChecked = !this.isAllChecked;
+    this.selectedItems = [];
     // let groups = this.formGroup.get('OrderLines') as FormArray;
-    this.items.forEach((i) =>{
+    this.orderLines.forEach((i) =>{
       if( this.isAllChecked){
         if(i.IDVendor == this.formGroup.get('IDVendor').value){
           i.checked = this.isAllChecked;
-        }
+        } 
       }
       else i.checked = this.isAllChecked;
+      super.changeSelection(i);
     })
-    this.selectedItems = this.isAllChecked ? [...this.items] : [];
-    this.changeSelection({});
+    // this.selectedItems = this.isAllChecked ? [...this.items.filter(d=> d.checked)] : [];
   }
- changeVendor(e){
+ changeVendor(e){       
   this.orderLines.forEach(i=>{
-    i.disabled = i.IDVendor != e.Id;
+    i.disabled = i.IDVendor? i.IDVendor != e.Id : (!i.Vendor && i._Vendors.some(v=> v.Id == e.Id))? false : true;
     i.checked = i.IDVendor == e.Id;
-    this.changeSelection(i);
+    super.changeSelection(i);
 
   });
  }
-
+ changeSelection(i, e = null){
+  i.checked = !i.checked;
+  super.changeSelection(i);
+ }
 }

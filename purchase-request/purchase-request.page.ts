@@ -20,6 +20,7 @@ export class PurchaseRequestPage extends PageBase {
   showSubmit = false;
   showApprove = false;
   showCancel = false;
+  showDisapprove = false;
   imgPath ='';
   constructor(
     public pageProvider: PURCHASE_RequestProvider,
@@ -75,9 +76,8 @@ export class PurchaseRequestPage extends PageBase {
 
   changeSelection(i, e = null) {
     super.changeSelection(i, e);
-    this.pageConfig.canSubmit = true;
     this.showCancel = this.pageConfig.canCancel;
-    this.showApprove = this.pageConfig.canApprove;
+    this.showApprove = this.showDisapprove = this.pageConfig.canApprove;
     this.showSubmit = this.pageConfig.canSubmit;
 
     this.selectedItems?.forEach((i) => {
@@ -86,7 +86,8 @@ export class PurchaseRequestPage extends PageBase {
       // let ShowCancel = ['Submitted', 'Approved', 'Unapproved'];
 
       let notShowSubmit = ['Submitted', 'Approved']
-      let notShowApprove = ['Approved', 'Unapproved', 'Draft', 'Cancel'];
+      let notShowApprove = ['Approved', 'Unapproved', 'Cancel'];//'Draft', 
+      let notShowDisApprove = ['Unapproved', 'Draft', 'Cancel'];
       let notShowCancel = ['Draft']
 
 
@@ -96,6 +97,9 @@ export class PurchaseRequestPage extends PageBase {
 
       if (notShowApprove.indexOf(i.Status) != -1) {
         this.showApprove = false;
+      }
+      if (notShowDisApprove.indexOf(i.Status) != -1) {
+        this.showDisapprove = false;
       }
       if (notShowCancel.indexOf(i.Status) != -1) {
         this.showCancel = false;
@@ -112,7 +116,7 @@ export class PurchaseRequestPage extends PageBase {
 
 
   submit() { // submit PO
-    if (!this.pageConfig.canSubmitOrdersForApproval) return;
+    if (!this.pageConfig.canSubmit) return;
     if (this.submitAttempt) return;
 
     let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Draft' || i.Status == 'Unapproved'));
@@ -129,9 +133,9 @@ export class PurchaseRequestPage extends PageBase {
 
       this.env
         .showPrompt(
-          {code:'Bạn có chắc muốn gửi duyệt {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
+          {code:'Bạn có chắc muốn gửi duyệt {{value}} đơn hàng đang chọn?',value:this.selectedItems.length},
           null,
-          {code:'Gửi duyệt {{value}} mua hàng',value:{value:this.selectedItems.length}}
+          {code:'Gửi duyệt {{value}} mua hàng',value:this.selectedItems.length}
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -167,17 +171,17 @@ export class PurchaseRequestPage extends PageBase {
     if (!this.pageConfig.canApprove) return;
     if (this.submitAttempt) return;
 
-    let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Submitted'));
-    if (itemsCanNotProcess.length == this.selectedItems.length) {
-      this.env.showMessage(
-        'Your selected order cannot be approved. Please only select pending for approval order',
-        'warning',
-      );
-    } else {
-      itemsCanNotProcess.forEach((i) => {
-        i.checked = false;
-      });
-      this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted');
+    // let itemsCanNotProcess = this.selectedItems.filter((i) => (i.Status != 'Submitted') || !this.pageConfig.canApprove);
+    // if (itemsCanNotProcess.length == this.selectedItems.length) {
+    //   this.env.showMessage(
+    //     'Your selected order cannot be approved. Please only select pending for approval order',
+    //     'warning',
+    //   );
+    // } else {
+    //   itemsCanNotProcess.forEach((i) => {
+    //     i.checked = false;
+    //   });
+      this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted' || (i.Status == 'Draft' && this.pageConfig.canApprove));
       this.env
         .showPrompt(
           {code:'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?',value:this.selectedItems.length},
@@ -212,7 +216,7 @@ export class PurchaseRequestPage extends PageBase {
               console.log(err);
             });
         });
-    }
+    // }
   }
   disapprove() {
     if (!this.pageConfig.canApprove) return;

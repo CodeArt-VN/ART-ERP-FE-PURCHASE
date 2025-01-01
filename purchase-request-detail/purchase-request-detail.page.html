@@ -1,13 +1,14 @@
 <ion-header>
   <app-toolbar [page]="this">
   
-    <ion-button *ngIf="formGroup.get('Status')?.value == 'Approved' && formGroup.get('ContentType').value != 'Service'" (click)="createPO()" title="{{'Create PO' | translate}}" >
+    <ion-button *ngIf="pageConfig.canCreatePO && formGroup.get('ContentType').value != 'Service'" (click)="createPO()" title="{{'Create PO' | translate}}" >
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
     </ion-button>
   </app-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme class="ion-padding">
+  <div id="ng-select-header" style="position: absolute; z-index: 30005"></div>
   <div class="main-view" *ngIf="item && pageConfig.showSpinner==false">
     <ion-grid fixed>
       <form [formGroup]="formGroup">
@@ -26,7 +27,7 @@
             </app-form-control>
      
             <app-form-control
-              [field]="{id:'IDVendor',label:'Vendor', type : 'ng-select-bp', form : formGroup,  dataSource: _vendorDataSource,  bindLabel: 'Name',  bindValue: 'Id',clearable:true }"
+              [field]="{id:'IDVendor',label:'Vendor', type : 'ng-select-bp', form : formGroup,  dataSource: _vendorDataSource,  bindLabel: 'Name',  bindValue: 'Id',clearable:true, appendTo:'#ng-select-header' }"
               (change)="changeVendor($event)"></app-form-control>
            
             <app-form-control [field]="{id :'ContentType', label:'Content type' ,

@@ -9,8 +9,8 @@
         <span>{{'Vendor'|translate}}</span> &nbsp;
         <div class="c-control"  style="margin-bottom:0px;max-width:250px;min-width:250px;">
         <app-input-control
-        [field]="{ id:'IDVendor',label:'Vendor',type:'ng-select-bp',
-        dataSource:_vendorDataSource,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
+        [field]="{ id:'IDVendor',label:'Vendor',type:'ng-select',
+        dataSource:vendorList,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
         form:formGroup}"(change)="changeVendor($event)">
       </app-input-control>
     </div>
