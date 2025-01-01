@@ -17,50 +17,10 @@ export class PurchaseOrderModalPage extends PageBase {
   storerList = [];
   branchList = [];
   preloadIDVendors : any;
-  preloadVendors = [];
   defaultVendor ;
   orderLines;
-  _vendorDataSource = {
-    searchProvider: this.contactProvider,
-    loading: false,
-    input$: new Subject<string>(),
-    selected: [],
-    items$: null,
-    that: this,
-    initSearch() {
-      this.loading = false;
-      this.items$ = concat(
-        of(this.selected),
-        this.input$.pipe(
-          distinctUntilChanged(),
-          tap(() => (this.loading = true)),
-          switchMap((term) => {
-            if (!term) {
-              this.loading = false;
-              return of(this.selected);
-            } else {
-              return this.searchProvider
-                .search({
-                  Term: term,
-                  SortBy: ['Id_desc'],
-                  Take: 20,
-                  Skip: 0,
-                  IsVendor: true,
-                  SkipAddress: true,
-                })
-                .pipe(
-                  catchError(() => of([])), // empty list on error
-                  tap(() => (this.loading = false)),
-                );
-            }
-          }),
-        ),
-      );
-    },
-    addSelectedItem(items) {
-      this.selected = [ ...this.selected,...items.filter(d=>!this.selected.map(s=> s.Id).includes( d.Id))];
-    },
-  };
+  vendorList = [];
+  
 
   constructor(
     public pageProvider: PURCHASE_OrderProvider,
@@ -87,7 +47,6 @@ export class PurchaseOrderModalPage extends PageBase {
 
   preLoadData(event?: any): void {
     this.id = 0;
-			this._vendorDataSource.selected = [...this.preloadVendors];
 
       this.loadedData(event);
     }
@@ -95,7 +54,6 @@ export class PurchaseOrderModalPage extends PageBase {
     super.loadedData(event);
     this.orderLines = [...this.orderLines]
     if(this.defaultVendor?.Id){
-      this._vendorDataSource.selected = [...this._vendorDataSource.selected ,this.defaultVendor];
       this.formGroup.get('IDVendor').setValue(this.defaultVendor.Id);
       this.orderLines.forEach(i=>{
         i.disabled = i.IDVendor != this.defaultVendor.Id;
@@ -104,7 +62,6 @@ export class PurchaseOrderModalPage extends PageBase {
 
       });
     }
-    this._vendorDataSource.initSearch();
   };
   
   submit() {
@@ -135,9 +92,9 @@ export class PurchaseOrderModalPage extends PageBase {
     })
     // this.selectedItems = this.isAllChecked ? [...this.items.filter(d=> d.checked)] : [];
   }
- changeVendor(e){
+ changeVendor(e){       
   this.orderLines.forEach(i=>{
-    i.disabled = i.IDVendor != e.Id;
+    i.disabled = i.IDVendor? i.IDVendor != e.Id : (!i.Vendor && i._Vendors.some(v=> v.Id == e.Id))? false : true;
     i.checked = i.IDVendor == e.Id;
     super.changeSelection(i);
 

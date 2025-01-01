@@ -86,7 +86,7 @@ export class PurchaseRequestPage extends PageBase {
       // let ShowCancel = ['Submitted', 'Approved', 'Unapproved'];
 
       let notShowSubmit = ['Submitted', 'Approved']
-      let notShowApprove = ['Approved', 'Unapproved', 'Draft', 'Cancel'];
+      let notShowApprove = ['Approved', 'Unapproved', 'Cancel'];//'Draft', 
       let notShowDisApprove = ['Unapproved', 'Draft', 'Cancel'];
       let notShowCancel = ['Draft']
 
@@ -171,17 +171,17 @@ export class PurchaseRequestPage extends PageBase {
     if (!this.pageConfig.canApprove) return;
     if (this.submitAttempt) return;
 
-    let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Submitted'));
-    if (itemsCanNotProcess.length == this.selectedItems.length) {
-      this.env.showMessage(
-        'Your selected order cannot be approved. Please only select pending for approval order',
-        'warning',
-      );
-    } else {
-      itemsCanNotProcess.forEach((i) => {
-        i.checked = false;
-      });
-      this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted');
+    // let itemsCanNotProcess = this.selectedItems.filter((i) => (i.Status != 'Submitted') || !this.pageConfig.canApprove);
+    // if (itemsCanNotProcess.length == this.selectedItems.length) {
+    //   this.env.showMessage(
+    //     'Your selected order cannot be approved. Please only select pending for approval order',
+    //     'warning',
+    //   );
+    // } else {
+    //   itemsCanNotProcess.forEach((i) => {
+    //     i.checked = false;
+    //   });
+      this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted' || (i.Status == 'Draft' && this.pageConfig.canApprove));
       this.env
         .showPrompt(
           {code:'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?',value:this.selectedItems.length},
@@ -216,7 +216,7 @@ export class PurchaseRequestPage extends PageBase {
               console.log(err);
             });
         });
-    }
+    // }
   }
   disapprove() {
     if (!this.pageConfig.canApprove) return;

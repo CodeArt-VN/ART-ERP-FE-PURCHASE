@@ -61,7 +61,7 @@ export class PurchaseRequestDetailPage extends PageBase {
   ) {
     super();
     this.pageConfig.isDetailPage = true;
-
+    this.pageConfig.canCreatePO = false;
     this.formGroup = this.formBuilder.group({
       IDBranch: [this.env.selectedBranch, Validators.required],
       IDRequester: [''],
@@ -145,6 +145,11 @@ export class PurchaseRequestDetailPage extends PageBase {
       this.formGroup.disable();
       this.pageConfig.canEdit = false;
     }
+    if(this.formGroup.get('Status').value == 'Approved' || this.formGroup.get('Status').value == 'Open'){
+      this.pageConfig.canCreatePO = true;
+      // todo : check theem dk da đủ line chưa
+    }
+    // if(this.item.Status )
   }
 
   removeItem(Ids) {
@@ -339,14 +344,22 @@ export class PurchaseRequestDetailPage extends PageBase {
   async createPO() {
     let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
 	  let vendorList = [] ;
-    this.formGroup.get('OrderLines').value.forEach(o=> vendorList = [...vendorList, ...o._Vendors.filter(v=> !vendorList.some(vd => v.Id == vd.Id ))]);
+    this.formGroup.get('OrderLines').value.forEach(o=> {
+      if(o.IDVendor){
+        vendorList = [...vendorList, ...o._Vendors.filter(v=> v.Id == o.IDVendor &&  !vendorList.some(vd => v.Id == vd.Id ))];
+      }
+      else
+      {
+        vendorList = [...vendorList, ...o._Vendors.filter(v=> !vendorList.some(vd => v.Id == vd.Id ))];
+      }
+    });
     
     const modal = await this.modalController.create({
       component: PurchaseOrderModalPage,
       componentProps: {
         orderLines: orderLines,
         defaultVendor: this._currentVendor,
-        preloadVendors : vendorList,
+        vendorList : vendorList,
       },
 
       cssClass: 'modal90',
@@ -374,7 +387,7 @@ export class PurchaseRequestDetailPage extends PageBase {
               if (loading) loading.dismiss();
               this.env.showMessage('PO created!', 'success');
               this.env
-               .showPrompt('Do you want to navigate to purchase order ?', 'Create purchase order successfully!')
+               .showPrompt('Create purchase order successfully!','Do you want to navigate to purchase order?' )
                .then((d) => {
                   this.nav('/purchase-order/' + resp.Id, 'forward');
                 });

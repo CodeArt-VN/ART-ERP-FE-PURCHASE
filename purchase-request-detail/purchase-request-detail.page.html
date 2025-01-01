@@ -1,7 +1,7 @@
 <ion-header>
   <app-toolbar [page]="this">
   
-    <ion-button *ngIf="formGroup.get('Status')?.value == 'Approved' && formGroup.get('ContentType').value != 'Service'" (click)="createPO()" title="{{'Create PO' | translate}}" >
+    <ion-button *ngIf="pageConfig.canCreatePO && formGroup.get('ContentType').value != 'Service'" (click)="createPO()" title="{{'Create PO' | translate}}" >
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
     </ion-button>
   </app-toolbar>
