@@ -22,7 +22,8 @@
             <app-form-control (change)="saveChange();"
             [field]="{id:'Name', type : 'text', label:'Name', form : formGroup}"></app-form-control>
 
-              <app-form-control [field]="{id :'Code', label:'Code' ,
+              <app-form-control (change)="saveChange()"
+              [field]="{id :'Code', label:'Code' ,
               type:'text',form:formGroup}">
             </app-form-control>
      
