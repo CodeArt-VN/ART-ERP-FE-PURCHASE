@@ -1,7 +1,7 @@
 import { Component, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { NavController, LoadingController, AlertController, ModalController, PopoverController } from '@ionic/angular';
 import { PageBase } from 'src/app/page-base';
-import { ActivatedRoute, NavigationExtras } from '@angular/router';
+import { ActivatedRoute, NavigationExtras, Router } from '@angular/router';
 import { EnvService } from 'src/app/services/core/env.service';
 import {
   BRA_BranchProvider,
@@ -29,6 +29,7 @@ export class PurchaseOrderDetailPage extends PageBase {
   branchList = [];
   storerList = [];
   statusList = [];
+  vendorView = false;
   paymentStatusList = [];
   _vendorDataSource = this.buildSelectDataSource((term) => {
     return this.contactProvider.search({  SkipAddress: true, IsVendor: true, SortBy: ['Id_desc'],Take: 20, Skip: 0, Term: term });
@@ -48,12 +49,13 @@ export class PurchaseOrderDetailPage extends PageBase {
     public alertCtrl: AlertController,
     public formBuilder: FormBuilder,
     public cdr: ChangeDetectorRef,
+    public router: Router,
     public loadingController: LoadingController,
     public commonService: CommonService,
   ) {
     super();
     this.pageConfig.isDetailPage = true;
-  
+    if(this.env.user.IDBusinessPartner > 0)  this.vendorView = true;
     this.paymentFormGroup = formBuilder.group({
       PaymentType: [''],
       PaymentSubType:[''],
@@ -90,7 +92,12 @@ export class PurchaseOrderDetailPage extends PageBase {
       },
     });
   }
-
+  print(){
+    this.pageConfig['purchase-order-note'] = true;
+    this.router.navigate(['/purchase-order-note/'+this.item.Id], {
+      state: { print: true }
+    });
+  }
   preLoadData(event) {
     this.formGroup = this.formBuilder.group({
       IDBranch: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
@@ -150,17 +157,14 @@ export class PurchaseOrderDetailPage extends PageBase {
           IDBranch: this.env.selectedBranch,
         })
         .toPromise(),
+        this.contactProvider.read({ IsVendor: true, Take: 20 })
     ]).then((values: any) => {
       this.pageConfig.POShowSuggestedQuantity = JSON.parse(values[0]['Value']);
       this.pageConfig.POShowAdjustedQuantity = JSON.parse(values[1]['Value']);
+      if(values&& values[2] && values[2].data){
+        this._vendorDataSource.selected = [...values[2].data];
+      }
       super.preLoadData(event);
-    });
-  }
-
-  markNestedNode(ls, Id) {
-    ls.filter((d) => d.IDParent == Id).forEach((i) => {
-      if (i.Type == 'Warehouse') i.disabled = false;
-      this.markNestedNode(ls, i.Id);
     });
   }
 
@@ -176,15 +180,20 @@ export class PurchaseOrderDetailPage extends PageBase {
 
     super.loadedData(event, true);
     this.setOrderLines();
-    if(this.pageConfig.canRequestOutgoingPayment)  this.pageConfig.ShowRequestOutgoingPayment = true;
+    this.pageConfig.ShowRequestOutgoingPayment = this.pageConfig.canRequestOutgoingPayment ;
     let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved','Paid'];
     let notShowRequestOutgoingPayment = ['Draft','Submitted', 'Approved',
       'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled'];
     if(notShowRequestOutgoingPayment.includes(this.formGroup.get('Status').value) || notShowRequestOutgoingPaymentPaymentStatus.includes(this.formGroup.get('PaymentStatus').value)){
       this.pageConfig.ShowRequestOutgoingPayment = false
     }
+    this.pageConfig.ShowCopyToReceipt = this.pageConfig.canCopyToReceipt;
+    let onlyShowCopyToReceipt = ['Ordered'];
+    if(!onlyShowCopyToReceipt.includes(this.formGroup.get('Status').value)) this.pageConfig.ShowCopyToReceipt = false;
+
+
     if(this.item?._Vendor){
-      this._vendorDataSource.selected = [...this._vendorDataSource.selected, ...[this.item?._Vendor]];
+      this._vendorDataSource.selected = [...this._vendorDataSource.selected, this.item?._Vendor];
       this._currentBusinessPartner = this.item._Vendor;
     }
     this._vendorDataSource.initSearch();
@@ -494,7 +503,22 @@ export class PurchaseOrderDetailPage extends PageBase {
         });
     });
   }
-
+  confirmOrder(){
+    this.env.showPrompt(
+     'Are you sure to confirm order?',
+      null,
+     'Confirm order'
+    ).then(()=>{
+      this.pageProvider['copyToReceipt'](this.item).then((rs)=>{
+        if(rs >0){
+          this.env.showMessage('ASN created!', 'success');
+          this.refresh();
+        }
+      }).catch(err=>{
+        this.env.showMessage('Cannot create ASN, please try again later', 'danger');
+      })
+    })
+  }
   async copyToReceipt() {
     const loading = await this.loadingController.create({
       cssClass: 'my-custom-class',

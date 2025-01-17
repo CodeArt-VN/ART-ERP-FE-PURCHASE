@@ -85,9 +85,13 @@ export class PurchaseOrderPage extends PageBase {
       i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
       i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
     });
+    if(this.pageConfig.canSubmitOrdersForApproval){
+      this.pageConfig.canSubmit = true;
+    }
     if (this.pageConfig['POUsedApprovalModule']) {
       this.pageConfig['canApprove'] = false;
     }
+   
     super.loadedData(event);
   }
  
@@ -356,28 +360,16 @@ export class PurchaseOrderPage extends PageBase {
   ShowSubmitForApproval ;
   changeSelection(i, e = null) {
     super.changeSelection(i, e);
-    this.ShowSubmitForApproval = false;
-    this.pageConfig.ShowApprove = false;
-    this.pageConfig.ShowDisapprove = false;
-    this.pageConfig.ShowCancel = false;
-    this.pageConfig.ShowDelete = false;
+
     this.ShowRequestOutgoingPayment = false;
-  
-    if (this.pageConfig.canApprove) {
-      this.pageConfig.ShowApprove = true;
-      this.pageConfig.ShowDisapprove = true;
-    }
-   if (this.pageConfig.canSubmitOrdersForApproval ) {
-      this.ShowSubmitForApproval = true;
-    }
-    if (this.pageConfig.canCancel ) {
-      this.pageConfig.ShowCancel  = true;
-    }
-    if (this.pageConfig.canDelete ) {
-      this.pageConfig.ShowDelete= true;
-    }
+    this.pageConfig.ShowSubmitOrders = this.pageConfig.canSubmitOrders;
+    this.pageConfig.ShowApprove = this.pageConfig.ShowDisapprove = this.pageConfig.canApprove;
+    this.pageConfig.ShowSubmit = this.pageConfig.canSubmit;
+    this.pageConfig.ShowCancel = this.pageConfig.canCancel;
+    this.pageConfig.ShowDelete = this.pageConfig.canDelete;
+    this.pageConfig.ShowRequestOutgoingPayment = this.pageConfig.canRequestOutgoingPayment;
     if (this.pageConfig.canRequestOutgoingPayment ) {
-      this.ShowRequestOutgoingPayment= true;
+      this.pageConfig.ShowRequestOutgoingPayment= true;
     }
 
     const uniqueSellerIDs = new Set(this.selectedItems.map(i => i.IDVendor));
@@ -401,20 +393,23 @@ export class PurchaseOrderPage extends PageBase {
         this.pageConfig.ShowCancel = false;
       }
 
-      let notShowSubmit = ['Draft','Unapproved', 'Ordered', 'Submitted',
+      // Đặt mua
+      let notShowSubmitOrders = ['Draft','Unapproved', 'Ordered', 'Submitted',
         'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled',];
-      if (notShowSubmit.indexOf(i.Status) > -1) {
-        this.pageConfig.ShowSubmit = false;
+      if (notShowSubmitOrders.indexOf(i.Status) > -1) {
+        this.pageConfig.ShowSubmitOrders = false;
       }
       let notShowDelete = ['Ordered', 'Approved', 'PORequestQuotation',
         'Confirmed', 'Shipping', 'PartiallyReceived', 'Received'];
       if (notShowDelete.indexOf(i.Status) > -1) {
         this.pageConfig.ShowDelete = false;
       }
-      let notShowSubmitOrdersForApproval = ['Ordered', 'Submitted', 'Approved',
+
+      //Gửi duyệt
+      let notShowSubmit = ['Ordered', 'Submitted', 'Approved',
         'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled'];
-      if (notShowSubmitOrdersForApproval.indexOf(i.Status) > -1) {
-        this.ShowSubmitForApproval = false;
+      if (notShowSubmit.indexOf(i.Status) > -1) {
+        this.pageConfig.ShowSubmit = false;
       }
 
       let notShowRequestOutgoingPayment = ['Draft','Submitted', 'Approved',

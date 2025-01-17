@@ -15,6 +15,7 @@ import { ActivatedRoute } from '@angular/router';
     standalone: false
 })
 export class PurchaseOrderNotePage extends PageBase {
+  state : any;
   constructor(
     public pageProvider: PURCHASE_OrderProvider,
     public modalController: ModalController,
@@ -32,6 +33,8 @@ export class PurchaseOrderNotePage extends PageBase {
     //let today = new Date;
     //this.query.OrderDate = lib.dateFormat(today.setDate(today.getDate() + 1), 'yyyy-mm-dd');
     this.query.Status = 'Approved';
+    this.state = history.state;
+    
   }
 
   preLoadData(event?: any): void {
@@ -156,6 +159,15 @@ export class PurchaseOrderNotePage extends PageBase {
             }
             this.submitAttempt = false;
             if (loading) loading.dismiss();
+          }).finally(()=>{
+            if (this.state.print) {
+              setTimeout(() => {
+                window.onafterprint = () => {
+                  this.goBack();
+                };
+                this.print(); 
+              }, 200);
+            }
           });
       });
   }

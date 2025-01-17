@@ -1,9 +1,9 @@
 <ion-header>
-  <app-detail-toolbar [page]="this">
+  <app-toolbar [page]="this">
     <ion-button title="Tạo hóa đơn" *ngIf="pageConfig.canCreateInvoice" (click)="createInvoice()">
       <ion-icon slot="icon-only" name="receipt-outline"></ion-icon>
     </ion-button>
-    <ion-button (click)="copyToReceipt()" title="{{'Goods receipt' | translate}}" *ngIf="pageConfig.canCopyToReceipt">
+    <ion-button (click)="copyToReceipt()" title="{{'Goods receipt' | translate}}" *ngIf="pageConfig.canCopyToReceipt && pageConfig.ShowCopyToReceipt">
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
     </ion-button>
     <ion-button
@@ -16,7 +16,7 @@
     <ion-button *ngIf="pageConfig.ShowRequestOutgoingPayment && pageConfig.canRequestOutgoingPayment" tollbarSelected  title="{{'Create outgoing payment' | translate}}" (click)="presentPopover()">
       <ion-icon color="success" name="money-check"></ion-icon>
     </ion-button>
-  </app-detail-toolbar>
+  </app-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme class="ion-padding">
@@ -133,43 +133,7 @@
                       [field]="{id:'IDItem', label:'Item', type : 'ng-select-item', form : g,  dataSource: g.controls._IDItemDataSource.value,  bindLabel: 'Name',  bindValue: 'Id',clearable:true,  placeholder:'Type to search...'}"
                       (change)="IDItemChange($event,g)"
                     ></app-input-control>
-                      <!-- <ng-select
-                        appendTo="#order-detail-page"
-                        class="c-input"
-                        (change)="IDItemChange($event, g);"
-                        labelForId="IDItem"
-                        formControlName="IDItem"
-                        [items]="g.get('_IDItemDataSource').value.items$ | async"
-                        [typeahead]="g.get('_IDItemDataSource').value.input$"
-                        [loading]="g.get('_IDItemDataSource').value.loading"
-                        [clearable]="true"
-                        bindValue="Id"
-                        placeholder="{{'Type to search...' | translate}}"
-                      >
-                        <ng-template ng-label-tmp let-i="item">
-                          <div *ngIf="i.Id">
-                            <a [routerLink]="['/item/'+i.Id]" (mousedown)="$event.stopPropagation()"
-                              >#{{i.Id}} <ion-icon name="open-outline"></ion-icon
-                            ></a>
-                            <span [title]="i.Name">
-                              <b *ngIf="i.Code" (mousedown)="$event.stopPropagation()">{{i.Code}}</b>
-                              {{i.Name}}</span
-                            >
-                          </div>
-                        </ng-template>
-                        <ng-template ng-option-tmp let-i="item" let-search="searchTerm">
-                          <div *ngIf="i">
-                            <div>
-                              <span [ngOptionHighlight]="search">{{i.Name}}</span>
-                            </div>
-                            <small
-                              >#<b
-                                ><span class="important" [ngOptionHighlight]="search">{{i.Id}} - {{i.Code}}</span></b
-                              ></small
-                            >
-                          </div>
-                        </ng-template>
-                      </ng-select> -->
+                    
                     </div>
                     <div class="col-number cell">
                       <app-input-control
@@ -177,29 +141,6 @@
                         (change)="IDUoMChange(g)"
                       ></app-input-control>
                     </div>
-
-                    <!-- <div class="col-name cell">
-											<ng-select formControlName="_Item" [clearable]="false" appendTo="#order-detail-page" [readonly]="submitAttempt" class="c-input" (change)="changedIDItem(g, $event)" [labelForId]="'IDItem'+idx" [items]="g.controls._ItemDataSource.value | async" [typeahead]="g.controls._ItemSearchInput.value" [loading]="g.controls._ItemSearchLoading.value" [virtualScroll]="true" bindLabel="Name" placeholder="{{'changeitem-placeholder' | translate}}">
-												<ng-template ng-label-tmp let-i="item">
-													<b *ngIf="i.Code" [title]="i.Id">
-														{{i.Code}}
-													</b>
-													{{i.Name}}
-												</ng-template>
-												<ng-template ng-option-tmp let-i="item" let-search="searchTerm">
-													<div *ngIf="i">
-														<div><span [ngOptionHighlight]="search">{{i.Name}}</span></div>
-														<small>#<b><span class="important" [ngOptionHighlight]="search">{{i.Id}} - {{i.Code}}</span></b></small>
-													</div>
-												</ng-template>
-											</ng-select>
-										</div>
-										<div class="col-uom cell">
-											<select formControlName="IDUoM" [attr.disabled]="(submitAttempt)?'':null" class="c-input c-dropdown" (change)="changedIDUoM(g)">
-												<option [disabled]="t.Flag" *ngFor="let t of g.controls._UoMs.value" [value]="t.Id">{{t.Name}}</option>
-											</select>
-										</div> -->
-
                     <div
                       *ngIf="pageConfig.POShowSuggestedQuantity && item.Type == 'FromPurchaseSuggestion'"
                       class="col-qty cell"
@@ -264,19 +205,6 @@
                         type="checkbox"
                       />
                     </div>
-
-                    <!-- <div class="col-price cell">
-                      <input
-                        formControlName="UoMPrice"
-                        class="c-input"
-                        [readonly]="!(pageConfig.canEdit && pageConfig.canEditPrice && !g.controls.IsPromotionItem.value)"
-                        (focus)="$event.target.select()"
-                        (change)="saveOrder()"
-                        mask="separator.2"
-                        thousandSeparator=","
-                        [allowNegativeNumbers]="false"
-                      />
-                    </div> -->
 
                     <div class="col-price cell">
                     
@@ -362,6 +290,16 @@
                 {{'Add items from SO' | translate}}
               </ion-button>
             </div>
+          </div>
+          <div class="row" *ngIf="vendorView">
+            <ion-buttons class="ion-justify-content-end"slot="end">
+            <ion-button style="margin-right:0"*ngIf="formGroup.get('Status').value == 'Ordered'" fill="solid" expand="block" size="small"(click)="confirmOrder()">
+              {{'Confirm order' | translate}}
+            </ion-button>
+            <ion-button style="margin-right:0" fill="solid" expand="block" size="small"(click)="print()">
+              <ion-icon slot="icon-only" name="print"></ion-icon>
+            </ion-button>
+          </ion-buttons>
           </div>
         </div>
       </div>
