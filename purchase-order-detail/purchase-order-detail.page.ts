@@ -29,6 +29,7 @@ export class PurchaseOrderDetailPage extends PageBase {
   branchList = [];
   storerList = [];
   statusList = [];
+  carrierList = [];
   vendorView = false;
   paymentStatusList = [];
   _vendorDataSource = this.buildSelectDataSource((term) => {
@@ -55,7 +56,10 @@ export class PurchaseOrderDetailPage extends PageBase {
   ) {
     super();
     this.pageConfig.isDetailPage = true;
-    if(this.env.user.IDBusinessPartner > 0)  this.vendorView = true;
+    if(this.env.user.IDBusinessPartner > 0 && this.env.user.SysRoles.includes('VENDOR')) 
+    {
+      this.vendorView = true;
+    } 
     this.paymentFormGroup = formBuilder.group({
       PaymentType: [''],
       PaymentSubType:[''],
@@ -143,7 +147,6 @@ export class PurchaseOrderDetailPage extends PageBase {
     this.env.getStatus('POPaymentStatus').then((data: any) => {
       this.paymentStatusList = data;
     });
-
     Promise.all([
       this.pageProvider.commonService
         .connect('GET', 'SYS/Config/ConfigByBranch', {
@@ -503,21 +506,49 @@ export class PurchaseOrderDetailPage extends PageBase {
         });
     });
   }
+
+  isShowReceiptModal = false;
+  receiptFormGroup = this.formBuilder.group({
+    Code:['',Validators.required],
+    IDCarrier:['',Validators.required],
+    VehicleNumber:['',Validators.required],
+    ExpectedReceiptDate:['',Validators.required],
+  });
+  onDismissReceiptModal(isApply = false){
+    this.isShowReceiptModal = false;
+
+    if(isApply){
+      this.receiptFormGroup.updateValueAndValidity();
+      if (!this.receiptFormGroup.valid) {
+        let invalidControls = this.findInvalidControlsRecursive(this.receiptFormGroup); 
+        const translationPromises = invalidControls.map(control => this.env.translateResource(control));
+        Promise.all(translationPromises).then((values) => {
+          let invalidControls = values;
+          this.env.showMessage('Please recheck control(s): {{value}}', 'warning', invalidControls.join(' | '));
+          });
+       
+      }
+      else{
+        this.pageProvider['copyToReceipt']({...this.item,...this.receiptFormGroup.getRawValue()}).then((rs)=>{
+          if(rs >0){
+            this.env.showMessage('ASN created!', 'success');
+            this.refresh();
+          }
+        }).catch(err=>{
+          this.env.showMessage('Cannot create ASN, please try again later', 'danger');
+        })
+      }
+    }
+  }
   confirmOrder(){
-    this.env.showPrompt(
-     'Are you sure to confirm order?',
-      null,
-     'Confirm order'
-    ).then(()=>{
-      this.pageProvider['copyToReceipt'](this.item).then((rs)=>{
-        if(rs >0){
-          this.env.showMessage('ASN created!', 'success');
-          this.refresh();
+    if(  this.carrierList.length == 0){
+      this.contactProvider.read({IsCarrier:true}).then((rs:any)=>{
+        if(rs && rs.data?.length>0){
+          this.carrierList = [...rs.data];
         }
-      }).catch(err=>{
-        this.env.showMessage('Cannot create ASN, please try again later', 'danger');
-      })
-    })
+      }).finally(()=>  this.isShowReceiptModal = true)
+    } else this.isShowReceiptModal = true
+  
   }
   async copyToReceipt() {
     const loading = await this.loadingController.create({
