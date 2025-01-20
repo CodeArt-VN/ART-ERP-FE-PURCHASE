@@ -32,6 +32,7 @@ export class PurchaseOrderNotePage extends PageBase {
     //let today = new Date;
     //this.query.OrderDate = lib.dateFormat(today.setDate(today.getDate() + 1), 'yyyy-mm-dd');
     this.query.Status = 'Approved';
+    
   }
 
   preLoadData(event?: any): void {
@@ -156,7 +157,7 @@ export class PurchaseOrderNotePage extends PageBase {
             }
             this.submitAttempt = false;
             if (loading) loading.dismiss();
-          });
+          })
       });
   }
 

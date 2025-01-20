@@ -1,9 +1,13 @@
 <ion-header>
-  <app-detail-toolbar [page]="this">
+  <app-toolbar [page]="this">
     <ion-button title="Tạo hóa đơn" *ngIf="pageConfig.canCreateInvoice" (click)="createInvoice()">
       <ion-icon slot="icon-only" name="receipt-outline"></ion-icon>
     </ion-button>
-    <ion-button (click)="copyToReceipt()" title="{{'Goods receipt' | translate}}" *ngIf="pageConfig.canCopyToReceipt">
+    <ion-button
+      (click)="copyToReceipt()"
+      title="{{'Goods receipt' | translate}}"
+      *ngIf="pageConfig.canCopyToReceipt && pageConfig.ShowCopyToReceipt"
+    >
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
     </ion-button>
     <ion-button
@@ -13,10 +17,15 @@
     >
       <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
     </ion-button>
-    <ion-button *ngIf="pageConfig.ShowRequestOutgoingPayment && pageConfig.canRequestOutgoingPayment" tollbarSelected  title="{{'Create outgoing payment' | translate}}" (click)="presentPopover()">
+    <ion-button
+      *ngIf="pageConfig.ShowRequestOutgoingPayment && pageConfig.canRequestOutgoingPayment"
+      tollbarSelected
+      title="{{'Create outgoing payment' | translate}}"
+      (click)="presentPopover()"
+    >
       <ion-icon color="success" name="money-check"></ion-icon>
     </ion-button>
-  </app-detail-toolbar>
+  </app-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme class="ion-padding">
@@ -35,34 +44,45 @@
                             <label class="c-label" for="Id"># Id</label>
                             <input class="c-input" id="Id" formControlName="Id" type="number">
                         </div> -->
-            <app-form-control (change)="saveOrder()" 
-            [field]="{id:'IDStorer',label:'Goods owner',type:'ng-select',
+            <app-form-control
+              (change)="saveOrder()"
+              [field]="{id:'IDStorer',label:'Goods owner',type:'ng-select',
               dataSource:storerList ,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
-              form:formGroup}">
+              form:formGroup}"
+            >
             </app-form-control>
-          
-            <app-form-control (change)="changeVendor()" 
-            [field]="{id:'IDVendor',label:'Vendor',type:'ng-select-bp',
+
+            <app-form-control
+              (change)="changeVendor()"
+              [field]="{id:'IDVendor',label:'Vendor',type:'ng-select-bp',
               dataSource:_vendorDataSource ,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
-              form:formGroup}">
+              form:formGroup}"
+            >
             </app-form-control>
-         
-            <app-form-control (change)="saveOrder()" 
-            [field]="{branchConfig:{showingType:'Warehouse',selectedBranch:this.env.selectedBranch},
+
+            <app-form-control
+              (change)="saveOrder()"
+              [field]="{branchConfig:{showingType:'Warehouse',selectedBranch:this.env.selectedBranch},
               id:'IDBranch',label:'Warehouse',type:'ng-select-branch',
               dataSource:branchList,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
-              form:formGroup}">
+              form:formGroup}"
+            >
             </app-form-control>
-         
           </ion-col>
           <ion-col size="12" size-sm size-xl="4">
-            <app-form-control (change)="saveOrder()" [field]="{id:'Code',label:'PO code (Vendors)',type:'text',form:formGroup}">
+            <app-form-control
+              (change)="saveOrder()"
+              [field]="{id:'Code',label:'PO code (Vendors)',type:'text',form:formGroup}"
+            >
               <small label *ngIf="item.Id">{{'Id' | translate}}: {{item.Id}}</small>
             </app-form-control>
-         
-            <app-form-control (change)="saveOrder()" [field]="{id:'ExpectedReceiptDate',label:'Expected receipt date',type:'datetime-local',form:formGroup}">
+
+            <app-form-control
+              (change)="saveOrder()"
+              [field]="{id:'ExpectedReceiptDate',label:'Expected receipt date',type:'datetime-local',form:formGroup}"
+            >
             </app-form-control>
-         
+
             <div class="c-control">
               <label class="c-label" for="TotalAfterTax"
                 >{{'Value' | translate}}
@@ -77,7 +97,6 @@
                 <b>{{calcTotalAfterTax() | number: '1.0-0'}}</b>
               </span>
             </div>
-
           </ion-col>
         </ion-row>
       </form>
@@ -130,46 +149,9 @@
                     <div class="col-id cell">{{idx+1}}</div>
                     <div class="col-name cell">
                       <app-input-control
-                      [field]="{id:'IDItem', label:'Item', type : 'ng-select-item', form : g,  dataSource: g.controls._IDItemDataSource.value,  bindLabel: 'Name',  bindValue: 'Id',clearable:true,  placeholder:'Type to search...'}"
-                      (change)="IDItemChange($event,g)"
-                    ></app-input-control>
-                      <!-- <ng-select
-                        appendTo="#order-detail-page"
-                        class="c-input"
-                        (change)="IDItemChange($event, g);"
-                        labelForId="IDItem"
-                        formControlName="IDItem"
-                        [items]="g.get('_IDItemDataSource').value.items$ | async"
-                        [typeahead]="g.get('_IDItemDataSource').value.input$"
-                        [loading]="g.get('_IDItemDataSource').value.loading"
-                        [clearable]="true"
-                        bindValue="Id"
-                        placeholder="{{'Type to search...' | translate}}"
-                      >
-                        <ng-template ng-label-tmp let-i="item">
-                          <div *ngIf="i.Id">
-                            <a [routerLink]="['/item/'+i.Id]" (mousedown)="$event.stopPropagation()"
-                              >#{{i.Id}} <ion-icon name="open-outline"></ion-icon
-                            ></a>
-                            <span [title]="i.Name">
-                              <b *ngIf="i.Code" (mousedown)="$event.stopPropagation()">{{i.Code}}</b>
-                              {{i.Name}}</span
-                            >
-                          </div>
-                        </ng-template>
-                        <ng-template ng-option-tmp let-i="item" let-search="searchTerm">
-                          <div *ngIf="i">
-                            <div>
-                              <span [ngOptionHighlight]="search">{{i.Name}}</span>
-                            </div>
-                            <small
-                              >#<b
-                                ><span class="important" [ngOptionHighlight]="search">{{i.Id}} - {{i.Code}}</span></b
-                              ></small
-                            >
-                          </div>
-                        </ng-template>
-                      </ng-select> -->
+                        [field]="{id:'IDItem', label:'Item', type : 'ng-select-item', form : g,  dataSource: g.controls._IDItemDataSource.value,  bindLabel: 'Name',  bindValue: 'Id',clearable:true,  placeholder:'Type to search...'}"
+                        (change)="IDItemChange($event,g)"
+                      ></app-input-control>
                     </div>
                     <div class="col-number cell">
                       <app-input-control
@@ -177,29 +159,6 @@
                         (change)="IDUoMChange(g)"
                       ></app-input-control>
                     </div>
-
-                    <!-- <div class="col-name cell">
-											<ng-select formControlName="_Item" [clearable]="false" appendTo="#order-detail-page" [readonly]="submitAttempt" class="c-input" (change)="changedIDItem(g, $event)" [labelForId]="'IDItem'+idx" [items]="g.controls._ItemDataSource.value | async" [typeahead]="g.controls._ItemSearchInput.value" [loading]="g.controls._ItemSearchLoading.value" [virtualScroll]="true" bindLabel="Name" placeholder="{{'changeitem-placeholder' | translate}}">
-												<ng-template ng-label-tmp let-i="item">
-													<b *ngIf="i.Code" [title]="i.Id">
-														{{i.Code}}
-													</b>
-													{{i.Name}}
-												</ng-template>
-												<ng-template ng-option-tmp let-i="item" let-search="searchTerm">
-													<div *ngIf="i">
-														<div><span [ngOptionHighlight]="search">{{i.Name}}</span></div>
-														<small>#<b><span class="important" [ngOptionHighlight]="search">{{i.Id}} - {{i.Code}}</span></b></small>
-													</div>
-												</ng-template>
-											</ng-select>
-										</div>
-										<div class="col-uom cell">
-											<select formControlName="IDUoM" [attr.disabled]="(submitAttempt)?'':null" class="c-input c-dropdown" (change)="changedIDUoM(g)">
-												<option [disabled]="t.Flag" *ngFor="let t of g.controls._UoMs.value" [value]="t.Id">{{t.Name}}</option>
-											</select>
-										</div> -->
-
                     <div
                       *ngIf="pageConfig.POShowSuggestedQuantity && item.Type == 'FromPurchaseSuggestion'"
                       class="col-qty cell"
@@ -265,25 +224,13 @@
                       />
                     </div>
 
-                    <!-- <div class="col-price cell">
-                      <input
-                        formControlName="UoMPrice"
-                        class="c-input"
-                        [readonly]="!(pageConfig.canEdit && pageConfig.canEditPrice && !g.controls.IsPromotionItem.value)"
-                        (focus)="$event.target.select()"
-                        (change)="saveOrder()"
-                        mask="separator.2"
-                        thousandSeparator=","
-                        [allowNegativeNumbers]="false"
-                      />
-                    </div> -->
-
                     <div class="col-price cell">
-                    
-                      <app-input-control (change)="saveOrder()" 
-                      [field]="{id:'UoMPrice',label:'UoM price',type:'number',form:g}">
+                      <app-input-control
+                        (change)="saveOrder()"
+                        [field]="{id:'UoMPrice',label:'UoM price',type:'number',form:g}"
+                      >
                       </app-input-control>
-                  </div>
+                    </div>
 
                     <div class="col-price cell">
                       <input formControlName="TaxRate" class="c-input" />
@@ -363,6 +310,23 @@
               </ion-button>
             </div>
           </div>
+          <div class="row" *ngIf="vendorView">
+            <ion-buttons class="ion-justify-content-end" slot="end">
+              <ion-button
+                style="margin-right: 0"
+                *ngIf="formGroup.get('Status').value == 'Ordered'"
+                fill="solid"
+                expand="block"
+                size="small"
+                (click)="confirmOrder()"
+              >
+                {{'Confirm order' | translate}}
+              </ion-button>
+              <ion-button style="margin-right: 0" fill="solid" expand="block" size="small" (click)="print()">
+                <ion-icon slot="icon-only" name="print"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </div>
         </div>
       </div>
       <div *ngIf="segmentView == 's2'">
@@ -399,9 +363,8 @@
                     </select>
                   </div>
                   <app-form-control
-                  [field]="{ id: 'PaymentStatus', type: 'ng-select', label: 'Payment status', dataSource: paymentStatusList, bindValue: 'Code', bindLabel: 'Name', form: formGroup }"
-                ></app-form-control>
-                 
+                    [field]="{ id: 'PaymentStatus', type: 'ng-select', label: 'Payment status', dataSource: paymentStatusList, bindValue: 'Code', bindLabel: 'Name', form: formGroup }"
+                  ></app-form-control>
                 </ion-col>
                 <ion-col size="12" size-sm size-xl="4">
                   <div class="c-control">
@@ -475,7 +438,13 @@
         </div>
       </div>
       <div class="table responsive" *ngIf="segmentView == 's3'">
-        <app-data-table class="box-shadow responsive" *ngIf ="paymentDetailList" [rows]="paymentDetailList" [(selectedRows)]="selectedItems" [showSpinner]="showSpinnerPayment" >
+        <app-data-table
+          class="box-shadow responsive"
+          *ngIf="paymentDetailList"
+          [rows]="paymentDetailList"
+          [(selectedRows)]="selectedItems"
+          [showSpinner]="showSpinnerPayment"
+        >
           <!-- <datatable-column [checkbox]="true"></datatable-column> -->
           <datatable-column class="col-id" name="Id" property="Id">
             <ng-template let-i="row" datatable-cell-template>
@@ -491,37 +460,29 @@
             </ng-template>
           </datatable-column>
           -->
-          <datatable-column class="col-code"  filterControlType="text" name="Type" property="Type">
+          <datatable-column class="col-code" filterControlType="text" name="Type" property="Type"> </datatable-column>
+          <datatable-column class="col-number" filterControlType="number" name="Amount" property="Amount">
           </datatable-column>
-          <datatable-column class="col-number"  filterControlType="number" name="Amount" property="Amount">
-      
+          <datatable-column class="col-date" filterControlType="date" name="Posting date" property="PostingDate">
+            <ng-template let-i="row" datatable-cell-template> {{i.PostingDate | date:'dd/MM/yyyy HH:mm'}} </ng-template>
           </datatable-column>
-          <datatable-column class="col-date"  filterControlType="date" name="Posting date" property="PostingDate">
-            <ng-template let-i="row" datatable-cell-template>
-              {{i.PostingDate | date:'dd/MM/yyyy HH:mm'}}
-              </ng-template>
-          </datatable-column>
-          <datatable-column class="col-date"  filterControlType="date" name="Document date" property="DocumentDate">
+          <datatable-column class="col-date" filterControlType="date" name="Document date" property="DocumentDate">
             <ng-template let-i="row" datatable-cell-template>
               {{i.DocumentDate | date:'dd/MM/yyyy HH:mm'}}
-              </ng-template>
+            </ng-template>
           </datatable-column>
-          <datatable-column class="col-date"  filterControlType="date" name="Due date" property="DueDate">
-            <ng-template let-i="row" datatable-cell-template>
-              {{i.DueDate | date:'dd/MM/yyyy HH:mm'}}
-              </ng-template>
+          <datatable-column class="col-date" filterControlType="date" name="Due date" property="DueDate">
+            <ng-template let-i="row" datatable-cell-template> {{i.DueDate | date:'dd/MM/yyyy HH:mm'}} </ng-template>
           </datatable-column>
           <!-- <datatable-column class="col-date" filterControlType="date" name="Picked date" property="PickedDate">
             <ng-template let-i="row" datatable-cell-template>
               {{i.PickedDate | date:'dd/MM/yyyy HH:mm'}}
               </ng-template>
           </datatable-column> -->
-         
+
           <datatable-column class="col-status" name="Status" property="Status">
             <ng-template let-i="row" datatable-cell-template>
-            <ion-badge [color]="i._Status?.Color" [title]="i._Status?.Name">
-              {{i._Status?.Name}}
-            </ion-badge>
+              <ion-badge [color]="i._Status?.Color" [title]="i._Status?.Name"> {{i._Status?.Name}} </ion-badge>
             </ng-template>
           </datatable-column>
         </app-data-table>
@@ -531,27 +492,74 @@
   <app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>
   <input class="hide-all" #importfile type="file" accept=".xlsx" (change)="uploadOrderLine($event)" />
   <ion-popover class="w300" #popover [isOpen]="isOpenPopover" (didDismiss)="dismissPopover()">
-		<ng-template>
-		<ion-content appScrollbarTheme>
-			<ion-grid>
-			<form [formGroup]="paymentFormGroup" (submit)="dismissPopover(true)">
-				<ion-row>
-				<ion-col size="12" size-sm size-xl="12">
-        <app-form-control
-        [field]="{ id: 'PaymentReason', type: 'ng-select', label: 'Reason', dataSource: paymentReasonList, bindValue: 'Code', bindLabel: 'Name', form: paymentFormGroup }"
-      ></app-form-control>
-        <app-form-control
-        [field]="{ id: 'PaymentType', type: 'ng-select', label: 'Type', dataSource: paymentTypeList, bindValue: 'Code', bindLabel: 'Name', form: paymentFormGroup }"
-      ></app-form-control>
-      <app-form-control
-      [field]="{ id: 'PaymentSubType', type: 'ng-select', label: 'Sub type', dataSource: paymentSubTypeList, bindValue: 'Code', bindLabel: 'Name', form: paymentFormGroup }"
-    ></app-form-control>
-				</ion-col>
-			</ion-row>
-			</form>
-		</ion-grid>
-		  </ion-content>
-		  <ion-button class="ion-margin" size="small" expand="block" (click)="dismissPopover(true)">Apply</ion-button>
-		</ng-template>
-	 </ion-popover>
+    <ng-template>
+      <ion-content appScrollbarTheme>
+        <ion-grid>
+          <form [formGroup]="paymentFormGroup" (submit)="dismissPopover(true)">
+            <ion-row>
+              <ion-col size="12" size-sm size-xl="12">
+                <app-form-control
+                  [field]="{ id: 'PaymentReason', type: 'ng-select', label: 'Reason', dataSource: paymentReasonList, bindValue: 'Code', bindLabel: 'Name', form: paymentFormGroup }"
+                ></app-form-control>
+                <app-form-control
+                  [field]="{ id: 'PaymentType', type: 'ng-select', label: 'Type', dataSource: paymentTypeList, bindValue: 'Code', bindLabel: 'Name', form: paymentFormGroup }"
+                ></app-form-control>
+                <app-form-control
+                  [field]="{ id: 'PaymentSubType', type: 'ng-select', label: 'Sub type', dataSource: paymentSubTypeList, bindValue: 'Code', bindLabel: 'Name', form: paymentFormGroup }"
+                ></app-form-control>
+              </ion-col>
+            </ion-row>
+          </form>
+        </ion-grid>
+      </ion-content>
+      <ion-button class="ion-margin" size="small" expand="block" (click)="dismissPopover(true)">Apply</ion-button>
+    </ng-template>
+  </ion-popover>
+
+  <ion-modal [isOpen]="isShowReceiptModal"  (willDismiss)="onDismissReceiptModal(); ">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{'Confirm modal' | translate}}</ion-title>
+          <ion-buttons slot="primary">
+            <ion-button title="{{'Close' | translate}}" color="secondary" (click)="isShowReceiptModal= false">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content appScrollbarTheme class="scrollx">
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-sm size-xl="6">
+              <app-form-control
+              [field]="{id:'Code',label:'PO code (Vendors)',type:'text',form:receiptFormGroup}"
+            >
+            </app-form-control>
+
+            <app-form-control
+            [field]="{id:'ExpectedReceiptDate',label:'Expected receipt date',type:'datetime-local',form:receiptFormGroup}"
+          ></app-form-control>
+              </ion-col>
+            <ion-col size="12" size-sm size-xl="6">
+              <app-form-control
+              [field]="{ id: 'IDCarrier', type: 'ng-select', label: 'Carrier', dataSource: carrierList, bindValue: 'Id', bindLabel: 'Name', form: receiptFormGroup }"
+            ></app-form-control>
+              <app-form-control
+                [field]="{ id: 'VehicleNumber', type: 'text', label: 'Vehicle number', form: receiptFormGroup }"
+              ></app-form-control>
+            
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-content>
+      <ion-footer>
+        <div class="ion-padding">
+          <ion-button color="primary" (click)="onDismissReceiptModal(true)" expand="block"
+            >{{'Confirm' | translate}}</ion-button
+          >
+        </div>
+      </ion-footer>
+    </ng-template>
+  </ion-modal>
 </ion-content>
