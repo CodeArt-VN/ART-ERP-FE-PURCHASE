@@ -204,10 +204,12 @@ export class PurchaseOrderDetailPage extends PageBase {
 
   setOrderLines() {
     this.formGroup.controls.OrderLines = new FormArray([]);
-    if (this.item.OrderLines?.length)
+    if (this.item.OrderLines?.length){
       this.item.OrderLines.forEach((i) => {
         this.addLine(i);
       });
+    }
+    if(!this.pageConfig.canEdit)  this.formGroup.controls.OrderLines.disable();
     // else
     //     this.addOrderLine({ IDOrder: this.item.Id, Id: 0 });
   }
@@ -556,7 +558,7 @@ export class PurchaseOrderDetailPage extends PageBase {
       message: 'Please wait for a few moments',
     });
     await loading.present().then(() => {
-      this.pageProvider['copyToReceipt'](this.item)
+      this.pageProvider['copyToReceipt']({...this.item,...{Status:'Confirmed'}})
         .then((resp: any) => {
           if (loading) loading.dismiss();
           this.alertCtrl

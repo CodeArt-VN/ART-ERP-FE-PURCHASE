@@ -29,6 +29,13 @@
 [ShowApprove]="pageConfig.ShowApprove"
 [ShowCancel]="pageConfig.ShowCancel"
 >
+<ion-button
+      (click)="copyToReceipt()"
+      title="{{'Goods receipt' | translate}}"
+      *ngIf="pageConfig.canCopyToReceipt && pageConfig.ShowCopyToReceipt"
+    >
+      <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
+    </ion-button>
 <ion-button *ngIf="selectedItems.length>0 && pageConfig.ShowSubmitOrders && pageConfig.canSubmit" fill="clear" title="Order submitted"  (click)="submitOrders()" >
   <ion-icon slot="start" name="cart-outline"></ion-icon>
 </ion-button>
