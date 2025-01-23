@@ -367,6 +367,8 @@ export class PurchaseOrderPage extends PageBase {
     this.pageConfig.ShowSubmit = this.pageConfig.canSubmit;
     this.pageConfig.ShowCancel = this.pageConfig.canCancel;
     this.pageConfig.ShowDelete = this.pageConfig.canDelete;
+    this.pageConfig.ShowDelete = this.pageConfig.canDelete;
+    this.pageConfig.ShowCopyToReceipt = this.pageConfig.canCopyToReceipt;
     this.pageConfig.ShowRequestOutgoingPayment = this.pageConfig.canRequestOutgoingPayment;
     if (this.pageConfig.canRequestOutgoingPayment ) {
       this.pageConfig.ShowRequestOutgoingPayment= true;
@@ -426,7 +428,11 @@ export class PurchaseOrderPage extends PageBase {
       else{
         this.IDBusinessPartner = [...uniqueSellerIDs][0];
       }
-  
+      let notShowShowCopyToReceipt = ['Draft','Unapproved', 'Ordered', 'Submitted',
+        'PORequestQuotation', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled',];
+      if (notShowShowCopyToReceipt.indexOf(i.Status) > -1) {
+        this.pageConfig.ShowCopyToReceipt = false;
+      }
       
     });
     if(this.selectedItems?.length==0){
@@ -435,8 +441,22 @@ export class PurchaseOrderPage extends PageBase {
       this.pageConfig.ShowDisapprove = false;
       this.pageConfig.ShowCancel = false;
       this.pageConfig.ShowDelete = false;
+      this.pageConfig.ShowCopyToReceipt = false;
       this.ShowRequestOutgoingPayment = false;
     }
   }
-
+  copyToReceipt() {
+    if (!this.pageConfig.canCopyToReceipt) return;
+    let obj = this.selectedItems.map(d=> {return {Id:d.Id}});
+  
+    this.pageProvider.commonService
+    .connect('POST', 'PURCHASE/Order/CopyToReceipt/', obj).toPromise().then((rs:any)=>{
+      if(rs >0){
+        this.env.showMessage('ASN created!', 'success');
+        this.refresh();
+      }
+    }).catch(err=>{
+      this.env.showMessage('Cannot create ASN, please try again later', 'danger');
+    })
+  }
 }
