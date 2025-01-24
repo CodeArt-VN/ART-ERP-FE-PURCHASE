@@ -36,7 +36,7 @@
     >
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
     </ion-button>
-<ion-button *ngIf="selectedItems.length>0 && pageConfig.ShowSubmitOrders && pageConfig.canSubmit" fill="clear" title="Order submitted"  (click)="submitOrders()" >
+<ion-button *ngIf="selectedItems.length>0 && pageConfig.ShowSubmitOrders && pageConfig.canSubmitOrders" fill="clear" title="Order submitted"  (click)="submitOrders()" >
   <ion-icon slot="start" name="cart-outline"></ion-icon>
 </ion-button>
 <ion-button *ngIf="selectedItems.length>0 &&ShowRequestOutgoingPayment && pageConfig.canRequestOutgoingPayment" fill="clear" title="Create outgoing payment"  (click)="presentPopover($event)" >
