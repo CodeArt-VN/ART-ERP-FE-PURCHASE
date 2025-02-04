@@ -2,17 +2,21 @@ import { Component, ViewChild } from '@angular/core';
 import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
-import { BANK_OutgoingPaymentProvider, PURCHASE_OrderProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
+import {
+  BANK_OutgoingPaymentProvider,
+  PURCHASE_OrderProvider,
+  SYS_ConfigProvider,
+} from 'src/app/services/static/services.service';
 import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { FormBuilder } from '@angular/forms';
 
 @Component({
-    selector: 'app-purchase-order',
-    templateUrl: 'purchase-order.page.html',
-    styleUrls: ['purchase-order.page.scss'],
-    standalone: false
+  selector: 'app-purchase-order',
+  templateUrl: 'purchase-order.page.html',
+  styleUrls: ['purchase-order.page.scss'],
+  standalone: false,
 })
 export class PurchaseOrderPage extends PageBase {
   statusList = [];
@@ -34,11 +38,11 @@ export class PurchaseOrderPage extends PageBase {
     public location: Location,
   ) {
     super();
-    
+
     this.formGroup = formBuilder.group({
       PaymentType: [''],
-      PaymentSubType:[''],
-      PaymentReason : ['']      
+      PaymentSubType: [''],
+      PaymentReason: [''],
     });
   }
 
@@ -52,9 +56,9 @@ export class PurchaseOrderPage extends PageBase {
     Promise.all([
       this.env.getStatus('PurchaseOrder'),
       this.env.getStatus('OutgoingPaymentStatus'),
-      this.sysConfigProvider.read({ Code_in: sysConfigQuery }),
+      this.sysConfigProvider.read({ Code_in: sysConfigQuery, IDBranch: this.env.selectedBranch }),
       this.env.getType('PaymentType'),
-      this.env.getType('OutgoingPaymentReasonType')
+      this.env.getType('OutgoingPaymentReasonType'),
     ]).then((values) => {
       this.statusList = values[0];
       this.paymentStatusList = values[1];
@@ -64,12 +68,16 @@ export class PurchaseOrderPage extends PageBase {
         }
         this.pageConfig[e.Code] = JSON.parse(e.Value);
       });
-      if(values[3]){
+      if (values[3]) {
         this.paymentTypeList = values[3].filter((d) => d.Code == 'Cash' || d.Code == 'Card' || d.Code == 'Transfer');
       }
-      if(values[4]){
+      if (values[4]) {
         this.paymentReasonList = values[4];
-        if(values[4].length==0) this.paymentReasonList = [{Name : 'Payment of invoice', Code :'PaymentOfInvoice'},{Name : 'Payment of purchase order', Code :'PaymentOfPO'}]
+        if (values[4].length == 0)
+          this.paymentReasonList = [
+            { Name: 'Payment of invoice', Code: 'PaymentOfInvoice' },
+            { Name: 'Payment of purchase order', Code: 'PaymentOfPO' },
+          ];
       }
       super.preLoadData(event);
     });
@@ -85,20 +93,21 @@ export class PurchaseOrderPage extends PageBase {
       i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
       i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
     });
-    if(this.pageConfig.canSubmitOrdersForApproval){
+    if (this.pageConfig.canSubmitOrdersForApproval) {
       this.pageConfig.canSubmit = true;
     }
     if (this.pageConfig['POUsedApprovalModule']) {
       this.pageConfig['canApprove'] = false;
     }
-   
+
     super.loadedData(event);
   }
- 
+
   merge() {}
   split() {}
 
-  submit() { // submit PO
+  submit() {
+    // submit PO
     if (!this.pageConfig.canSubmitOrdersForApproval) return;
     if (this.submitAttempt) return;
 
@@ -116,9 +125,12 @@ export class PurchaseOrderPage extends PageBase {
 
       this.env
         .showPrompt(
-          {code:'Bạn có chắc muốn gửi duyệt {{value}} đơn hàng đang chọn?',value:{value:this.selectedItems.length}},
+          {
+            code: 'Bạn có chắc muốn gửi duyệt {{value}} đơn hàng đang chọn?',
+            value: { value: this.selectedItems.length },
+          },
           null,
-          {code:'Gửi duyệt {{value}} mua hàng',value:{value:this.selectedItems.length}}
+          { code: 'Gửi duyệt {{value}} mua hàng', value: { value: this.selectedItems.length } },
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -137,10 +149,7 @@ export class PurchaseOrderPage extends PageBase {
               if (savedItem > 0) {
                 this.env.showMessage('{{value}} orders sent for approval', 'success', savedItem);
               } else {
-                this.env.showMessage(
-                  'Please check again, orders must have at least 1 item to be approved',
-                  'warning',
-                );
+                this.env.showMessage('Please check again, orders must have at least 1 item to be approved', 'warning');
               }
             })
             .catch((err) => {
@@ -167,9 +176,9 @@ export class PurchaseOrderPage extends PageBase {
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted');
       this.env
         .showPrompt(
-          {code:'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?',value:this.selectedItems.length},
+          { code: 'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?', value: this.selectedItems.length },
           null,
-          {code:'Duyệt {{value}} đơn hàng',value:this.selectedItems.length},
+          { code: 'Duyệt {{value}} đơn hàng', value: this.selectedItems.length },
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -188,10 +197,7 @@ export class PurchaseOrderPage extends PageBase {
               if (savedItem > 0) {
                 this.env.showMessage('{{value}} orders approved', 'success', savedItem);
               } else {
-                this.env.showMessage(
-                  'Please check again, orders must have at least 1 item to be approved',
-                  'warning',
-                );
+                this.env.showMessage('Please check again, orders must have at least 1 item to be approved', 'warning');
               }
             })
             .catch((err) => {
@@ -218,9 +224,9 @@ export class PurchaseOrderPage extends PageBase {
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted' || i.Status == 'Approved');
       this.env
         .showPrompt(
-          {code:'Bạn có chắc muốn TRẢ LẠI {{value}} đơn hàng đang chọn?',value:this.selectedItems.length},
+          { code: 'Bạn có chắc muốn TRẢ LẠI {{value}} đơn hàng đang chọn?', value: this.selectedItems.length },
           null,
-          {code:'Duyệt {{value}} đơn hàng',value:this.selectedItems.length},
+          { code: 'Duyệt {{value}} đơn hàng', value: this.selectedItems.length },
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -261,9 +267,9 @@ export class PurchaseOrderPage extends PageBase {
       this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'Unapproved');
       this.env
         .showPrompt(
-          {code:'Bạn có chắc muốn HỦY {{value}} đơn hàng đang chọn?',value:this.selectedItems.length},
+          { code: 'Bạn có chắc muốn HỦY {{value}} đơn hàng đang chọn?', value: this.selectedItems.length },
           null,
-          {code:'Duyệt {{value}} đơn hàng',value:this.selectedItems.length},
+          { code: 'Duyệt {{value}} đơn hàng', value: this.selectedItems.length },
         )
         .then((_) => {
           this.submitAttempt = true;
@@ -311,7 +317,6 @@ export class PurchaseOrderPage extends PageBase {
       });
   }
 
-  
   ngOnDestroy() {
     this.dismissPopover();
   }
@@ -323,31 +328,38 @@ export class PurchaseOrderPage extends PageBase {
     if (apply) {
       this.submitAttempt = true;
       let obj = {
-        Id:0,
-        IDBranch:this.env.selectedBranch,
-        IDBusinessPartner : this.IDBusinessPartner,
-        Name: 'Pay for PO ['+this.selectedItems.map(d=> d.Id).join(',')+']',
-        SourceType : 'Order',
-        IDStaff : this.env.user.StaffID,
+        Id: 0,
+        IDBranch: this.env.selectedBranch,
+        IDBusinessPartner: this.IDBusinessPartner,
+        Name: 'Pay for PO [' + this.selectedItems.map((d) => d.Id).join(',') + ']',
+        SourceType: 'Order',
+        IDStaff: this.env.user.StaffID,
         PostingDate: new Date(),
         DueDate: new Date(),
         DocumentDate: new Date(),
-        SubType:this.formGroup.get('PaymentSubType').value,
-        Type:this.formGroup.get('PaymentType').value,
-        PaymentReason:this.formGroup.get('PaymentReason').value,
-        OutgoingPaymentDetails : this.selectedItems.map(d=> d.Id)
+        SubType: this.formGroup.get('PaymentSubType').value,
+        Type: this.formGroup.get('PaymentType').value,
+        PaymentReason: this.formGroup.get('PaymentReason').value,
+        OutgoingPaymentDetails: this.selectedItems.map((d) => d.Id),
+      };
+      this.outgoingPaymentProvider.commonService
+        .connect('POST', 'BANK/OutgoingPayment/PostFromSource', obj)
+        .toPromise()
+        .then((rs: any) => {
+          this.env
+            .showPrompt('Create outgoing payment successfully!', 'Do you want to navigate to outgoing payment ?')
+            .then((d) => {
+              this.nav('outgoing-payment/' + rs.Id, 'forward');
+            });
+          console.log(rs);
+        })
+        .catch((err) => {
+          this.env.showMessage(err?.error?.Message ?? err, 'danger');
+        })
+        .finally(() => {
+          this.submitAttempt = false;
+        });
 
-    } 
-    this.outgoingPaymentProvider.commonService.connect('POST','BANK/OutgoingPayment/PostFromSource',obj).toPromise().then((rs:any)=>{
-      this.env.showPrompt('Create outgoing payment successfully!','Do you want to navigate to outgoing payment ?').then(d=> {
-        this.nav('outgoing-payment/'+rs.Id, 'forward');
-      })
-      console.log(rs);
-    }).catch(err=>{
-      this.env.showMessage(err?.error?.Message?? err,'danger');
-
-    }).finally(()=> {this.submitAttempt = false});
-     
       // this.form.patchValue(this._reportConfig?.DataConfig);
     }
     this.isOpenPopover = false;
@@ -357,106 +369,70 @@ export class PurchaseOrderPage extends PageBase {
   }
 
   ShowRequestOutgoingPayment;
-  ShowSubmitForApproval ;
+  ShowSubmitForApproval;
   changeSelection(i, e = null) {
     super.changeSelection(i, e);
 
-    this.ShowRequestOutgoingPayment = false;
-    this.pageConfig.ShowSubmitOrders = this.pageConfig.canSubmitOrders;
-    this.pageConfig.ShowApprove = this.pageConfig.ShowDisapprove = this.pageConfig.canApprove;
-    this.pageConfig.ShowSubmit = this.pageConfig.canSubmit;
-    this.pageConfig.ShowCancel = this.pageConfig.canCancel;
-    this.pageConfig.ShowDelete = this.pageConfig.canDelete;
-    this.pageConfig.ShowDelete = this.pageConfig.canDelete;
-    this.pageConfig.ShowCopyToReceipt = this.pageConfig.canCopyToReceipt;
-    this.pageConfig.ShowRequestOutgoingPayment = this.pageConfig.canRequestOutgoingPayment;
-    if (this.pageConfig.canRequestOutgoingPayment ) {
-      this.pageConfig.ShowRequestOutgoingPayment= true;
+    {
+      // this.ShowRequestOutgoingPayment = false;
+      // this.pageConfig.ShowSubmitOrders = this.pageConfig.canSubmitOrders;
+      // this.pageConfig.ShowApprove =
+      //   this.pageConfig.ShowDisapprove =
+      //   this.pageConfig.canDisapprove =
+      //     this.pageConfig.canApprove;
+      // this.pageConfig.ShowSubmit = this.pageConfig.canSubmit;
+      // this.pageConfig.ShowCancel = this.pageConfig.canCancel;
+      // this.pageConfig.ShowDelete = this.pageConfig.canDelete;
+      // this.pageConfig.ShowDelete = this.pageConfig.canDelete;
+      // this.pageConfig.ShowCopyToReceipt = this.pageConfig.canCopyToReceipt;
+      // this.pageConfig.ShowRequestOutgoingPayment = this.pageConfig.canRequestOutgoingPayment;
     }
 
-    const uniqueSellerIDs = new Set(this.selectedItems.map(i => i.IDVendor));
+    const approveSet = new Set(['Submitted', 'Draft']);
+    const submitSet = new Set(['Draft', 'Unapproved']);
+    const cancelSet = new Set(['Draft', 'Unapproved']);
+    const deleteSet = new Set(['Draft', 'Unapproved', 'Cancelled']);
+    const copyToReceiptSet = new Set([ 'Approved' ,'Confirmed','Ordered']);
+    const requestOutgoingPaymentSet = new Set(['Ordered']);
+    const uniqueSellerIDs = new Set(this.selectedItems.map((i) => i.IDVendor));
+    const toolbarSet = new Set(['Draft', 'Unapproved', 'Submitted']);
+    this.pageConfig.ShowApprove = this.selectedItems.every(i => approveSet.has(i.Status));
 
-    this.selectedItems?.forEach((i) => {
-      let notShowApprove = ['Draft',
-        'Unapproved', 'Ordered', 'Approved', 'PORequestQuotation', 'Confirmed',
-         'Shipping', 'PartiallyReceived', 'Received', 'Cancelled'];
-      if (notShowApprove.indexOf(i.Status) > -1) {
-        this.pageConfig.ShowApprove = false;
-      }
-      let notShowDisapprove = [ 'Draft', 'Unapproved', 'Ordered', 'PORequestQuotation',
-        'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled'];
-      if (notShowDisapprove.indexOf(i.Status) > -1) {
-        this.pageConfig.ShowDisapprove = false;
-      }
-
-      let notShowCancel = [ 'Ordered', 'Approved', 'PORequestQuotation',
-        'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled',];
-      if (notShowCancel.indexOf(i.Status) > -1) {
-        this.pageConfig.ShowCancel = false;
-      }
-
-      // Đặt mua
-      let notShowSubmitOrders = ['Draft','Unapproved', 'Ordered', 'Submitted',
-        'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled',];
-      if (notShowSubmitOrders.indexOf(i.Status) > -1) {
-        this.pageConfig.ShowSubmitOrders = false;
-      }
-      let notShowDelete = ['Ordered', 'Approved', 'PORequestQuotation',
-        'Confirmed', 'Shipping', 'PartiallyReceived', 'Received'];
-      if (notShowDelete.indexOf(i.Status) > -1) {
-        this.pageConfig.ShowDelete = false;
-      }
-
-      //Gửi duyệt
-      let notShowSubmit = ['Ordered', 'Submitted', 'Approved',
-        'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled'];
-      if (notShowSubmit.indexOf(i.Status) > -1) {
-        this.pageConfig.ShowSubmit = false;
-      }
-
-      let notShowRequestOutgoingPayment = ['Draft','Submitted', 'Approved',
-        'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled'];
-      let notShowRequestOutgoingPaymentPaymentStatus = ['Paid'];
-      if (notShowRequestOutgoingPayment.indexOf(i.Status) != -1 || notShowRequestOutgoingPaymentPaymentStatus.includes(i.PaymentStatus)) {
-        this.ShowRequestOutgoingPayment = false;
-        this.IDBusinessPartner = null;
-      }
-      if (uniqueSellerIDs.size > 1) {
-        this.ShowRequestOutgoingPayment = false;
-        this.IDBusinessPartner = null;
-      }
-      else{
-        this.IDBusinessPartner = [...uniqueSellerIDs][0];
-      }
-      let notShowShowCopyToReceipt = ['Draft','Unapproved', 'Ordered', 'Submitted',
-        'PORequestQuotation', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled',];
-      if (notShowShowCopyToReceipt.indexOf(i.Status) > -1) {
-        this.pageConfig.ShowCopyToReceipt = false;
-      }
-      
-    });
-    if(this.selectedItems?.length==0){
-      this.ShowSubmitForApproval = false;
-      this.pageConfig.ShowApprove = false;
-      this.pageConfig.ShowDisapprove = false;
-      this.pageConfig.ShowCancel = false;
-      this.pageConfig.ShowDelete = false;
-      this.pageConfig.ShowCopyToReceipt = false;
+    this.pageConfig.ShowSubmit = this.selectedItems.every(i => submitSet.has(i.Status));
+    this.pageConfig.ShowCancel = this.selectedItems.every(i => cancelSet.has(i.Status));
+    this.pageConfig.ShowDelete = this.selectedItems.every(i => deleteSet.has(i.Status));
+    this.pageConfig.ShowCopyToReceipt =  this.selectedItems.every(i => copyToReceiptSet.has(i.Status));
+    this.pageConfig.ShowRequestOutgoingPayment =this.selectedItems.every(i => requestOutgoingPaymentSet.has(i.Status));
+    this.pageConfig.ShowChangeBranch = this.pageConfig.ShowApprove = this.pageConfig.ShowDisapprove =
+    this.pageConfig.ShowArchive = this.pageConfig.ShowDelete = this.selectedItems.every(i => toolbarSet.has(i.Status));
+    if (this.pageConfig.canRequestOutgoingPayment) {
+      this.pageConfig.ShowRequestOutgoingPayment = true;
+    }
+    if (uniqueSellerIDs.size > 1) {
       this.ShowRequestOutgoingPayment = false;
+      this.IDBusinessPartner = null;
+    } else {
+      this.IDBusinessPartner = [...uniqueSellerIDs][0];
     }
+
   }
   copyToReceipt() {
     if (!this.pageConfig.canCopyToReceipt) return;
-    let obj = this.selectedItems.map(d=> {return {Id:d.Id}});
-  
+    let obj = this.selectedItems.map((d) => {
+      return { Id: d.Id };
+    });
+
     this.pageProvider.commonService
-    .connect('POST', 'PURCHASE/Order/CopyToReceipt/', obj).toPromise().then((rs:any)=>{
-      if(rs >0){
-        this.env.showMessage('ASN created!', 'success');
-        this.refresh();
-      }
-    }).catch(err=>{
-      this.env.showMessage('Cannot create ASN, please try again later', 'danger');
-    })
+      .connect('POST', 'PURCHASE/Order/CopyToReceipt/', obj)
+      .toPromise()
+      .then((rs: any) => {
+        if (rs > 0) {
+          this.env.showMessage('ASN created!', 'success');
+          this.refresh();
+        }
+      })
+      .catch((err) => {
+        this.env.showMessage('Cannot create ASN, please try again later', 'danger');
+      });
   }
 }

@@ -531,10 +531,10 @@ export class PurchaseOrderDetailPage extends PageBase {
        
       }
       else{
-        this.pageProvider['copyToReceipt']({...this.item,...this.receiptFormGroup.getRawValue()}).then((rs)=>{
+        this.pageProvider['copyToReceipt']({...this.item,...{...this.receiptFormGroup.getRawValue(),Status:'Confirmed'}}).then((rs)=>{
           if(rs >0){
             this.env.showMessage('ASN created!', 'success');
-            this.refresh();
+            this.refresh(); 
           }
         }).catch(err=>{
           this.env.showMessage('Cannot create ASN, please try again later', 'danger');
@@ -558,7 +558,7 @@ export class PurchaseOrderDetailPage extends PageBase {
       message: 'Please wait for a few moments',
     });
     await loading.present().then(() => {
-      this.pageProvider['copyToReceipt']({...this.item,...{Status:'Confirmed'}})
+      this.pageProvider['copyToReceipt']({...this.item,Status:'Confirmed'})
         .then((resp: any) => {
           if (loading) loading.dismiss();
           this.alertCtrl
