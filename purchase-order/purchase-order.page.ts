@@ -392,19 +392,25 @@ export class PurchaseOrderPage extends PageBase {
     const submitSet = new Set(['Draft', 'Unapproved']);
     const cancelSet = new Set(['Draft', 'Unapproved']);
     const deleteSet = new Set(['Draft', 'Unapproved', 'Cancelled']);
-    const copyToReceiptSet = new Set([ 'Approved' ,'Confirmed','Ordered']);
+    const copyToReceiptSet = new Set(['Approved', 'Confirmed', 'Ordered']);
     const requestOutgoingPaymentSet = new Set(['Ordered']);
     const uniqueSellerIDs = new Set(this.selectedItems.map((i) => i.IDVendor));
     const toolbarSet = new Set(['Draft', 'Unapproved', 'Submitted']);
-    this.pageConfig.ShowApprove = this.selectedItems.every(i => approveSet.has(i.Status));
+    this.pageConfig.ShowApprove = this.selectedItems.every((i) => approveSet.has(i.Status));
 
-    this.pageConfig.ShowSubmit = this.selectedItems.every(i => submitSet.has(i.Status));
-    this.pageConfig.ShowCancel = this.selectedItems.every(i => cancelSet.has(i.Status));
-    this.pageConfig.ShowDelete = this.selectedItems.every(i => deleteSet.has(i.Status));
-    this.pageConfig.ShowCopyToReceipt =  this.selectedItems.every(i => copyToReceiptSet.has(i.Status));
-    this.pageConfig.ShowRequestOutgoingPayment =this.selectedItems.every(i => requestOutgoingPaymentSet.has(i.Status));
-    this.pageConfig.ShowChangeBranch = this.pageConfig.ShowApprove = this.pageConfig.ShowDisapprove =
-    this.pageConfig.ShowArchive = this.pageConfig.ShowDelete = this.selectedItems.every(i => toolbarSet.has(i.Status));
+    this.pageConfig.ShowSubmit = this.selectedItems.every((i) => submitSet.has(i.Status));
+    this.pageConfig.ShowCancel = this.selectedItems.every((i) => cancelSet.has(i.Status));
+    this.pageConfig.ShowDelete = this.selectedItems.every((i) => deleteSet.has(i.Status));
+    this.pageConfig.ShowCopyToReceipt = this.selectedItems.every((i) => copyToReceiptSet.has(i.Status));
+    this.pageConfig.ShowRequestOutgoingPayment = this.selectedItems.every((i) =>
+      requestOutgoingPaymentSet.has(i.Status),
+    );
+    this.pageConfig.ShowChangeBranch =
+      this.pageConfig.ShowApprove =
+      this.pageConfig.ShowDisapprove =
+      this.pageConfig.ShowArchive =
+      this.pageConfig.ShowDelete =
+        this.selectedItems.every((i) => toolbarSet.has(i.Status));
     if (this.pageConfig.canRequestOutgoingPayment) {
       this.pageConfig.ShowRequestOutgoingPayment = true;
     }
@@ -414,7 +420,6 @@ export class PurchaseOrderPage extends PageBase {
     } else {
       this.IDBusinessPartner = [...uniqueSellerIDs][0];
     }
-
   }
   copyToReceipt() {
     if (!this.pageConfig.canCopyToReceipt) return;
@@ -425,10 +430,51 @@ export class PurchaseOrderPage extends PageBase {
     this.pageProvider.commonService
       .connect('POST', 'PURCHASE/Order/CopyToReceipt/', obj)
       .toPromise()
-      .then((rs: any) => {
-        if (rs > 0) {
-          this.env.showMessage('ASN created!', 'success');
-          this.refresh();
+      .then(async (resp: any) => {
+        let messageTitle = 'Đã tạo ASN thành công : ';
+        let messageSubtile = 'Nhưng có lỗi khi tạo ASN ';
+        let message = '';
+        let ids = [];
+        let idsErr = [];
+        for(const r of resp ){
+          if (message != '') message += '<br>';
+          if (r.Id) {
+            ids.push(r.Id);
+          }
+          if (r.ErrorList && r.ErrorList.length) {
+            if (r.Id) {
+              idsErr.push(r.Id);
+            }
+            for (let i = 0; i < r.ErrorList.length && i <= 5; i++)
+              if (i == 5) message += '<br> Còn nữa...';
+              else {
+                const e = r.ErrorList[i];
+                const translationPromises = this.env.translateResource(e.Message);
+                await translationPromises.then((translated) => {
+                  e.Message = translated;
+                });
+                message += '<br> ' + e.IDItem + ' - ' + e.Name + ': ' + e.Message;
+              }
+          } else {
+            this.env.showMessage('ASN created!', 'Success');
+          }
+        }
+        if (message != '') {
+          this.env
+            .showPrompt(
+              {
+                code: 'There was an error creating the ASN: {{value}}',
+                value: message,
+              },
+              ids.length > 0 ? messageSubtile + idsErr.join(', ') : null,
+              ids.length > 0 ? messageTitle + ids.join(', ') : 'Lỗi khi tạo ASN',
+            )
+            .then((_) => {
+              // if (messageSubtile) this.nav('/receipt/' + resp.Id);
+            })
+            .catch((e) => {});
+        } else {
+          this.env.showPrompt(null, null, messageTitle + ids.join(', '));
         }
       })
       .catch((err) => {

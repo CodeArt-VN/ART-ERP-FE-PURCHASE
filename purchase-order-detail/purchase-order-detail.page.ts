@@ -19,10 +19,10 @@ import { ApiSetting } from 'src/app/services/static/api-setting';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
 
 @Component({
-    selector: 'app-purchase-order-detail',
-    templateUrl: './purchase-order-detail.page.html',
-    styleUrls: ['./purchase-order-detail.page.scss'],
-    standalone: false
+  selector: 'app-purchase-order-detail',
+  templateUrl: './purchase-order-detail.page.html',
+  styleUrls: ['./purchase-order-detail.page.scss'],
+  standalone: false,
 })
 export class PurchaseOrderDetailPage extends PageBase {
   @ViewChild('importfile') importfile: any;
@@ -33,9 +33,16 @@ export class PurchaseOrderDetailPage extends PageBase {
   vendorView = false;
   paymentStatusList = [];
   _vendorDataSource = this.buildSelectDataSource((term) => {
-    return this.contactProvider.search({  SkipAddress: true, IsVendor: true, SortBy: ['Id_desc'],Take: 20, Skip: 0, Term: term });
+    return this.contactProvider.search({
+      SkipAddress: true,
+      IsVendor: true,
+      SortBy: ['Id_desc'],
+      Take: 20,
+      Skip: 0,
+      Term: term,
+    });
   });
-  paymentFormGroup:FormGroup;
+  paymentFormGroup: FormGroup;
   constructor(
     public pageProvider: PURCHASE_OrderProvider,
     public purchaseOrderDetailProvider: PURCHASE_OrderDetailProvider,
@@ -56,14 +63,13 @@ export class PurchaseOrderDetailPage extends PageBase {
   ) {
     super();
     this.pageConfig.isDetailPage = true;
-    if(this.env.user.IDBusinessPartner > 0 && this.env.user.SysRoles.includes('VENDOR')) 
-    {
+    if (this.env.user.IDBusinessPartner > 0 && this.env.user.SysRoles.includes('VENDOR')) {
       this.vendorView = true;
-    } 
+    }
     this.paymentFormGroup = formBuilder.group({
       PaymentType: [''],
-      PaymentSubType:[''],
-      PaymentReason : ['']      
+      PaymentSubType: [''],
+      PaymentReason: [''],
     });
     Object.assign(pageProvider, {
       importDetail(fileToUpload: File, id) {
@@ -96,10 +102,10 @@ export class PurchaseOrderDetailPage extends PageBase {
       },
     });
   }
-  print(){
+  print() {
     this.pageConfig['purchase-order-note'] = true;
-    this.router.navigate(['/purchase-order-note/'+this.item.Id], {
-      state: { print: true }
+    this.router.navigate(['/purchase-order-note/' + this.item.Id], {
+      state: { print: true },
     });
   }
   preLoadData(event) {
@@ -136,7 +142,7 @@ export class PurchaseOrderDetailPage extends PageBase {
       TotalDiscount: new FormControl({ value: '', disabled: true }),
       TotalAfterTax: new FormControl({ value: '', disabled: true }),
     });
-    this.branchList = lib.cloneObject(this.env.branchList)
+    this.branchList = lib.cloneObject(this.env.branchList);
     this.contactProvider.read({ IsStorer: true, Take: 5000 }).then((resp) => {
       this.storerList = resp['data'];
     });
@@ -160,11 +166,11 @@ export class PurchaseOrderDetailPage extends PageBase {
           IDBranch: this.env.selectedBranch,
         })
         .toPromise(),
-        this.contactProvider.read({ IsVendor: true, Take: 20 })
+      this.contactProvider.read({ IsVendor: true, Take: 20 }),
     ]).then((values: any) => {
       this.pageConfig.POShowSuggestedQuantity = JSON.parse(values[0]['Value']);
       this.pageConfig.POShowAdjustedQuantity = JSON.parse(values[1]['Value']);
-      if(values&& values[2] && values[2].data){
+      if (values && values[2] && values[2].data) {
         this._vendorDataSource.selected = [...values[2].data];
       }
       super.preLoadData(event);
@@ -183,19 +189,30 @@ export class PurchaseOrderDetailPage extends PageBase {
 
     super.loadedData(event, true);
     this.setOrderLines();
-    this.pageConfig.ShowRequestOutgoingPayment = this.pageConfig.canRequestOutgoingPayment ;
-    let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved','Paid'];
-    let notShowRequestOutgoingPayment = ['Draft','Submitted', 'Approved',
-      'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled'];
-    if(notShowRequestOutgoingPayment.includes(this.formGroup.get('Status').value) || notShowRequestOutgoingPaymentPaymentStatus.includes(this.formGroup.get('PaymentStatus').value)){
-      this.pageConfig.ShowRequestOutgoingPayment = false
+    this.pageConfig.ShowRequestOutgoingPayment = this.pageConfig.canRequestOutgoingPayment;
+    let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved', 'Paid'];
+    let notShowRequestOutgoingPayment = [
+      'Draft',
+      'Submitted',
+      'Approved',
+      'PORequestQuotation',
+      'Confirmed',
+      'Shipping',
+      'PartiallyReceived',
+      'Received',
+      'Cancelled',
+    ];
+    if (
+      notShowRequestOutgoingPayment.includes(this.formGroup.get('Status').value) ||
+      notShowRequestOutgoingPaymentPaymentStatus.includes(this.formGroup.get('PaymentStatus').value)
+    ) {
+      this.pageConfig.ShowRequestOutgoingPayment = false;
     }
     this.pageConfig.ShowCopyToReceipt = this.pageConfig.canCopyToReceipt;
     let onlyShowCopyToReceipt = ['Ordered'];
-    if(!onlyShowCopyToReceipt.includes(this.formGroup.get('Status').value)) this.pageConfig.ShowCopyToReceipt = false;
+    if (!onlyShowCopyToReceipt.includes(this.formGroup.get('Status').value)) this.pageConfig.ShowCopyToReceipt = false;
 
-
-    if(this.item?._Vendor){
+    if (this.item?._Vendor) {
       this._vendorDataSource.selected = [...this._vendorDataSource.selected, this.item?._Vendor];
       this._currentBusinessPartner = this.item._Vendor;
     }
@@ -204,12 +221,12 @@ export class PurchaseOrderDetailPage extends PageBase {
 
   setOrderLines() {
     this.formGroup.controls.OrderLines = new FormArray([]);
-    if (this.item.OrderLines?.length){
+    if (this.item.OrderLines?.length) {
       this.item.OrderLines.forEach((i) => {
         this.addLine(i);
       });
     }
-    if(!this.pageConfig.canEdit)  this.formGroup.controls.OrderLines.disable();
+    if (!this.pageConfig.canEdit) this.formGroup.controls.OrderLines.disable();
     // else
     //     this.addOrderLine({ IDOrder: this.item.Id, Id: 0 });
   }
@@ -353,7 +370,7 @@ export class PurchaseOrderDetailPage extends PageBase {
       super.saveChange2();
     }, 300);
   }
-  changeVendor(e){
+  changeVendor(e) {
     this._currentBusinessPartner = e;
     this.saveOrder();
   }
@@ -378,7 +395,7 @@ export class PurchaseOrderDetailPage extends PageBase {
   segmentChanged(ev: any) {
     this.segmentView = ev.detail.value;
     this.segmentView = ev.detail.value;
-    if(this.segmentView == 's3'){
+    if (this.segmentView == 's3') {
       this.getPaymentHistory();
     }
   }
@@ -511,46 +528,85 @@ export class PurchaseOrderDetailPage extends PageBase {
 
   isShowReceiptModal = false;
   receiptFormGroup = this.formBuilder.group({
-    Code:['',Validators.required],
-    IDCarrier:['',Validators.required],
-    VehicleNumber:['',Validators.required],
-    ExpectedReceiptDate:['',Validators.required],
+    Code: ['', Validators.required],
+    IDCarrier: ['', Validators.required],
+    VehicleNumber: ['', Validators.required],
+    ExpectedReceiptDate: ['', Validators.required],
   });
-  onDismissReceiptModal(isApply = false){
+  onDismissReceiptModal(isApply = false) {
     this.isShowReceiptModal = false;
 
-    if(isApply){
+    if (isApply) {
       this.receiptFormGroup.updateValueAndValidity();
       if (!this.receiptFormGroup.valid) {
-        let invalidControls = this.findInvalidControlsRecursive(this.receiptFormGroup); 
-        const translationPromises = invalidControls.map(control => this.env.translateResource(control));
+        let invalidControls = this.findInvalidControlsRecursive(this.receiptFormGroup);
+        const translationPromises = invalidControls.map((control) => this.env.translateResource(control));
         Promise.all(translationPromises).then((values) => {
           let invalidControls = values;
           this.env.showMessage('Please recheck control(s): {{value}}', 'warning', invalidControls.join(' | '));
-          });
-       
-      }
-      else{
-        this.pageProvider['copyToReceipt']({...this.item,...{...this.receiptFormGroup.getRawValue(),Status:'Confirmed'}}).then((rs)=>{
-          if(rs >0){
-            this.env.showMessage('ASN created!', 'success');
-            this.refresh(); 
-          }
-        }).catch(err=>{
-          this.env.showMessage('Cannot create ASN, please try again later', 'danger');
+        });
+      } else {
+        this.pageProvider['copyToReceipt']({
+          ...this.item,
+          ...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' },
         })
+          .then(async (resp: any) => {
+            let messageTitle = 'Có lỗi khi tạo ASN';
+            let messageSubtile = null;
+            if (resp.Id) {
+              messageTitle = 'Đã tạo ASN thành công nhưng ' + messageTitle;
+              messageSubtile = 'Bạn có muốn di chuyến đến ASN vừa tạo?';
+            }
+            if (resp.ErrorList && resp.ErrorList.length) {
+              let message = '';
+              for (let i = 0; i < resp.ErrorList.length && i <= 5; i++)
+                if (i == 5) message += '<br> Còn nữa...';
+                else {
+                  const e = resp.ErrorList[i];
+                  const translationPromises =this.env.translateResource(e.Message);
+                  await translationPromises.then((translated) => {
+                    e.Message = translated;
+                  });
+                  message += '<br> ' + e.IDItem + ' - ' + e.Name + ': ' + e.Message;
+                }
+              this.env
+                .showPrompt(
+                  {
+                    code: 'There was an error creating the ASN: {{value}}',
+                    value: message,
+                  },
+                  messageSubtile,
+                  messageTitle,
+                )
+                .then((_) => {
+                  if (messageSubtile) this.nav('/receipt/' + resp.Id);
+                })
+                .catch((e) => {});
+            } else {
+              this.env.showMessage('ASN created!', 'success');
+            }
+            // if (resp > 0) {
+            //   this.env.showMessage('ASN created!', 'success');
+            //   this.refresh();
+            // }
+          })
+          .catch((err) => {
+            this.env.showMessage('Cannot create ASN, please try again later', 'danger');
+          });
       }
     }
   }
-  confirmOrder(){
-    if(  this.carrierList.length == 0){
-      this.contactProvider.read({IsCarrier:true}).then((rs:any)=>{
-        if(rs && rs.data?.length>0){
-          this.carrierList = [...rs.data];
-        }
-      }).finally(()=>  this.isShowReceiptModal = true)
-    } else this.isShowReceiptModal = true
-  
+  confirmOrder() {
+    if (this.carrierList.length == 0) {
+      this.contactProvider
+        .read({ IsCarrier: true })
+        .then((rs: any) => {
+          if (rs && rs.data?.length > 0) {
+            this.carrierList = [...rs.data];
+          }
+        })
+        .finally(() => (this.isShowReceiptModal = true));
+    } else this.isShowReceiptModal = true;
   }
   async copyToReceipt() {
     const loading = await this.loadingController.create({
@@ -558,35 +614,56 @@ export class PurchaseOrderDetailPage extends PageBase {
       message: 'Please wait for a few moments',
     });
     await loading.present().then(() => {
-      this.pageProvider['copyToReceipt']({...this.item,Status:'Confirmed'})
-        .then((resp: any) => {
+      this.pageProvider['copyToReceipt']({ ...this.item, Status: 'Confirmed' })
+        .then(async(resp: any) => {
           if (loading) loading.dismiss();
-          this.alertCtrl
-            .create({
-              header: 'Đã tạo ASN/Receipt',
-
-              message: 'Bạn có muốn di chuyển đến ASN mới tạo?',
-              cssClass: 'alert-text-left',
-              buttons: [
+          let messageTitle = 'Có lỗi khi tạo ASN';
+          let messageSubtile = null;
+          if (resp.Id) {
+            messageTitle = 'Đã tạo ASN thành công nhưng ' + messageTitle;
+            messageSubtile = 'Bạn có muốn di chuyến đến ASN vừa tạo?';
+          }
+          if (resp.ErrorList && resp.ErrorList.length) {
+            let message = '';
+            for (let i = 0; i < resp.ErrorList.length && i <= 5; i++)
+              if (i == 5) message += '<br> Còn nữa...';
+              else {
+                const e = resp.ErrorList[i];
+                const translationPromises =this.env.translateResource(e.Message);
+                await translationPromises.then((translated) => {
+                  e.Message = translated;
+                });
+                message += '<br> ' + e.IDItem + ' - ' + e.Name + ': ' + e.Message;
+              }
+            this.env
+              .showPrompt(
                 {
-                  text: 'Không',
-                  role: 'cancel',
-                  handler: () => {},
+                  code: 'There was an error creating the ASN: {{value}}',
+                  value: message,
                 },
+                messageSubtile,
+                messageTitle,
+              )
+              .then((_) => {
+                if (messageSubtile) this.nav('/receipt/' + resp.Id);
+              })
+              .catch((e) => {});
+          } else {
+            this.env
+              .showPrompt(
                 {
-                  text: 'Có',
-                  cssClass: 'success-btn',
-                  handler: () => {
-                    this.nav('/receipt/' + resp);
-                  },
+                  code: 'Do you want to navigate to the receipt just created?',
                 },
-              ],
-            })
-            .then((alert) => {
-              alert.present();
-            });
-          this.env.showMessage('ASN created!', 'success');
-          this.env.publishEvent({ Code: this.pageConfig.pageName });
+                null,
+                'ASN created!',
+              )
+              .then((_) => {
+                if (messageSubtile) this.nav('/receipt/' + resp.Id);
+              })
+              .catch((e) => {});
+            //this.env.showMessage('ASN created!', 'success');
+            
+          }
         })
         .catch((err) => {
           console.log(err);
@@ -668,109 +745,117 @@ export class PurchaseOrderDetailPage extends PageBase {
     }
   }
   _currentBusinessPartner;
-  createOutgoingPayment(){
+  createOutgoingPayment() {
     let date = this.formGroup.get('OrderDate').value;
 
     let navigationExtras: NavigationExtras = {
       state: {
-           OutgoingPaymentDetails: [{
-            DocumentEntry:this.formGroup.get('Id').value,
-            Id:0,
-            DocumentType:'Order',
-            Amount:  this.formGroup.get('TotalAfterTax').value - this.item.PaidAmount
-           }],
-            _BusinessPartner:this._currentBusinessPartner,
-          IDBusinessPartner:this.formGroup.get('IDVendor').value,
-          Name: 'Pay for PO #'+this.formGroup.get('Id').value,
-          IDStaff : this.env.user.StaffID,
-          IDBranch:this.formGroup.get('IDBranch').value,
-          Amount: this.formGroup.get('TotalAfterTax').value - this.item.PaidAmount,
-          DocumentDate: date,
-          PostingDate:date,
-          DueDate: date,
-          
-      }
+        OutgoingPaymentDetails: [
+          {
+            DocumentEntry: this.formGroup.get('Id').value,
+            Id: 0,
+            DocumentType: 'Order',
+            Amount: this.formGroup.get('TotalAfterTax').value - this.item.PaidAmount,
+          },
+        ],
+        _BusinessPartner: this._currentBusinessPartner,
+        IDBusinessPartner: this.formGroup.get('IDVendor').value,
+        Name: 'Pay for PO #' + this.formGroup.get('Id').value,
+        IDStaff: this.env.user.StaffID,
+        IDBranch: this.formGroup.get('IDBranch').value,
+        Amount: this.formGroup.get('TotalAfterTax').value - this.item.PaidAmount,
+        DocumentDate: date,
+        PostingDate: date,
+        DueDate: date,
+      },
     };
     this.nav('/outgoing-payment/0', 'forward', navigationExtras);
   }
   paymentDetailList = [];
   showSpinnerPayment = false;
   outgoingPaymentStatusList;
-  getPaymentHistory(){
+  getPaymentHistory() {
     this.showSpinnerPayment = true;
-     let queryPayment = {
-      Id:this.formGroup.get('Id').value
-     }
-      this.commonService.connect('GET','PURCHASE/Order/GetPaymentHistory/',queryPayment).toPromise()
+    let queryPayment = {
+      Id: this.formGroup.get('Id').value,
+    };
+    this.commonService
+      .connect('GET', 'PURCHASE/Order/GetPaymentHistory/', queryPayment)
+      .toPromise()
       .then((result: any) => {
         this.paymentDetailList = result;
-        if(!this.outgoingPaymentStatusList){
-          this.env.getStatus('OutgoingPaymentStatus').then(rs=>{
+        if (!this.outgoingPaymentStatusList) {
+          this.env.getStatus('OutgoingPaymentStatus').then((rs) => {
             this.outgoingPaymentStatusList = rs;
-            this.paymentDetailList.forEach(i=>{
-                i._Status = this.outgoingPaymentStatusList.find((d) => d.Code == i.Status);
-            })
-          })
-        }else{
-          this.paymentDetailList.forEach(i=>{
+            this.paymentDetailList.forEach((i) => {
+              i._Status = this.outgoingPaymentStatusList.find((d) => d.Code == i.Status);
+            });
+          });
+        } else {
+          this.paymentDetailList.forEach((i) => {
             i._Status = this.outgoingPaymentStatusList.find((d) => d.Code == i.Status);
-        })
-      }
+          });
+        }
         // this.paymentDetailList = result;
         //   this.paymentDetailList.forEach(i=>{
         //     i._Status = this.paymentStatusList.find((d) => d.Code == i.Status);
         // })
-        
       })
-      .catch(err=> this.env.showMessage(err,'danger'))
-      .finally(()=>{ this.showSpinnerPayment = false});
-    }
+      .catch((err) => this.env.showMessage(err, 'danger'))
+      .finally(() => {
+        this.showSpinnerPayment = false;
+      });
+  }
 
-    
   ngOnDestroy() {
     this.dismissPopover();
   }
   @ViewChild('popover') popover;
   isOpenPopover = false;
   dismissPopover(apply: boolean = false) {
-   
     if (apply) {
       if (!this.formGroup.get('IDVendor').value) {
         this.isOpenPopover = false;
-        this.env.showMessage('Vendor not valid!','danger')
+        this.env.showMessage('Vendor not valid!', 'danger');
         return;
       }
       this.submitAttempt = true;
       let date = this.formGroup.get('OrderDate').value;
-      let obj ={
-        IDBusinessPartner:this.formGroup.get('IDVendor').value,
-        Name: 'From PO #'+this.formGroup.get('Id').value,
-        IDStaff : this.env.user.StaffID,
-        IDBranch:this.formGroup.get('IDBranch').value,
-        SourceType : 'Order',
-        SubType:this.paymentFormGroup.get('PaymentSubType').value,
-        Type:this.paymentFormGroup.get('PaymentType').value,
-        PaymentReason:this.paymentFormGroup.get('PaymentReason').value,
+      let obj = {
+        IDBusinessPartner: this.formGroup.get('IDVendor').value,
+        Name: 'From PO #' + this.formGroup.get('Id').value,
+        IDStaff: this.env.user.StaffID,
+        IDBranch: this.formGroup.get('IDBranch').value,
+        SourceType: 'Order',
+        SubType: this.paymentFormGroup.get('PaymentSubType').value,
+        Type: this.paymentFormGroup.get('PaymentType').value,
+        PaymentReason: this.paymentFormGroup.get('PaymentReason').value,
         DocumentDate: date,
-        PostingDate:date,
+        PostingDate: date,
         DueDate: date,
         OutgoingPaymentDetails: [this.formGroup.get('Id').value],
-      }
-      this.pageProvider.commonService.connect('POST','BANK/OutgoingPayment/PostFromSource',obj).toPromise().then((rs:any)=>{
-        this.env.showPrompt('Create outgoing payment successfully!','Do you want to navigate to outgoing payment ?').then(d=> {
-          this.nav('outgoing-payment/'+rs.Id, 'forward');
-          this.refresh();
+      };
+      this.pageProvider.commonService
+        .connect('POST', 'BANK/OutgoingPayment/PostFromSource', obj)
+        .toPromise()
+        .then((rs: any) => {
+          this.env
+            .showPrompt('Create outgoing payment successfully!', 'Do you want to navigate to outgoing payment ?')
+            .then((d) => {
+              this.nav('outgoing-payment/' + rs.Id, 'forward');
+              this.refresh();
+            });
         })
-      }).catch(err=>{
-        this.env.showMessage(err?.error?.Message?? err,'danger');
-  
-      }).finally(()=> {this.submitAttempt = false});
+        .catch((err) => {
+          this.env.showMessage(err?.error?.Message ?? err, 'danger');
+        })
+        .finally(() => {
+          this.submitAttempt = false;
+        });
     }
     this.isOpenPopover = false;
   }
   presentPopover(event) {
     this.isOpenPopover = true;
-
   }
-
 }
