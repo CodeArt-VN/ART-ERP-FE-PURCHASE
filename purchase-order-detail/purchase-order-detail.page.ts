@@ -550,46 +550,41 @@ export class PurchaseOrderDetailPage extends PageBase {
           ...this.item,
           ...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' },
         })
-          .then(async (resp: any) => {
-            let messageTitle = 'Có lỗi khi tạo ASN';
-            let messageSubtile = null;
-            if (resp.Id) {
-              messageTitle = 'Đã tạo ASN thành công nhưng ' + messageTitle;
-              messageSubtile = 'Bạn có muốn di chuyến đến ASN vừa tạo?';
-            }
-            if (resp.ErrorList && resp.ErrorList.length) {
-              let message = '';
-              for (let i = 0; i < resp.ErrorList.length && i <= 5; i++)
-                if (i == 5) message += '<br> Còn nữa...';
-                else {
-                  const e = resp.ErrorList[i];
-                  const translationPromises =this.env.translateResource(e.Message);
-                  await translationPromises.then((translated) => {
-                    e.Message = translated;
+          .then(async (r: any) => {
+            let messageTitle ;
+            let subMessage = 'Do you want to navigate to the receipt just created?';
+            let message = '';
+            let recheckList = [];
+            let ids = [];
+            if (r.Id) ids.push(r.Id);
+            if (r.RecheckReceipts && r.RecheckReceipts.length) recheckList = [...recheckList, ...r.RecheckReceipts];
+            if(recheckList.length > 0) message = recheckList.join(', ');
+            if(ids.length > 0) messageTitle={code:'Created ASN successfully with Id: {{value}}', value: ids.join(', ')};
+            else messageTitle='PO has entered a full amount of quantity!';
+            this.env
+              .showPrompt(
+                message != '' ?  {code:'Refer to ASN: {{value}}' ,value: message }: null,
+                ids.length > 0 ? subMessage : null, 
+                messageTitle,
+              )
+              .then((_) => {
+                if (ids.length > 0){
+                  this.refresh();
+                  this.env.publishEvent({
+                    Code: this.pageConfig.pageName,
                   });
-                  message += '<br> ' + e.IDItem + ' - ' + e.Name + ': ' + e.Message;
-                }
-              this.env
-                .showPrompt(
-                  {
-                    code: 'There was an error creating the ASN: {{value}}',
-                    value: message,
-                  },
-                  messageSubtile,
-                  messageTitle,
-                )
-                .then((_) => {
-                  if (messageSubtile) this.nav('/receipt/' + resp.Id);
-                })
-                .catch((e) => {});
-            } else {
-              this.env.showMessage('ASN created!', 'success');
-            }
-            // if (resp > 0) {
-            //   this.env.showMessage('ASN created!', 'success');
-            //   this.refresh();
-            // }
-          })
+                  this.nav('/receipt/' + r.Id);
+                } 
+              })
+              .catch((e) => {
+                if (ids.length > 0){
+                  this.refresh();
+                  this.env.publishEvent({
+                    Code: this.pageConfig.pageName,
+                  });
+                } 
+              });
+            })
           .catch((err) => {
             this.env.showMessage('Cannot create ASN, please try again later', 'danger');
           });
@@ -615,59 +610,43 @@ export class PurchaseOrderDetailPage extends PageBase {
     });
     await loading.present().then(() => {
       this.pageProvider['copyToReceipt']({ ...this.item, Status: 'Confirmed' })
-        .then(async(resp: any) => {
+        .then((r: any) => {
           if (loading) loading.dismiss();
-          let messageTitle = 'Có lỗi khi tạo ASN';
-          let messageSubtile = null;
-          if (resp.Id) {
-            messageTitle = 'Đã tạo ASN thành công nhưng ' + messageTitle;
-            messageSubtile = 'Bạn có muốn di chuyến đến ASN vừa tạo?';
-          }
-          if (resp.ErrorList && resp.ErrorList.length) {
-            let message = '';
-            for (let i = 0; i < resp.ErrorList.length && i <= 5; i++)
-              if (i == 5) message += '<br> Còn nữa...';
-              else {
-                const e = resp.ErrorList[i];
-                const translationPromises =this.env.translateResource(e.Message);
-                await translationPromises.then((translated) => {
-                  e.Message = translated;
+          let messageTitle ;
+          let subMessage = 'Do you want to navigate to the receipt just created?';
+          let message = '';
+          let recheckList = [];
+          let ids = [];
+          if (r.Id) ids.push(r.Id);
+          if (r.RecheckReceipts && r.RecheckReceipts.length) recheckList = [...recheckList, ...r.RecheckReceipts];
+          if(recheckList.length > 0) message = recheckList.join(', ');
+          if(ids.length > 0) messageTitle={code:'Created ASN successfully with Id: {{value}}', value: ids.join(', ')};
+          else messageTitle='PO has entered a full amount of quantity!';
+          this.env
+            .showPrompt(
+              message != '' ?  {code:'Refer to ASN: {{value}}' ,value: message }: null,
+              ids.length > 0 ? subMessage : null, 
+              messageTitle,
+            )
+            .then((_) => {
+              if(ids.length > 0){
+                this.env.publishEvent({
+                  Code: this.pageConfig.pageName,
                 });
-                message += '<br> ' + e.IDItem + ' - ' + e.Name + ': ' + e.Message;
+                this.refresh();
+                this.nav('/receipt/' + r.Id);
               }
-            this.env
-              .showPrompt(
-                {
-                  code: 'There was an error creating the ASN: {{value}}',
-                  value: message,
-                },
-                messageSubtile,
-                messageTitle,
-              )
-              .then((_) => {
-                if (messageSubtile) this.nav('/receipt/' + resp.Id);
-              })
-              .catch((e) => {});
-          } else {
-            this.env
-              .showPrompt(
-                {
-                  code: 'Do you want to navigate to the receipt just created?',
-                },
-                null,
-                'ASN created!',
-              )
-              .then((_) => {
-                if (messageSubtile) this.nav('/receipt/' + resp.Id);
-              })
-              .catch((e) => {});
-            //this.env.showMessage('ASN created!', 'success');
-            
-          }
-        })
+            })
+            .catch((e) => {
+              if(ids.length > 0){
+                this.refresh();
+                this.env.publishEvent({
+                  Code: this.pageConfig.pageName,
+                });
+              }
+            });
+          })
         .catch((err) => {
-          console.log(err);
-
           this.env.showMessage('Cannot create ASN, please try again later', 'danger');
           if (loading) loading.dismiss();
         });
