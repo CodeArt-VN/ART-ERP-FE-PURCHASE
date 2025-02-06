@@ -76,9 +76,9 @@ export class PurchaseRequestPage extends PageBase {
 
   changeSelection(i, e = null) {
     super.changeSelection(i, e);
-    this.showCancel = this.pageConfig.canCancel;
-    this.showApprove = this.showDisapprove = this.pageConfig.canApprove;
-    this.showSubmit = this.pageConfig.canSubmit;
+    this.pageConfig.ShowCancel = this.pageConfig.canCancel;
+    this.pageConfig.ShowApprove = this.showDisapprove = this.pageConfig.canApprove;
+    this.pageConfig.ShowSubmit = this.pageConfig.canSubmit;
 
     this.selectedItems?.forEach((i) => {
       // let ShowSubmit = ['Draft', 'Unapproved'];
@@ -92,25 +92,22 @@ export class PurchaseRequestPage extends PageBase {
 
 
       if (notShowSubmit.indexOf(i.Status) != -1) {
-        this.showSubmit = false;
+        this.pageConfig.ShowSubmit = false;
       }
 
       if (notShowApprove.indexOf(i.Status) != -1) {
-        this.showApprove = false;
+        this.pageConfig.ShowApprove = false;
       }
       if (notShowDisApprove.indexOf(i.Status) != -1) {
-        this.showDisapprove = false;
+        this.pageConfig.ShowDisapprove = false;
       }
       if (notShowCancel.indexOf(i.Status) != -1) {
-        this.showCancel = false;
+        this.pageConfig.ShowCancel = false;
       }
 
     });
-
-
-
     if (this.selectedItems?.length == 0) {
-      this.showCancel = this.showApprove = this.showSubmit = false;
+      this.pageConfig.ShowCancel = this.pageConfig.ShowApprove = this.pageConfig.ShowSubmit = false;
     }
   }
 

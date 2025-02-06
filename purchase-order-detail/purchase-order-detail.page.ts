@@ -546,48 +546,49 @@ export class PurchaseOrderDetailPage extends PageBase {
           this.env.showMessage('Please recheck control(s): {{value}}', 'warning', invalidControls.join(' | '));
         });
       } else {
-        this.pageProvider['copyToReceipt']({
-          ...this.item,
-          ...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' },
-        })
-          .then(async (r: any) => {
-            let messageTitle ;
-            let subMessage = 'Do you want to navigate to the receipt just created?';
-            let message = '';
-            let recheckList = [];
-            let ids = [];
-            if (r.Id) ids.push(r.Id);
-            if (r.RecheckReceipts && r.RecheckReceipts.length) recheckList = [...recheckList, ...r.RecheckReceipts];
-            if(recheckList.length > 0) message = recheckList.join(', ');
-            if(ids.length > 0) messageTitle={code:'Created ASN successfully with Id: {{value}}', value: ids.join(', ')};
-            else messageTitle='PO has entered a full amount of quantity!';
-            this.env
-              .showPrompt(
-                message != '' ?  {code:'Refer to ASN: {{value}}' ,value: message }: null,
-                ids.length > 0 ? subMessage : null, 
-                messageTitle,
-              )
-              .then((_) => {
-                if (ids.length > 0){
-                  this.refresh();
-                  this.env.publishEvent({
-                    Code: this.pageConfig.pageName,
-                  });
-                  this.nav('/receipt/' + r.Id);
-                } 
+        this.env
+        .showLoading(
+          'Please wait for a few moments',this.pageProvider['copyToReceipt']({
+            ...this.item,
+            ...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' }
+          })).then((r: any) => {
+              let messageTitle ;
+              let subMessage = 'Do you want to navigate to the receipt just created?';
+              let message = '';
+              let recheckList = [];
+              let ids = [];
+              if (r.Id) ids.push(r.Id);
+              if (r.RecheckReceipts && r.RecheckReceipts.length) recheckList = [...recheckList, ...r.RecheckReceipts];
+              if(recheckList.length > 0) message = recheckList.join(', ');
+              if(ids.length > 0) messageTitle={code:'Created ASN successfully with Id: {{value}}', value: ids.join(', ')};
+              else messageTitle='PO has entered a full amount of quantity!';
+              this.env
+                .showPrompt(
+                  message != '' ?  {code:'Refer to ASN: {{value}}' ,value: message }: null,
+                  ids.length > 0 ? subMessage : null, 
+                  messageTitle,
+                )
+                .then((_) => {
+                  if (ids.length > 0){
+                    this.refresh();
+                    this.env.publishEvent({
+                      Code: this.pageConfig.pageName,
+                    });
+                    this.nav('/receipt/' + r.Id);
+                  } 
+                })
+                .catch((e) => {
+                  if (ids.length > 0){
+                    this.refresh();
+                    this.env.publishEvent({
+                      Code: this.pageConfig.pageName,
+                    });
+                  } 
+                });
               })
-              .catch((e) => {
-                if (ids.length > 0){
-                  this.refresh();
-                  this.env.publishEvent({
-                    Code: this.pageConfig.pageName,
-                  });
-                } 
-              });
-            })
-          .catch((err) => {
-            this.env.showMessage('Cannot create ASN, please try again later', 'danger');
-          });
+            .catch((err) => {
+              this.env.showMessage('Cannot create ASN, please try again later', 'danger');
+            });
       }
     }
   }
@@ -670,7 +671,7 @@ export class PurchaseOrderDetailPage extends PageBase {
             if (resp.length == 1) {
               this.nav('/ap-invoice/' + resp[0]);
             } else {
-              this.nav('/ap-invoice/');
+              this.nav('/ap-invoice');
             }
           })
           .catch((_) => {});
