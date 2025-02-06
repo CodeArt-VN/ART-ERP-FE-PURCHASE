@@ -20,6 +20,7 @@ import { el } from '@fullcalendar/core/internal-common';
   standalone: false,
 })
 export class PurchaseOrderPage extends PageBase {
+  updateToolbar;
   statusList = [];
   paymentStatusList = [];
   paymentTypeList = [];
@@ -373,49 +374,35 @@ export class PurchaseOrderPage extends PageBase {
   ShowSubmitForApproval;
   changeSelection(i, e = null) {
     super.changeSelection(i, e);
-
-    {
-      // this.ShowRequestOutgoingPayment = false;
-      // this.pageConfig.ShowSubmitOrders = this.pageConfig.canSubmitOrders;
-      // this.pageConfig.ShowApprove =
-      //   this.pageConfig.ShowDisapprove =
-      //   this.pageConfig.canDisapprove =
-      //     this.pageConfig.canApprove;
-      // this.pageConfig.ShowSubmit = this.pageConfig.canSubmit;
-      // this.pageConfig.ShowCancel = this.pageConfig.canCancel;
-      // this.pageConfig.ShowDelete = this.pageConfig.canDelete;
-      // this.pageConfig.ShowDelete = this.pageConfig.canDelete;
-      // this.pageConfig.ShowCopyToReceipt = this.pageConfig.canCopyToReceipt;
-      // this.pageConfig.ShowRequestOutgoingPayment = this.pageConfig.canRequestOutgoingPayment;
-    }
-
     const approveSet = new Set(['Submitted', 'Draft']);
+    const disApproveSet = new Set(['Submitted', 'Draft']);
     const submitSet = new Set(['Draft', 'Unapproved']);
     const cancelSet = new Set(['Draft', 'Unapproved','Approved']);
-    const deleteSet = new Set(['Draft', 'Unapproved', 'Cancelled']);
+    const deleteSet = new Set(['Draft', 'Unapproved', 'Cancelled']);  
     const copyToReceiptSet = new Set(['Approved', 'Confirmed', 'Ordered']);
-    const requestOutgoingPaymentSet = new Set(['Ordered']);
+    const requestOutgoingPaymentSet = new Set(['Approved', 'Confirmed', 'Ordered','Shipping','PartiallyReceived','Received']);
+    const createInvoiceSet = new Set(['Approved', 'Confirmed', 'Ordered','Shipping','PartiallyReceived','Received']);
     const uniqueSellerIDs = new Set(this.selectedItems.map((i) => i.IDVendor));
     const toolbarSet = new Set(['Draft', 'Unapproved', 'Submitted']);
+    this.pageConfig.canDisapprove = this.pageConfig.canApprove;
     this.pageConfig.ShowApprove = this.selectedItems.every((i) => approveSet.has(i.Status));
-
+    this.pageConfig.ShowDisapprove = this.selectedItems.every((i) => disApproveSet.has(i.Status));
     this.pageConfig.ShowSubmit = this.selectedItems.every((i) => submitSet.has(i.Status));
     this.pageConfig.ShowCancel = this.selectedItems.every((i) => cancelSet.has(i.Status));
     this.pageConfig.ShowDelete = this.selectedItems.every((i) => deleteSet.has(i.Status));
     this.pageConfig.ShowCopyToReceipt = this.selectedItems.every((i) => copyToReceiptSet.has(i.Status));
-    this.pageConfig.ShowRequestOutgoingPayment = this.selectedItems.every((i) =>
-      requestOutgoingPaymentSet.has(i.Status),
-    );
+    this.pageConfig.ShowRequestOutgoingPayment = this.selectedItems.every((i) =>requestOutgoingPaymentSet.has(i.Status))
+    this.pageConfig.ShowCreateInvoice = this.selectedItems.every((i) => createInvoiceSet.has(i.Status))
+    
     this.pageConfig.ShowChangeBranch =
       this.pageConfig.ShowApprove =
-      this.pageConfig.ShowDisapprove =
       this.pageConfig.ShowArchive =
       this.pageConfig.ShowDelete =
       this.pageConfig.ShowMerge =
       this.pageConfig.ShowSplit =
         this.selectedItems.every((i) => toolbarSet.has(i.Status));
     if (uniqueSellerIDs.size > 1) {
-      this.ShowRequestOutgoingPayment = false;
+      this.pageConfig.ShowRequestOutgoingPayment = false;
       this.IDBusinessPartner = null;
     } else {
       this.IDBusinessPartner = [...uniqueSellerIDs][0];
@@ -426,42 +413,66 @@ export class PurchaseOrderPage extends PageBase {
     let obj = this.selectedItems.map((d) => {
       return { Id: d.Id };
     });
-
-    this.pageProvider.commonService
-      .connect('POST', 'PURCHASE/Order/CopyToReceipt/', obj)
-      .toPromise()
-      .then(async (resp: any) => {
+   this.env .showLoading( 'Please wait for a few moments', 
+      this.pageProvider.commonService .connect('POST', 'PURCHASE/Order/CopyToReceipt/', obj)
+      .toPromise()).then((resp: any) => {
         let messageTitle ;
-          let message = '';
-          let recheckList = [];
-          let ids = [];
-          for(const r of resp ){
-            if (r.Id) ids.push(r.Id);
-            if (r.RecheckReceipts && r.RecheckReceipts.length) recheckList = [...recheckList, ...r.RecheckReceipts];
-          }
-          if(recheckList.length > 0) message = recheckList.join(', ');
-          if(ids.length > 0) messageTitle={code:'Created ASN successfully with Id: {{value}}', value: ids.join(', ')};
-          else messageTitle='PO has entered a full amount of quantity!';
-          this.env
-            .showPrompt(
-              message != '' ?  {code:'Refer to ASN: {{value}}' ,value: message }: null,
-              messageTitle,
-            )
-            .then((_) => { 
-              if(ids.length > 0)
-                this.env.publishEvent({
-                  Code: this.pageConfig.pageName,
-                });
-            })
-            .catch((e) => {
-              if(ids.length > 0)
-                this.env.publishEvent({
-                  Code: this.pageConfig.pageName,
-                });
-            });
+        let message = '';
+        let recheckList = [];
+        let ids = [];
+        for(const r of resp ){
+          if (r.Id) ids.push(r.Id);
+          if (r.RecheckReceipts && r.RecheckReceipts.length) recheckList = [...recheckList, ...r.RecheckReceipts];
+        }
+        if(recheckList.length > 0) message = recheckList.join(', ');
+        if(ids.length > 0) messageTitle={code:'Created ASN successfully with Id: {{value}}', value: ids.join(', ')};
+        else messageTitle='PO has entered a full amount of quantity!';
+        this.env
+          .showPrompt(
+            message != '' ?  {code:'Refer to ASN: {{value}}' ,value: message }: null,
+            messageTitle,
+          )
+          .then((_) => { 
+            if(ids.length > 0)
+              this.env.publishEvent({
+                Code: this.pageConfig.pageName,
+              });
           })
-      .catch((err) => {
+          .catch((e) => {
+            if(ids.length > 0)
+              this.env.publishEvent({
+                Code: this.pageConfig.pageName,
+              });
+          });
+      }).catch((err) => {
         this.env.showMessage('Cannot create ASN, please try again later', 'danger');
+      });
+  }
+  async createInvoice() {
+    if(this.selectedItems.length==0) return;
+    this.env
+      .showLoading(
+        'Please wait for a few moments',
+        this.pageProvider.commonService
+          .connect('POST', 'PURCHASE/Order/CreateInvoice/', {
+            Ids: this.selectedItems.map(i=>i.Id),
+          })
+          .toPromise(),
+      )
+      .then((resp: any) => {
+        this.env
+          .showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
+          .then((_) => {
+            if (resp.length == 1) {
+              this.nav('/ap-invoice/' + resp[0]);
+            } else {
+              this.nav('/ap-invoice');
+            }
+          })
+          .catch((_) => {});
+      })
+      .catch((err) => {
+        this.env.showMessage(err);
       });
   }
 }
