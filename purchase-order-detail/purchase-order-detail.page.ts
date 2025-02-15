@@ -17,6 +17,7 @@ import { concat, of, Subject } from 'rxjs';
 import { catchError, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
+import { CopyToReceiptModalPage } from '../copy-to-receipt-modal/copy-to-receipt-modal.page';
 
 @Component({
   selector: 'app-purchase-order-detail',
@@ -191,6 +192,7 @@ export class PurchaseOrderDetailPage extends PageBase {
     this.setOrderLines();
     this.pageConfig.ShowRequestOutgoingPayment = this.pageConfig.canRequestOutgoingPayment;
     let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved', 'Paid'];
+    const copyToReceiptSet = new Set(['Approved', 'Confirmed', 'Ordered']);
     let notShowRequestOutgoingPayment = [
       'Draft',
       'Submitted',
@@ -208,10 +210,12 @@ export class PurchaseOrderDetailPage extends PageBase {
     ) {
       this.pageConfig.ShowRequestOutgoingPayment = false;
     }
-    this.pageConfig.ShowCopyToReceipt = this.pageConfig.canCopyToReceipt;
-    let onlyShowCopyToReceipt = ['Ordered'];
-    if (!onlyShowCopyToReceipt.includes(this.formGroup.get('Status').value)) this.pageConfig.ShowCopyToReceipt = false;
+   // this.pageConfig.ShowCopyToReceipt = this.pageConfig.canCopyToReceipt;
+    this.pageConfig.ShowCopyToReceipt = copyToReceiptSet.has(this.formGroup.get('Status').value);
+    // let onlyShowCopyToReceipt = ['Ordered'];
+    // if (!onlyShowCopyToReceipt.includes(this.formGroup.get('Status').value)) this.pageConfig.ShowCopyToReceipt = false;
 
+    if(this.formGroup.get('Status').value == 'Approved') this.pageConfig.ShowSubmitOrders =  this.pageConfig.canSubmitOrders = true;
     if (this.item?._Vendor) {
       this._vendorDataSource.selected = [...this._vendorDataSource.selected, this.item?._Vendor];
       this._currentBusinessPartner = this.item._Vendor;
@@ -563,7 +567,7 @@ export class PurchaseOrderDetailPage extends PageBase {
                 if (i == 5) message += '<br> Còn nữa...';
                 else {
                   const e = resp.ErrorList[i];
-                  const translationPromises =this.env.translateResource(e.Message);
+                  const translationPromises = this.env.translateResource(e.Message);
                   await translationPromises.then((translated) => {
                     e.Message = translated;
                   });
@@ -609,69 +613,22 @@ export class PurchaseOrderDetailPage extends PageBase {
     } else this.isShowReceiptModal = true;
   }
   async copyToReceipt() {
-    const loading = await this.loadingController.create({
-      cssClass: 'my-custom-class',
-      message: 'Please wait for a few moments',
+    this.item._qtyReceipted = this.item._Receipts;
+    const modal = await this.modalController.create({
+      component: CopyToReceiptModalPage,
+      componentProps: {
+        _item: this.item,
+      },
+      cssClass: 'modal90',
     });
-    await loading.present().then(() => {
-      this.pageProvider['copyToReceipt']({ ...this.item, Status: 'Confirmed' })
-        .then(async(resp: any) => {
-          if (loading) loading.dismiss();
-          let messageTitle = 'Có lỗi khi tạo ASN';
-          let messageSubtile = null;
-          if (resp.Id) {
-            messageTitle = 'Đã tạo ASN thành công nhưng ' + messageTitle;
-            messageSubtile = 'Bạn có muốn di chuyến đến ASN vừa tạo?';
-          }
-          if (resp.ErrorList && resp.ErrorList.length) {
-            let message = '';
-            for (let i = 0; i < resp.ErrorList.length && i <= 5; i++)
-              if (i == 5) message += '<br> Còn nữa...';
-              else {
-                const e = resp.ErrorList[i];
-                const translationPromises =this.env.translateResource(e.Message);
-                await translationPromises.then((translated) => {
-                  e.Message = translated;
-                });
-                message += '<br> ' + e.IDItem + ' - ' + e.Name + ': ' + e.Message;
-              }
-            this.env
-              .showPrompt(
-                {
-                  code: 'There was an error creating the ASN: {{value}}',
-                  value: message,
-                },
-                messageSubtile,
-                messageTitle,
-              )
-              .then((_) => {
-                if (messageSubtile) this.nav('/receipt/' + resp.Id);
-              })
-              .catch((e) => {});
-          } else {
-            this.env
-              .showPrompt(
-                {
-                  code: 'Do you want to navigate to the receipt just created?',
-                },
-                null,
-                'ASN created!',
-              )
-              .then((_) => {
-                if (messageSubtile) this.nav('/receipt/' + resp.Id);
-              })
-              .catch((e) => {});
-            //this.env.showMessage('ASN created!', 'success');
-            
-          }
-        })
-        .catch((err) => {
-          console.log(err);
 
-          this.env.showMessage('Cannot create ASN, please try again later', 'danger');
-          if (loading) loading.dismiss();
-        });
-    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      this.env.showPrompt(null, 'Do you want to move to the just created ASN page ?','ASN created!').then((_) => {
+        this.nav('/receipt/' + data.Id);
+      });
+    }
   }
 
   async createInvoice() {
@@ -857,5 +814,30 @@ export class PurchaseOrderDetailPage extends PageBase {
   }
   presentPopover(event) {
     this.isOpenPopover = true;
+  }
+
+
+  submitOrders() {
+    if (this.submitAttempt) {
+      return;
+    }
+
+    this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Approved');
+    this.submitAttempt = true;
+    let postDTO = { Ids: [] };
+    postDTO.Ids = [this.item.Id];
+
+    this.pageProvider.commonService
+      .connect('POST', ApiSetting.apiDomain('PURCHASE/Order/SubmitOrders/'), postDTO)
+      .toPromise()
+      .then((savedItem: any) => {
+        this.env.publishEvent({ Code: this.pageConfig.pageName });
+        this.env.showMessage('Purchased ordered', 'success');
+        this.submitAttempt = false;
+      })
+      .catch((err) => {
+        this.submitAttempt = false;
+        console.log(err);
+      });
   }
 }

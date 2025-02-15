@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { ShareModule } from 'src/app/share.module';
 import { PurchaseOrderDetailPage } from './purchase-order-detail.page';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
+import { CopyToReceiptModalPage } from '../copy-to-receipt-modal/copy-to-receipt-modal.page';
 
 const routes: Routes = [
   {
@@ -16,6 +17,6 @@ const routes: Routes = [
 
 @NgModule({
   imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule, ShareModule, RouterModule.forChild(routes)],
-  declarations: [PurchaseOrderDetailPage, SaleOrderPickerModalPage],
+  declarations: [PurchaseOrderDetailPage, SaleOrderPickerModalPage,CopyToReceiptModalPage],
 })
 export class PurchaseOrderDetailPageModule {}
