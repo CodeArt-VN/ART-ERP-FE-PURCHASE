@@ -1,45 +1,21 @@
 <ion-header>
-  <!-- <app-list-toolbar
-    pageTitle="{{'Purchase order list' | translate}}"
-    selectedTitle="{{selectedItems.length}} đơn"
-    [pageConfig]="pageConfig"
-    [selectedItems]="selectedItems"
-    [query]="query"
-    (add)="add()"
-    (refresh)="refresh()"
-    (export)="export()"
-    (import)="import($event)"
-    (help)="help()"
-    (unselect)="unselect()"
-    (archiveItems)="archiveItems()"
-    (deleteItems)="deleteItems()"
-    (changeBranch)="changeBranch($event)"
-   
-    (submitOrdersForApproval)="submitOrdersForApproval()"
-  >
-  <ion-buttons slot="start"*ngIf="pageConfig.canRequestOutgoingPayment" class="ion-hide-sm-down_">
-		<ion-button fill="clear" title="Create outgoing payment"  (click)="presentPopover($event)" >
-			<ion-icon slot="start" name="money-check"></ion-icon>
-		</ion-button>
-	</ion-buttons>
-</app-list-toolbar> -->
   <app-toolbar
     [page]="this"
-    [ShowSubmit]="pageConfig.ShowSubmit"
-    [ShowApprove]="pageConfig.ShowApprove"
-    [ShowCancel]="pageConfig.ShowCancel"
-    [ShowDelete]="pageConfig.ShowDelete"
-    [ShowChangeBranch]="pageConfig.ShowChangeBranch"
-    [ShowArchive]="pageConfig.ShowArchive"
-    [ShowDisapprove]="pageConfig.ShowDisapprove"
-  >
+    >
     <ion-button
       tollbarSelected
+      fill="clear"
       (click)="copyToReceipt()"
       title="{{'Goods receipt' | translate}}"
       *ngIf="pageConfig.canCopyToReceipt && pageConfig.ShowCopyToReceipt"
     >
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
+    </ion-button>
+    <ion-button 
+    tollbarSelected
+    fill="clear"
+    title="Tạo hóa đơn" *ngIf="pageConfig.ShowCreateInvoice&& pageConfig.canCreateInvoice" (click)="createInvoice()">
+      <ion-icon slot="icon-only" name="receipt-outline"></ion-icon>
     </ion-button>
     <ion-button
       tollbarSelected
@@ -52,7 +28,7 @@
     </ion-button>
     <ion-button
       tollbarSelected
-      *ngIf="selectedItems.length>0 &&ShowRequestOutgoingPayment && pageConfig.canRequestOutgoingPayment"
+      *ngIf="selectedItems.length>0 &&pageConfig.ShowRequestOutgoingPayment && pageConfig.canRequestOutgoingPayment"
       fill="clear"
       title="Create outgoing payment"
       (click)="presentPopover($event)"

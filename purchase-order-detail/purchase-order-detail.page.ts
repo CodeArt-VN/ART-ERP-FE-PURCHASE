@@ -550,19 +550,16 @@ export class PurchaseOrderDetailPage extends PageBase {
           this.env.showMessage('Please recheck control(s): {{value}}', 'warning', invalidControls.join(' | '));
         });
       } else {
-        this.pageProvider['copyToReceipt']({
-          ...this.item,
-          ...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' },
-        })
-          .then(async (resp: any) => {
-            let messageTitle = 'Có lỗi khi tạo ASN';
-            let messageSubtile = null;
-            if (resp.Id) {
-              messageTitle = 'Đã tạo ASN thành công nhưng ' + messageTitle;
-              messageSubtile = 'Bạn có muốn di chuyến đến ASN vừa tạo?';
-            }
-            if (resp.ErrorList && resp.ErrorList.length) {
+        this.env
+        .showLoading(
+          'Please wait for a few moments',this.pageProvider['copyToReceipt']({
+            ...this.item,
+            ...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' }
+          })).then((r: any) => {
+              let messageTitle ;
+              let subMessage = 'Do you want to navigate to the receipt just created?';
               let message = '';
+
               for (let i = 0; i < resp.ErrorList.length && i <= 5; i++)
                 if (i == 5) message += '<br> Còn nữa...';
                 else {
@@ -573,30 +570,34 @@ export class PurchaseOrderDetailPage extends PageBase {
                   });
                   message += '<br> ' + e.IDItem + ' - ' + e.Name + ': ' + e.Message;
                 }
+
               this.env
                 .showPrompt(
-                  {
-                    code: 'There was an error creating the ASN: {{value}}',
-                    value: message,
-                  },
-                  messageSubtile,
+                  message != '' ?  {code:'Refer to ASN: {{value}}' ,value: message }: null,
+                  ids.length > 0 ? subMessage : null, 
                   messageTitle,
                 )
                 .then((_) => {
-                  if (messageSubtile) this.nav('/receipt/' + resp.Id);
+                  if (ids.length > 0){
+                    this.refresh();
+                    this.env.publishEvent({
+                      Code: this.pageConfig.pageName,
+                    });
+                    this.nav('/receipt/' + r.Id);
+                  } 
                 })
-                .catch((e) => {});
-            } else {
-              this.env.showMessage('ASN created!', 'success');
-            }
-            // if (resp > 0) {
-            //   this.env.showMessage('ASN created!', 'success');
-            //   this.refresh();
-            // }
-          })
-          .catch((err) => {
-            this.env.showMessage('Cannot create ASN, please try again later', 'danger');
-          });
+                .catch((e) => {
+                  if (ids.length > 0){
+                    this.refresh();
+                    this.env.publishEvent({
+                      Code: this.pageConfig.pageName,
+                    });
+                  } 
+                });
+              })
+            .catch((err) => {
+              this.env.showMessage('Cannot create ASN, please try again later', 'danger');
+            });
       }
     }
   }
@@ -621,7 +622,7 @@ export class PurchaseOrderDetailPage extends PageBase {
       },
       cssClass: 'modal90',
     });
-
+    
     await modal.present();
     const { data } = await modal.onWillDismiss();
     if (data) {
@@ -648,7 +649,7 @@ export class PurchaseOrderDetailPage extends PageBase {
             if (resp.length == 1) {
               this.nav('/ap-invoice/' + resp[0]);
             } else {
-              this.nav('/ap-invoice/');
+              this.nav('/ap-invoice');
             }
           })
           .catch((_) => {});
