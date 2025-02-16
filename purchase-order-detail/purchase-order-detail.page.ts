@@ -17,6 +17,7 @@ import { concat, of, Subject } from 'rxjs';
 import { catchError, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
+import { CopyToReceiptModalPage } from '../copy-to-receipt-modal/copy-to-receipt-modal.page';
 
 @Component({
   selector: 'app-purchase-order-detail',
@@ -66,11 +67,7 @@ export class PurchaseOrderDetailPage extends PageBase {
     if (this.env.user.IDBusinessPartner > 0 && this.env.user.SysRoles.includes('VENDOR')) {
       this.vendorView = true;
     }
-    this.paymentFormGroup = formBuilder.group({
-      PaymentType: [''],
-      PaymentSubType: [''],
-      PaymentReason: [''],
-    });
+    this.paymentFormGroup = formBuilder.group({ PaymentType: [''], PaymentSubType: [''], PaymentReason: [''] });
     Object.assign(pageProvider, {
       importDetail(fileToUpload: File, id) {
         const formData: FormData = new FormData();
@@ -104,9 +101,7 @@ export class PurchaseOrderDetailPage extends PageBase {
   }
   print() {
     this.pageConfig['purchase-order-note'] = true;
-    this.router.navigate(['/purchase-order-note/' + this.item.Id], {
-      state: { print: true },
-    });
+    this.router.navigate(['/purchase-order-note/' + this.item.Id], { state: { print: true } });
   }
   preLoadData(event) {
     this.formGroup = this.formBuilder.group({
@@ -114,25 +109,13 @@ export class PurchaseOrderDetailPage extends PageBase {
       IDStorer: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
       IDVendor: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
       Id: new FormControl({ value: '', disabled: true }),
-      Code: new FormControl({
-        value: '',
-        disabled: !this.pageConfig.canEdit,
-      }),
-      Name: new FormControl({
-        value: '',
-        disabled: !this.pageConfig.canEdit,
-      }),
+      Code: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
+      Name: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
       // ForeignName: [''],
-      Remark: new FormControl({
-        value: '',
-        disabled: !this.pageConfig.canEdit,
-      }),
+      Remark: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
       // ForeignRemark: [''],
       OrderDate: new FormControl({ value: '', disabled: true }),
-      ExpectedReceiptDate: new FormControl({
-        value: '',
-        disabled: !this.pageConfig.canEdit,
-      }),
+      ExpectedReceiptDate: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
       ReceiptedDate: new FormControl({ value: '', disabled: true }),
       Type: ['Regular'],
       Status: new FormControl({ value: 'Draft', disabled: true }),
@@ -253,14 +236,7 @@ export class PurchaseOrderDetailPage extends PageBase {
                 tap(() => (this.loading = true)),
                 switchMap((term) =>
                   this.searchProvider
-                    .search({
-                      ARSearch: true,
-                      IDPO: line.IDOrder,
-                      SortBy: ['Id_desc'],
-                      Take: 20,
-                      Skip: 0,
-                      Term: term,
-                    })
+                    .search({ ARSearch: true, IDPO: line.IDOrder, SortBy: ['Id_desc'], Take: 20, Skip: 0, Term: term })
                     .pipe(
                       catchError(() => of([])), // empty list on error
                       tap(() => (this.loading = false)),
@@ -285,21 +261,12 @@ export class PurchaseOrderDetailPage extends PageBase {
       IDItem: [line.IDItem, Validators.required],
       IDUoM: new FormControl({ value: line.IDUoM, disabled: !this.pageConfig.canEdit }, Validators.required),
       UoMPrice: new FormControl(
-        {
-          value: line.UoMPrice,
-          disabled: !(this.pageConfig.canEdit && this.pageConfig.canEditPrice),
-        },
+        { value: line.UoMPrice, disabled: !(this.pageConfig.canEdit && this.pageConfig.canEditPrice) },
         Validators.required,
       ),
-      SuggestedQuantity: new FormControl({
-        value: line.SuggestedQuantity,
-        disabled: true,
-      }),
+      SuggestedQuantity: new FormControl({ value: line.SuggestedQuantity, disabled: true }),
       UoMQuantityExpected: new FormControl(
-        {
-          value: line.UoMQuantityExpected,
-          disabled: !this.pageConfig.canEdit,
-        },
+        { value: line.UoMQuantityExpected, disabled: !this.pageConfig.canEdit },
         Validators.required,
       ),
       QuantityAdjusted: new FormControl({
@@ -309,28 +276,13 @@ export class PurchaseOrderDetailPage extends PageBase {
           this.pageConfig.canEditApprovedOrder
         ),
       }),
-      IsPromotionItem: new FormControl({
-        value: line.IsPromotionItem,
-        disabled: !this.pageConfig.canEdit,
-      }),
-      TotalBeforeDiscount: new FormControl({
-        value: line.TotalBeforeDiscount,
-        disabled: true,
-      }),
-      TotalDiscount: new FormControl({
-        value: line.TotalDiscount,
-        disabled: !this.pageConfig.canEdit,
-      }),
-      TotalAfterDiscount: new FormControl({
-        value: line.TotalAfterDiscount,
-        disabled: true,
-      }),
+      IsPromotionItem: new FormControl({ value: line.IsPromotionItem, disabled: !this.pageConfig.canEdit }),
+      TotalBeforeDiscount: new FormControl({ value: line.TotalBeforeDiscount, disabled: true }),
+      TotalDiscount: new FormControl({ value: line.TotalDiscount, disabled: !this.pageConfig.canEdit }),
+      TotalAfterDiscount: new FormControl({ value: line.TotalAfterDiscount, disabled: true }),
       TaxRate: new FormControl({ value: line.TaxRate, disabled: true }),
       Tax: new FormControl({ value: line.Tax, disabled: true }),
-      TotalAfterTax: new FormControl({
-        value: line.TotalAfterTax,
-        disabled: true,
-      }),
+      TotalAfterTax: new FormControl({ value: line.TotalAfterTax, disabled: true }),
     });
     groups.push(group);
 
@@ -342,10 +294,7 @@ export class PurchaseOrderDetailPage extends PageBase {
   }
 
   addNewLine() {
-    let newLine: any = {
-      IDOrder: this.item.Id,
-      Id: 0,
-    };
+    let newLine: any = { IDOrder: this.item.Id, Id: 0 };
     this.addLine(newLine, true);
   }
 
@@ -493,11 +442,7 @@ export class PurchaseOrderDetailPage extends PageBase {
                 message: 'Có ' + resp.ErrorList.length + ' lỗi khi import:' + message,
                 cssClass: 'alert-text-left',
                 buttons: [
-                  {
-                    text: 'Không',
-                    role: 'cancel',
-                    handler: () => {},
-                  },
+                  { text: 'Không', role: 'cancel', handler: () => {} },
                   {
                     text: 'Có',
                     cssClass: 'success-btn',
@@ -512,9 +457,7 @@ export class PurchaseOrderDetailPage extends PageBase {
               });
           } else {
             this.env.showMessage('Import completed!', 'success');
-            this.env.publishEvent({
-              Code: this.pageConfig.pageName,
-            });
+            this.env.publishEvent({ Code: this.pageConfig.pageName });
           }
         })
         .catch((err) => {
@@ -547,48 +490,48 @@ export class PurchaseOrderDetailPage extends PageBase {
         });
       } else {
         this.env
-        .showLoading(
-          'Please wait for a few moments',this.pageProvider['copyToReceipt']({
-            ...this.item,
-            ...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' }
-          })).then((r: any) => {
-              let messageTitle ;
-              let subMessage = 'Do you want to navigate to the receipt just created?';
-              let message = '';
-              let recheckList = [];
-              let ids = [];
-              if (r.Id) ids.push(r.Id);
-              if (r.RecheckReceipts && r.RecheckReceipts.length) recheckList = [...recheckList, ...r.RecheckReceipts];
-              if(recheckList.length > 0) message = recheckList.join(', ');
-              if(ids.length > 0) messageTitle={code:'Created ASN successfully with Id: {{value}}', value: ids.join(', ')};
-              else messageTitle='PO has entered a full amount of quantity!';
-              this.env
-                .showPrompt(
-                  message != '' ?  {code:'Refer to ASN: {{value}}' ,value: message }: null,
-                  ids.length > 0 ? subMessage : null, 
-                  messageTitle,
-                )
-                .then((_) => {
-                  if (ids.length > 0){
-                    this.refresh();
-                    this.env.publishEvent({
-                      Code: this.pageConfig.pageName,
-                    });
-                    this.nav('/receipt/' + r.Id);
-                  } 
-                })
-                .catch((e) => {
-                  if (ids.length > 0){
-                    this.refresh();
-                    this.env.publishEvent({
-                      Code: this.pageConfig.pageName,
-                    });
-                  } 
-                });
+          .showLoading(
+            'Please wait for a few moments',
+            this.pageProvider['copyToReceipt']({
+              ...this.item,
+              ...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' },
+            }),
+          )
+          .then((r: any) => {
+            let messageTitle;
+            let subMessage = 'Do you want to navigate to the receipt just created?';
+            let message = '';
+            let recheckList = [];
+            let ids = [];
+            if (r.Id) ids.push(r.Id);
+            if (r.RecheckReceipts && r.RecheckReceipts.length) recheckList = [...recheckList, ...r.RecheckReceipts];
+            if (recheckList.length > 0) message = recheckList.join(', ');
+            if (ids.length > 0)
+              messageTitle = { code: 'Created ASN successfully with Id: {{value}}', value: ids.join(', ') };
+            else messageTitle = 'PO has entered a full amount of quantity!';
+            this.env
+              .showPrompt(
+                message != '' ? { code: 'Refer to ASN: {{value}}', value: message } : null,
+                ids.length > 0 ? subMessage : null,
+                messageTitle,
+              )
+              .then((_) => {
+                if (ids.length > 0) {
+                  this.refresh();
+                  this.env.publishEvent({ Code: this.pageConfig.pageName });
+                  this.nav('/receipt/' + r.Id);
+                }
               })
-            .catch((err) => {
-              this.env.showMessage('Cannot create ASN, please try again later', 'danger');
-            });
+              .catch((e) => {
+                if (ids.length > 0) {
+                  this.refresh();
+                  this.env.publishEvent({ Code: this.pageConfig.pageName });
+                }
+              });
+          })
+          .catch((err) => {
+            this.env.showMessage('Cannot create ASN, please try again later', 'danger');
+          });
       }
     }
   }
@@ -604,54 +547,21 @@ export class PurchaseOrderDetailPage extends PageBase {
         .finally(() => (this.isShowReceiptModal = true));
     } else this.isShowReceiptModal = true;
   }
+
   async copyToReceipt() {
-    const loading = await this.loadingController.create({
-      cssClass: 'my-custom-class',
-      message: 'Please wait for a few moments',
+    this.item._qtyReceipted = this.item._Receipts;
+    const modal = await this.modalController.create({
+      component: CopyToReceiptModalPage,
+      componentProps: { _item: this.item },
+      cssClass: 'modal90',
     });
-    await loading.present().then(() => {
-      this.pageProvider['copyToReceipt']({ ...this.item, Status: 'Confirmed' })
-        .then((r: any) => {
-          if (loading) loading.dismiss();
-          let messageTitle ;
-          let subMessage = 'Do you want to navigate to the receipt just created?';
-          let message = '';
-          let recheckList = [];
-          let ids = [];
-          if (r.Id) ids.push(r.Id);
-          if (r.RecheckReceipts && r.RecheckReceipts.length) recheckList = [...recheckList, ...r.RecheckReceipts];
-          if(recheckList.length > 0) message = recheckList.join(', ');
-          if(ids.length > 0) messageTitle={code:'Created ASN successfully with Id: {{value}}', value: ids.join(', ')};
-          else messageTitle='PO has entered a full amount of quantity!';
-          this.env
-            .showPrompt(
-              message != '' ?  {code:'Refer to ASN: {{value}}' ,value: message }: null,
-              ids.length > 0 ? subMessage : null, 
-              messageTitle,
-            )
-            .then((_) => {
-              if(ids.length > 0){
-                this.env.publishEvent({
-                  Code: this.pageConfig.pageName,
-                });
-                this.refresh();
-                this.nav('/receipt/' + r.Id);
-              }
-            })
-            .catch((e) => {
-              if(ids.length > 0){
-                this.refresh();
-                this.env.publishEvent({
-                  Code: this.pageConfig.pageName,
-                });
-              }
-            });
-          })
-        .catch((err) => {
-          this.env.showMessage('Cannot create ASN, please try again later', 'danger');
-          if (loading) loading.dismiss();
-        });
-    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      this.env.showPrompt(null, 'Do you want to move to the just created ASN page ?', 'ASN created!').then((_) => {
+        this.nav('/receipt/' + data.Id);
+      });
+    }
   }
 
   async createInvoice() {
@@ -659,9 +569,7 @@ export class PurchaseOrderDetailPage extends PageBase {
       .showLoading(
         'Please wait for a few moments',
         this.pageProvider.commonService
-          .connect('POST', 'PURCHASE/Order/CreateInvoice/', {
-            Ids: [this.item.Id],
-          })
+          .connect('POST', 'PURCHASE/Order/CreateInvoice/', { Ids: [this.item.Id] })
           .toPromise(),
       )
       .then((resp: any) => {
@@ -684,9 +592,7 @@ export class PurchaseOrderDetailPage extends PageBase {
   async showSaleOrderPickerModal() {
     const modal = await this.modalController.create({
       component: SaleOrderPickerModalPage,
-      componentProps: {
-        id: this.item.Id,
-      },
+      componentProps: { id: this.item.Id },
       cssClass: 'modal90',
     });
 
@@ -702,19 +608,14 @@ export class PurchaseOrderDetailPage extends PageBase {
         message: 'Please wait for a few moments',
       });
       await loading.present().then(() => {
-        let postData = {
-          Id: this.item.Id,
-          SOIds: data.map((i) => i.Id),
-        };
+        let postData = { Id: this.item.Id, SOIds: data.map((i) => i.Id) };
         this.commonService
           .connect('POST', ApiSetting.apiDomain('PURCHASE/Order/ImportDetailFromSaleOrders/'), postData)
           .toPromise()
           .then((data) => {
             if (loading) loading.dismiss();
             this.refresh();
-            this.env.publishEvent({
-              Code: this.pageConfig.pageName,
-            });
+            this.env.publishEvent({ Code: this.pageConfig.pageName });
           })
           .catch((err) => {
             console.log(err);
@@ -756,9 +657,7 @@ export class PurchaseOrderDetailPage extends PageBase {
   outgoingPaymentStatusList;
   getPaymentHistory() {
     this.showSpinnerPayment = true;
-    let queryPayment = {
-      Id: this.formGroup.get('Id').value,
-    };
+    let queryPayment = { Id: this.formGroup.get('Id').value };
     this.commonService
       .connect('GET', 'PURCHASE/Order/GetPaymentHistory/', queryPayment)
       .toPromise()
@@ -837,5 +736,29 @@ export class PurchaseOrderDetailPage extends PageBase {
   }
   presentPopover(event) {
     this.isOpenPopover = true;
+  }
+
+  submitOrders() {
+    if (this.submitAttempt) {
+      return;
+    }
+
+    this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Approved');
+    this.submitAttempt = true;
+    let postDTO = { Ids: [] };
+    postDTO.Ids = [this.item.Id];
+
+    this.pageProvider.commonService
+      .connect('POST', ApiSetting.apiDomain('PURCHASE/Order/SubmitOrders/'), postDTO)
+      .toPromise()
+      .then((savedItem: any) => {
+        this.env.publishEvent({ Code: this.pageConfig.pageName });
+        this.env.showMessage('Purchased ordered', 'success');
+        this.submitAttempt = false;
+      })
+      .catch((err) => {
+        this.submitAttempt = false;
+        console.log(err);
+      });
   }
 }

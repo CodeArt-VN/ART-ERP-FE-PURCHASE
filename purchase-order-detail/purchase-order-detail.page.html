@@ -1,11 +1,19 @@
 <ion-header>
   <app-toolbar [page]="this">
+    <ion-button
+      *ngIf="pageConfig.ShowSubmitOrders && pageConfig.canSubmitOrders"
+      fill="clear"
+      title="Order submitted"
+      (click)="submitOrders()"
+    >
+      <ion-icon name="cart-outline"></ion-icon>
+    </ion-button>
     <ion-button title="Tạo hóa đơn" *ngIf="pageConfig.canCreateInvoice" (click)="createInvoice()">
       <ion-icon slot="icon-only" name="receipt-outline"></ion-icon>
     </ion-button>
     <ion-button
       (click)="copyToReceipt()"
-      title="{{'Goods receipt' | translate}}"
+      title="{{'Copy to goods receipt' | translate}}"
       *ngIf="pageConfig.canCopyToReceipt && pageConfig.ShowCopyToReceipt"
     >
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
@@ -19,7 +27,6 @@
     </ion-button>
     <ion-button
       *ngIf="pageConfig.ShowRequestOutgoingPayment && pageConfig.canRequestOutgoingPayment"
-      tollbarSelected
       title="{{'Create outgoing payment' | translate}}"
       (click)="presentPopover()"
     >
