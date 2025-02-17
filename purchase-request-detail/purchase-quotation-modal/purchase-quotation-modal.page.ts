@@ -40,32 +40,24 @@ export class PurchaseQuotationModalPage extends PageBase {
     
   }
 
-  // preLoadData(event?: any): void {
-  //   if (this.itemInVendors){
+  preLoadData(event?: any): void {
+    // if (this.itemInVendors){
 
-  //     this.query.IDItem = this.itemInVendors.map(d=> d.IDItem);
-  //   } 
-  //   super.preLoadData();
-  // }
+    //   this.query.IDItem = this.itemInVendors.map(d=> d.IDItem);
+    // } 
+    // super.preLoadData();
+    this.loadData(event);
+  }
+
+  loadData(event?: any): void {
+    this.loadedData();
+  }
 
   loadedData(event?: any, ignoredFromGroup?: boolean): void {
-    // super.loadedData();
+ 
     console.log(this.items);
-    // this.items = [...this.items.reduce((acc, item) => {
-    //   if (item['IDItem']) {
-    //     let i = acc.find(d => d.IDItem == item['IDItem'])
-    //     if (i) {
-    //       i._Vendors.push(item._Vendor)
-    //     } else {
-    //       item._Vendors = [item._Vendor];
-    //       acc.push(item);
-    //     }
-    //   }
-    //   return acc;
-    // }, [])];
     this.itemInVendors = this.itemInVendors?.map(d => {
-      // let i = this.items.find(item => item.IDItem == d['IDItem']);
-      // let temp = lib.cloneObject(i);
+
       if(d.IDVendor == null){
         d._Vendors.forEach(v=> {v.checked = true ; this.vendorList.push(v)})//= (v.Id == d.IDVendor)
         return {...d, Quantity: d.Quantity, UoMName: d.UoMName,IDDetail:d.IDDetail,UoMPrice : d.UoMPrice} ;
@@ -96,7 +88,7 @@ export class PurchaseQuotationModalPage extends PageBase {
   submitForm() {
     let obj = this.itemInVendors.map(d=>{return {
       IDItem : d.IDItem,
-      IDUom : d. IDItemUoM,
+      IDUoM : d. IDItemUoM,
       Vendors: d._Vendors.map(v=> {
         if(v.checked) return v.Id;
       })
