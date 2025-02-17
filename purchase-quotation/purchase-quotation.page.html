@@ -1,128 +1,9 @@
 <ion-header>
   <app-toolbar [page]="this">
   </app-toolbar>
-
-  <section class="table">
-    <form (submit)="refresh()" action="#">
-      <header class="filter" *ngIf="pageConfig.isShowSearch">
-        <div class="col-checkbox cell"></div>
-        <div class="col-id cell">
-          <input
-            placeholder="{{'Id' | translate}}"
-            [ngModelOptions]="{standalone: true}"
-            [(ngModel)]="query.Id"
-            class="c-input"
-            [ngClass]="{active: query.Id}"
-            type="text"
-          />
-          <ion-icon class="min-btn" (click)="query.Id=''; refresh()" *ngIf="query.Id" name="close-circle-outline">
-          </ion-icon>
-        </div>
-        <div class="col-status cell">
-          <select
-            (change)="refresh()"
-            class="c-input c-dropdown"
-            [ngModelOptions]="{standalone: true}"
-            [(ngModel)]="query.Status"
-            [ngClass]="{active: query.Status}"
-          >
-            <option value="">{{'All' | translate}}</option>
-            <option disabled value="">----------</option>
-            <option *ngFor="let t of statusList" [value]="t.Code">{{t.Name}}</option>
-          </select>
-          <ion-icon
-            class="min-btn"
-            (click)="query.Status=''; refresh()"
-            *ngIf="query.Status !=''"
-            name="close-circle-outline"
-          ></ion-icon>
-        </div>
-        <div class="col-code col-orderDate cell">
-          <input
-            (change)="refresh()"
-            [ngModelOptions]="{standalone: true}"
-            [(ngModel)]="query.OrderDate"
-            class="c-input"
-            [ngClass]="{active: query.OrderDate}"
-            type="date"
-          />
-          <ion-icon
-            class="min-btn"
-            (click)="query.OrderDate=''; refresh()"
-            *ngIf="query.OrderDate"
-            name="close-circle-outline"
-          ></ion-icon>
-        </div>
-        <div class="col-code col-expectDate cell">
-          <input
-            (change)="refresh()"
-            [ngModelOptions]="{standalone: true}"
-            [(ngModel)]="query.ExpectedReceiptDate"
-            class="c-input"
-            [ngClass]="{active: query.ExpectedReceiptDate}"
-            type="date"
-          />
-          <ion-icon
-            class="min-btn"
-            (click)="query.ExpectedReceiptDate=''; refresh()"
-            *ngIf="query.ExpectedReceiptDate"
-            name="close-circle-outline"
-          ></ion-icon>
-        </div>
-        <div class="col-name col-owner cell">
-          <input
-            placeholder="{{'Owner' | translate}}"
-            [ngModelOptions]="{standalone: true}"
-            [(ngModel)]="query.StorerName"
-            class="c-input"
-            [ngClass]="{active: query.StorerName}"
-            type="text"
-          />
-          <ion-icon
-            class="min-btn"
-            (click)="query.StorerName=''; refresh()"
-            *ngIf="query.StorerName"
-            name="close-circle-outline"
-          ></ion-icon>
-        </div>
-        <div class="col-name col-vendor cell">
-          <input
-            placeholder="{{'Vendor' | translate}}"
-            [ngModelOptions]="{standalone: true}"
-            [(ngModel)]="query.VendorName"
-            class="c-input"
-            [ngClass]="{active: query.VendorName}"
-            type="text"
-          />
-          <ion-icon
-            class="min-btn"
-            (click)="query.VendorName=''; refresh()"
-            *ngIf="query.VendorName"
-            name="close-circle-outline"
-          ></ion-icon>
-        </div>
-        <div class="col-code cell money"></div>
-        <div class="col-code cell">
-          <input
-            placeholder="{{'code-search-placerholder' | translate}}"
-            [ngModelOptions]="{standalone: true}"
-            [(ngModel)]="query.Code"
-            class="c-input"
-            [ngClass]="{active: query.Code}"
-            type="text"
-          />
-          <ion-icon class="min-btn" (click)="query.Code=''; refresh()" *ngIf="query.Code" name="close-circle-outline">
-          </ion-icon>
-        </div>
-        <button mat-raised-button type="submit" style="display: none">Search</button>
-      </header>
-    </form>
-  </section>
 </ion-header>
 
 <ion-content appScrollbarTheme class="header-table">
-  <app-page-message [itemsLength]="items.length" [showSpinner]="pageConfig.showSpinner"></app-page-message>
-  <div *ngIf="items.length && pageConfig.showSpinner==false">
     <app-data-table
       style="width: fit-content; min-width: calc(100% - 32px)"
       class="box-shadow responsive"
@@ -159,7 +40,7 @@
           </div>
         </ng-template>
         <ng-template let-i="row" datatable-cell-template>
-          <div (click)="nav('purchase-request/'+i.Id,'forward')" class="col-id cell">{{i.Id}}</div>
+          <div (click)="nav('purchase-quotation/'+i.Id,'forward')" class="col-id cell">{{i.Id}}</div>
         </ng-template>
       </datatable-column>
 
@@ -214,7 +95,7 @@
           <div
             *ngIf="i.RequiredDate"
             class="col-date cell"
-            (click)="nav('purchase-request/'+i.Id,'forward')"
+            (click)="nav('purchase-quotation/'+i.Id,'forward')"
           >
             {{i.RequiredDate | date :'dd/MM/yyyy'}}
             <small>{{i.RequiredDate | date:'hh:mm'}}</small>
@@ -243,7 +124,7 @@
           <div
             *ngIf="i.PostingDate"
             class="col-code col-expectDate cell"
-            (click)="nav('purchase-request/'+i.Id,'forward')"
+            (click)="nav('purchase-quotation/'+i.Id,'forward')"
           >
             {{i.PostingDate | date :'dd/MM/yyyy'}}
             <small >{{i.PostingDate | date :'hh:mm'}}</small>
@@ -272,7 +153,7 @@
           <div
             *ngIf="i.DocumentDate"
             class="col-code col-expectDate cell"
-            (click)="nav('purchase-request/'+i.Id,'forward')"
+            (click)="nav('purchase-quotation/'+i.Id,'forward')"
           >
             {{i.DocumentDate | date :'dd/MM/yyyy'}}
             <small> {{i.DocumentDate | date :'hh:mm'}}</small>
@@ -298,7 +179,7 @@
           </div>
         </ng-template>
         <ng-template let-i="row" datatable-cell-template>
-          <div *ngIf="i.DueDate" class="col-code col-expectDate cell" (click)="nav('purchase-request/'+i.Id,'forward')">
+          <div *ngIf="i.DueDate" class="col-code col-expectDate cell" (click)="nav('purchase-quotation/'+i.Id,'forward')">
             {{i.DueDate | date :'dd/MM/yyyy'}}
             <small> {{i.DueDate | date :'hh:mm'}}</small>
           </div>
@@ -342,13 +223,5 @@
       </datatable-column>
 
     </app-data-table>
-  </div>
-  <ion-infinite-scroll
-    color="primary"
-    threshold="20%"
-    (ionInfinite)="loadData($event)"
-    [disabled]="!pageConfig.infiniteScroll || pageConfig.isEndOfData"
-  >
-    <ion-infinite-scroll-content loadingSpinner="dots"></ion-infinite-scroll-content>
-  </ion-infinite-scroll>
+ 
 </ion-content>

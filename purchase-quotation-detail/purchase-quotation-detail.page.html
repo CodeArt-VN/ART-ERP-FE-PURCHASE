@@ -1,13 +1,10 @@
 <ion-header>
   <app-toolbar [page]="this">
-  
+<!--   
     <ion-button *ngIf="pageConfig.canCreatePO && formGroup.get('ContentType').value != 'Service'" (click)="createPO()" title="{{'Create PO' | translate}}" >
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
-    </ion-button>
-    <ion-button *ngIf="" (click)="sendRequestToVendor()" title="{{'Send quotate request to vendor' | translate}}" >
-      <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
-    </ion-button>
-  </app-toolbar>
+    </ion-button>-->
+  </app-toolbar> 
 </ion-header>
 
 <ion-content appScrollbarTheme class="ion-padding">
@@ -96,15 +93,7 @@
         </ion-segment>
       </ion-toolbar>
       <div *ngIf="segmentView == 's1'" >
-        <app-purchase-items (renderFormArray)="renderFormArray($event)"
-        [contentType]="_currentContentType"
-        [IDPurchaseRequest]="formGroup.get('Id').value"
-        [canEdit]="pageConfig.canEdit" (onChange)="saveChange()"
-        [IDVendor]="formGroup.get('IDVendor').value"
-        [orderLines]="item.OrderLines"
-         (removeItem)="removeItem($event)"
-         (onRefresh)="refresh()">
-        </app-purchase-items>
+        
       </div>
       <div *ngIf="segmentView == 's2'">
         <div class="ion-padding">

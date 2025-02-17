@@ -14,10 +14,9 @@ import {
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
 import { lib } from 'src/app/services/static/global-functions';
-import { concat, of, Subject } from 'rxjs';
-import { catchError, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { ApiSetting } from 'src/app/services/static/api-setting';
-import { PurchaseOrderModalPage } from '../purchase-order-modal/purchase-order-modal.page';
+import { PurchaseOrderModalPage } from './purchase-order-modal/purchase-order-modal.page';
+import { PurchaseQuotationModalPage } from './purchase-quotation-modal/purchase-quotation-modal.page';
 
 @Component({
   selector: 'app-purchase-request-detail',
@@ -351,11 +350,75 @@ export class PurchaseRequestDetailPage extends PageBase {
       else
       {
         vendorList = [...vendorList, ...o._Vendors.filter(v=> !vendorList.some(vd => v.Id == vd.Id ))];
-      }
+      } 
     });
     
     const modal = await this.modalController.create({
       component: PurchaseOrderModalPage,
+      componentProps: {
+        orderLines: orderLines,
+        defaultVendor: this._currentVendor,
+        vendorList : vendorList,
+      },
+
+      cssClass: 'modal90',
+    });
+
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+
+    if (data && data.IDVendor && data.OrderLines.length > 0) {
+      const loading = await this.loadingController.create({
+        cssClass: 'my-custom-class',
+        message: 'Xin vui lòng chờ tạo PO...',
+      });
+      await loading.present().then(() => {
+        let postData = {
+          // SelectedRecommendations: this.items.filter((d) => d.checked).map((m) => ({ Id: m.Id, IDVendor: m.VendorId })),
+          IDVendor: data.IDVendor,
+          IDOrderlines: data.OrderLines.map((o) => o.Id),
+        };
+        this.commonService
+          .connect('POST', 'PURCHASE/Request/CopyToPO/' + this.formGroup.get('Id').value, postData)
+          .toPromise()
+          .then((resp: any) => {
+            if (resp) {
+              if (loading) loading.dismiss();
+              this.env.showMessage('PO created!', 'success');
+              this.env
+               .showPrompt('Create purchase order successfully!','Do you want to navigate to purchase order?' )
+               .then((d) => {
+                  this.nav('/purchase-order/' + resp.Id, 'forward');
+                });
+              this.refresh();
+              this.env.publishEvent({
+                Code: this.pageConfig.pageName,
+              });
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            this.env.showMessage('Cannot create PO, please try again later', 'danger');
+            if (loading) loading.dismiss();
+          });
+      });
+    }
+  }
+  async copyToPurchaseQuotation(){
+    let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
+	  let vendorList = [] ;
+    this.formGroup.get('OrderLines').value.forEach(o=> {
+      if(o.IDVendor){
+        vendorList = [...vendorList, ...o._Vendors.filter(v=> v.Id == o.IDVendor &&  !vendorList.some(vd => v.Id == vd.Id ))];
+      }
+      else
+      {
+        vendorList = [...vendorList, ...o._Vendors.filter(v=> !vendorList.some(vd => v.Id == vd.Id ))];
+      } 
+    });
+    
+    const modal = await this.modalController.create({
+      component: PurchaseQuotationModalPage,
       componentProps: {
         orderLines: orderLines,
         defaultVendor: this._currentVendor,
