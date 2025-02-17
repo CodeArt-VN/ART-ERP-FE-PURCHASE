@@ -1,104 +1,108 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
-import { NavController, LoadingController, AlertController, ModalController, NavParams } from '@ionic/angular';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ModalController, NavController } from '@ionic/angular';
 import { PageBase } from 'src/app/page-base';
+import { CommonService } from 'src/app/services/core/common.service';
 import { EnvService } from 'src/app/services/core/env.service';
-import { BRA_BranchProvider, CRM_ContactProvider, WMS_ItemProvider, PURCHASE_OrderProvider } from 'src/app/services/static/services.service';
-import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
+import { lib } from 'src/app/services/static/global-functions';
+import { PROD_ItemInVendorProvider } from 'src/app/services/static/services.service';
+
 @Component({
-    selector: 'app-purchase-quotation-modal',
-    templateUrl: './purchase-quotation-modal.page.html',
-    styleUrls: ['./purchase-quotation-modal.page.scss'],
-    standalone: false
+  selector: 'app-purchase-quotation-modal',
+  templateUrl: './purchase-quotation-modal.page.html',
+  styleUrls: ['./purchase-quotation-modal.page.scss'],
+  standalone : false
 })
 export class PurchaseQuotationModalPage extends PageBase {
-  storerList = [];
-  branchList = [];
-  preloadIDVendors : any;
-  defaultVendor ;
-  orderLines;
-  vendorList = [];
-  
 
+
+  @Input() itemInVendors: any;
+  @Input() isMultiple: any = false;
+  @Input() defaultVendor :any;
+  vendorList : any = [];
+  formGroup;
   constructor(
-    public pageProvider: PURCHASE_OrderProvider,
-    public contactProvider: CRM_ContactProvider,
-    public itemProvider: WMS_ItemProvider,
-    public branchProvider: BRA_BranchProvider,
-    public modalController: ModalController,
-    public alertCtrl: AlertController,
-    public navParams: NavParams,
-    public loadingController: LoadingController,
-    public env: EnvService,
+    public modal: ModalController,
+    public itemInVendorProvider: PROD_ItemInVendorProvider,
+    public route: ActivatedRoute,
+    public router: Router,
     public navCtrl: NavController,
-    public formBuilder: FormBuilder,
-    public cdr: ChangeDetectorRef,
+    public env: EnvService,
+    public pageProvider: PROD_ItemInVendorProvider,
+    public formBuilder : FormBuilder
+
   ) {
     super();
-
-    this.pageConfig.isDetailPage = true;
-
-    this.formGroup = formBuilder.group({
-      IDVendor: ['', Validators.required],
+    this.formGroup = this.formBuilder.group({
+      IDVendor : new FormControl({value:'',disabled:true})
     });
+    
   }
 
-  preLoadData(event?: any): void {
-    this.id = 0;
+  // preLoadData(event?: any): void {
+  //   if (this.itemInVendors){
 
-      this.loadedData(event);
-    }
-  loadedData(event){
-    super.loadedData(event);
-    this.orderLines = [...this.orderLines]
-    if(this.defaultVendor?.Id){
-      this.formGroup.get('IDVendor').setValue(this.defaultVendor.Id);
-      this.orderLines.forEach(i=>{
-        i.disabled = i.IDVendor != this.defaultVendor.Id;
-        i.checked = i.IDVendor ==  this.defaultVendor.Id;
-        this.changeSelection(i);
+  //     this.query.IDItem = this.itemInVendors.map(d=> d.IDItem);
+  //   } 
+  //   super.preLoadData();
+  // }
 
-      });
-    }
-  };
-  
-  submit() {
-    this.formGroup.updateValueAndValidity();
-    if (!this.formGroup.valid) {
-      this.env.showMessage('Please recheck information highlighted in red above', 'warning');
-    } else {
-      let submitItem:any = this.formGroup.value;
-      let orderLines = this.orderLines.filter(i => i.checked && !i.disabled);
-      submitItem.OrderLines = orderLines; 
-      this.modalController.dismiss(submitItem);
-    }
-  }
-
-  isAllChecked = false;
-  toggleSelectAll() {
-    this.isAllChecked = !this.isAllChecked;
-    this.selectedItems = [];
-    // let groups = this.formGroup.get('OrderLines') as FormArray;
-    this.orderLines.forEach((i) =>{
-      if( this.isAllChecked){
-        if(i.IDVendor == this.formGroup.get('IDVendor').value){
-          i.checked = this.isAllChecked;
-        } 
+  loadedData(event?: any, ignoredFromGroup?: boolean): void {
+    // super.loadedData();
+    console.log(this.items);
+    // this.items = [...this.items.reduce((acc, item) => {
+    //   if (item['IDItem']) {
+    //     let i = acc.find(d => d.IDItem == item['IDItem'])
+    //     if (i) {
+    //       i._Vendors.push(item._Vendor)
+    //     } else {
+    //       item._Vendors = [item._Vendor];
+    //       acc.push(item);
+    //     }
+    //   }
+    //   return acc;
+    // }, [])];
+    this.itemInVendors = this.itemInVendors?.map(d => {
+      // let i = this.items.find(item => item.IDItem == d['IDItem']);
+      // let temp = lib.cloneObject(i);
+      if(d.IDVendor == null){
+        d._Vendors.forEach(v=> {v.checked = true ; this.vendorList.push(v)})//= (v.Id == d.IDVendor)
+        return {...d, Quantity: d.Quantity, UoMName: d.UoMName,IDDetail:d.IDDetail,UoMPrice : d.UoMPrice} ;
+      } else{
+        d._Vendors = d._Vendors.filter(v=> v.Id == d.IDVendor)
+        d._Vendors.forEach(v=> {v.checked = true ; this.vendorList.push(v)})//= (v.Id == d.IDVendor)
+        return {...d, Quantity: d.Quantity, UoMName: d.UoMName,IDDetail:d.IDDetail,UoMPrice : d.UoMPrice} ;
       }
-      else i.checked = this.isAllChecked;
-      super.changeSelection(i);
-    })
-    // this.selectedItems = this.isAllChecked ? [...this.items.filter(d=> d.checked)] : [];
-  }
- changeVendor(e){       
-  this.orderLines.forEach(i=>{
-    i.disabled = i.IDVendor? i.IDVendor != e.Id : (!i.Vendor && i._Vendors.some(v=> v.Id == e.Id))? false : true;
-    i.checked = i.IDVendor == e.Id;
-    super.changeSelection(i);
+      return d;
+    });
+    this.formGroup.controls.IDVendor.setValue(this.defaultVendor.Id);
+    this.items=this.itemInVendors;
 
-  });
- }
- changeSelection(i, e = null){
-  i.checked = !i.checked;
-  super.changeSelection(i);
- }
+    console.log(this.items)
+  }
+
+
+  changeVendor(i, index) {
+    if (!this.isMultiple) {
+      if (i._Vendors[index].checked) {
+        i._Vendors.forEach(d => d.checked = false)
+        i._Vendors[index].checked = true;
+      }
+    }
+  }
+  
+
+  submitForm() {
+    let obj = this.itemInVendors.map(d=>{return {
+      IDItem : d.IDItem,
+      IDUom : d. IDItemUoM,
+      Vendors: d._Vendors.map(v=> {
+        if(v.checked) return v.Id;
+      })
+    }});
+    console.log(obj);
+    
+    this.modal.dismiss(obj);
+  }
 }

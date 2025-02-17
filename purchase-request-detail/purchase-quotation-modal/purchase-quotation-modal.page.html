@@ -1,86 +1,111 @@
+
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start" class="ion-hide-sm-down_">
-      <ion-button color="dark" class="ion-hide-sm-down"> {{'Select order' | translate}} </ion-button>
-    </ion-buttons>
-
-    <ion-buttons slot="primary">
-      <ion-buttons style="justify-content: flex-end;">
+    <ion-title> {{'Item in vendor'| translate}}</ion-title>
+    
+    <ion-buttons slot="end">
+      <ion-buttons *ngIf="defaultVendor.Id && vendorList.length > 0" style="justify-content: flex-end;">
         <span>{{'Vendor'|translate}}</span> &nbsp;
         <div class="c-control"  style="margin-bottom:0px;max-width:250px;min-width:250px;">
         <app-input-control
         [field]="{ id:'IDVendor',label:'Vendor',type:'ng-select',
         dataSource:vendorList,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
-        form:formGroup}"(change)="changeVendor($event)">
+        form:formGroup}">
       </app-input-control>
     </div>
       </ion-buttons>
     
-     
-      <span class="split ion-hide-sm-down">|</span>
-
-      <ion-button
-        [disabled]="selectedItems.length==0"
-        fill="solid"
-        size="small"
-        color="primary"
-        (click)="submit()"
-      >
-        &nbsp;{{'Add' | translate}} {{selectedItems.length}} {{'Order' | translate}}&nbsp;
-      </ion-button>
-
-      <ion-button (click)="refresh()" title="{{'Refresh' | translate}}">
-        <ion-icon slot="icon-only" name="reload-outline"></ion-icon>
-      </ion-button>
-
-      <ion-button title="{{'Help' | translate}}" (click)="help()">
-        <ion-icon slot="icon-only" name="help-circle-outline"></ion-icon>
-      </ion-button>
-
-      <ion-button title="{{'Close' | translate}}" color="secondary" (click)="closeModal()">
-        <ion-icon slot="icon-only" name="close"></ion-icon>
+      <ion-button (click)="modal.dismiss()">
+        <ion-icon name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <section class="table">
-    <app-data-table class="box-shadow responsive"  [rows]="orderLines" [(selectedRows)]="selectedItems"
-    (filter)="onDatatableFilter($event)"
-    (sort)="onSort($event)" 
-    [(query)]="query"
-    (activate)="changeSelection($event)"
-    (dataInfinite)="loadData($event)"
-		[showFilter]="pageConfig.isShowSearch"
-    [showSpinner]="pageConfig.showSpinner" >
-      <datatable-column [checkbox]="true" property="checked">
-        <ng-template datatable-header-template>
-        <input class="c-checkbox" type="checkbox" (change)="toggleSelectAll()" [checked]="isAllSelected">
-        
-        </ng-template>
-        <ng-template let-i="row" datatable-cell-template>
-          <input class="c-checkbox" type="checkbox" [disabled]="i.disabled" (change)="changeSelection(i)" [checked]="i.checked">
+</ion-header>
 
-        </ng-template>
-      </datatable-column>
-      <datatable-column class="col-id" name="IDItem" property="IDItem">
-        <ng-template let-i="row" datatable-cell-template>
-          <a [routerLink]="['/item/'+i.IDItem]" >
-           {{i.IDItem}}
-          </a >
-        </ng-template>
-      </datatable-column>
-      <datatable-column class="col-name" name="Name" property="IDItem">
-        <ng-template let-i="row" datatable-cell-template>
-           <span *ngIf="i._Item?.Code">{{i._Item?.Code}} - </span>{{i._Item.Name}}
-        </ng-template>
-        </datatable-column>
-        <datatable-column class="col-name" name="UoM" property="UoMName">
-          </datatable-column>
+<ion-content appScrollbarTheme class="header-table scrollx" forceOverscroll="false">
+  <section class="table" style="min-width: calc(1024px)">
 
-        <datatable-column class="col-qty" name="Quantity" property="Quantity">
-          <ng-template let-i="row" datatable-cell-template>
-            <span *ngIf="i.Quantity">{{i.Quantity | number: '1.0-0'}}</span>
-            <small *ngIf="i.UoMName ">{{i.UoMName}}</small>
-         </ng-template>
-         
-          </datatable-column>
-        </app-data-table>
+    <header class="bold">
+      <!-- <div class="col-checkbox cell"></div> -->
+      <div class="col-id cell">
+        {{'Id' | translate}}
+        <ion-icon class="min-btn" *ngIf="sort.Id" [name]="sort.Id == 'Id'?'arrow-down': 'arrow-up'"></ion-icon>
+        <ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.Id"
+          name="search" color="primary"></ion-icon>
+      </div>
+
+      <div class="col-name cell">
+        {{'Item' | translate}}
+        <ion-icon class="min-btn" *ngIf="sort.Name" [name]="sort.Name == 'Name'?'arrow-down': 'arrow-up'"></ion-icon>
+        <ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.Name"
+          name="search" color="primary"></ion-icon>
+      </div>
+    
+      <div class="col-number cell">
+        {{'Quantity' | translate}}
+        <ion-icon class="min-btn" *ngIf="sort.DinnerPax"
+          [name]="sort.DinnerPax == 'DinnerPax'?'arrow-down': 'arrow-up'"></ion-icon>
+        <ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.DinnerPax"
+          name="search" color="primary"></ion-icon>
+      </div>
+
+      <div class="col-checkbox cell">{{'Order' | translate}}</div>
+  
+      <div class="col-number cell">
+        {{'Price' | translate}}
+        <ion-icon class="min-btn" *ngIf="sort.DinnerPax"
+          [name]="sort.DinnerPax == 'DinnerPax'?'arrow-down': 'arrow-up'"></ion-icon>
+        <ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.DinnerPax"
+          name="search" color="primary"></ion-icon>
+      </div>
+    </header>
+
+    <div *ngFor="let i of items; let j = index;" class="row" [ngClass]="{odd: j % 2 != 0}"
+      [ngClass]="{selected: i.checked}">
+      <div class="col-id cell">
+        <span *ngIf="i.IDItem"> {{i.IDItem}} </span>
+      </div>
+
+      <div class="col-name vendor-name cell">
+        <span *ngIf="i.IDItem"> <b>{{i._Item?.Code}}</b> - {{i._Item?.Name}} </span>
+        <div *ngIf="i._Vendors">
+          <div *ngFor="let v of i._Vendors; let z = index" class="vendor-text">
+            &nbsp;&nbsp;&nbsp;
+            <span >
+              <a [href]="'#/'+'business-partner/'+v.Id" (click)="nav('business-partner/'+v.Id,'forward')"
+                title="{{'Vendor' | translate}}">
+                {{v.Id}} <ion-icon name="open-outline"></ion-icon>
+              </a>
+              {{v.Name}}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-number cell" *ngIf="i.IDItem">
+        <b *ngIf="i.IDItem">{{i.Quantity}} <small>{{i.UoMName}}</small></b>
+      </div>
+      <div class="col-checkbox vendor-name cell">
+        <span>&nbsp;</span>
+        <div>
+          <div *ngFor="let v of i._Vendors; let z = index" class="vendor-text">
+            <span>
+              <input *ngIf="i.IDItem" class="c-checkbox" type="checkbox" [(ngModel)]="v.checked"
+                (change)="changeVendor(i,z)" />
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="col-number cell">
+        <span *ngIf="i.IDItem">{{i.UoMPrice | number: '1.0-0'}}</span>
+      </div>
+
+    </div>
+  </section>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-button size="large" slot="end" (click)="submitForm()">{{'Submit' | translate}}</ion-button>
+  </ion-toolbar>
+</ion-footer>

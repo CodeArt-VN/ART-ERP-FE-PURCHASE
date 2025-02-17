@@ -270,7 +270,8 @@ export class PurchaseRequestDetailPage extends PageBase {
           this._currentVendor = e;
           this.saveChange()
         };;
-    }
+        console.log(this.formGroup.get('IDVendor').value)
+      }
     else{
       this._currentVendor = e;
       this.saveChange();
@@ -404,7 +405,7 @@ export class PurchaseRequestDetailPage extends PageBase {
       });
     }
   }
-  async copyToPurchaseQuotation(){
+  async sendRequestQuotationToVendor(){
     let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
 	  let vendorList = [] ;
     this.formGroup.get('OrderLines').value.forEach(o=> {
@@ -420,9 +421,10 @@ export class PurchaseRequestDetailPage extends PageBase {
     const modal = await this.modalController.create({
       component: PurchaseQuotationModalPage,
       componentProps: {
-        orderLines: orderLines,
-        defaultVendor: this._currentVendor,
-        vendorList : vendorList,
+        itemInVendors: orderLines,
+        isMultiple : true,
+        defaultVendor: this._currentVendor
+        // vendorList : vendorList,
       },
 
       cssClass: 'modal90',
@@ -431,28 +433,26 @@ export class PurchaseRequestDetailPage extends PageBase {
     await modal.present();
     const { data } = await modal.onWillDismiss();
 
-    if (data && data.IDVendor && data.OrderLines.length > 0) {
-      const loading = await this.loadingController.create({
+    if(data && data.some(d=> d.Vendors.length > 0)){
+         const loading = await this.loadingController.create({
         cssClass: 'my-custom-class',
-        message: 'Xin vui lòng chờ tạo PO...',
+        message: 'Xin vui lòng chờ tạo PQ...',
       });
-      await loading.present().then(() => {
+      await loading.present().then(()=>{
         let postData = {
-          // SelectedRecommendations: this.items.filter((d) => d.checked).map((m) => ({ Id: m.Id, IDVendor: m.VendorId })),
-          IDVendor: data.IDVendor,
-          IDOrderlines: data.OrderLines.map((o) => o.Id),
-        };
-        this.commonService
-          .connect('POST', 'PURCHASE/Request/CopyToPO/' + this.formGroup.get('Id').value, postData)
+          data : data.filter(d=> d.Vendors.length > 0)
+        }
+             this.commonService
+          .connect('POST', 'PURCHASE/Request/SendRequestQuotationToVendor/' + this.formGroup.get('Id').value, postData)
           .toPromise()
           .then((resp: any) => {
             if (resp) {
               if (loading) loading.dismiss();
-              this.env.showMessage('PO created!', 'success');
+              this.env.showMessage('PQ created!', 'success');
               this.env
-               .showPrompt('Create purchase order successfully!','Do you want to navigate to purchase order?' )
+               .showPrompt('Create purchase quotation successfully!','Do you want to navigate to purchase quotation?' )
                .then((d) => {
-                  this.nav('/purchase-order/' + resp.Id, 'forward');
+                  // this.nav('/purchase-quotation/' + resp.Id, 'forward');
                 });
               this.refresh();
               this.env.publishEvent({
@@ -462,10 +462,49 @@ export class PurchaseRequestDetailPage extends PageBase {
           })
           .catch((err) => {
             console.log(err);
-            this.env.showMessage('Cannot create PO, please try again later', 'danger');
+            this.env.showMessage('Cannot create PQ, please try again later', 'danger');
             if (loading) loading.dismiss();
           });
       });
     }
+
+    // if (data && data.IDVendor && data.OrderLines.length > 0) {
+    //   const loading = await this.loadingController.create({
+    //     cssClass: 'my-custom-class',
+    //     message: 'Xin vui lòng chờ tạo PO...',
+    //   });
+    //   await loading.present().then(() => {
+    //     let postData = {
+    //       // SelectedRecommendations: this.items.filter((d) => d.checked).map((m) => ({ Id: m.Id, IDVendor: m.VendorId })),
+    //       IDVendor: data.IDVendor,
+    //       IDOrderlines: data.OrderLines.map((o) => o.Id),
+    //     };
+    //     this.commonService
+    //       .connect('POST', 'PURCHASE/Request/CopyToPO/' + this.formGroup.get('Id').value, postData)
+    //       .toPromise()
+    //       .then((resp: any) => {
+    //         if (resp) {
+    //           if (loading) loading.dismiss();
+    //           this.env.showMessage('PO created!', 'success');
+    //           this.env
+    //            .showPrompt('Create purchase order successfully!','Do you want to navigate to purchase order?' )
+    //            .then((d) => {
+    //               this.nav('/purchase-order/' + resp.Id, 'forward');
+    //             });
+    //           this.refresh();
+    //           this.env.publishEvent({
+    //             Code: this.pageConfig.pageName,
+    //           });
+    //         }
+    //       })
+    //       .catch((err) => {
+    //         console.log(err);
+    //         this.env.showMessage('Cannot create PO, please try again later', 'danger');
+    //         if (loading) loading.dismiss();
+    //       });
+    //   });
+    
+    
+    // }
   }
 }

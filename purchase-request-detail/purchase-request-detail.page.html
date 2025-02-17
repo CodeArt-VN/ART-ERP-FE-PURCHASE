@@ -4,9 +4,11 @@
     <ion-button *ngIf="pageConfig.canCreatePO && formGroup.get('ContentType').value != 'Service'" (click)="createPO()" title="{{'Create PO' | translate}}" >
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
     </ion-button>
-    <ion-button *ngIf="" (click)="sendRequestToVendor()" title="{{'Send quotate request to vendor' | translate}}" >
+    <ion-button 
+    (click)="sendRequestQuotationToVendor()" title="{{'Send quotate request to vendor' | translate}}" >
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
     </ion-button>
+    <!-- *ngIf="pageConfig.ShowSendRequestToVendor" -->
   </app-toolbar>
 </ion-header>
 
