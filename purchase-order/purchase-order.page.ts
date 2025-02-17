@@ -11,7 +11,6 @@ import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { FormBuilder } from '@angular/forms';
-import { el } from '@fullcalendar/core/internal-common';
 
 @Component({
   selector: 'app-purchase-order',
@@ -20,7 +19,6 @@ import { el } from '@fullcalendar/core/internal-common';
   standalone: false,
 })
 export class PurchaseOrderPage extends PageBase {
-  updateToolbar;
   statusList = [];
   paymentStatusList = [];
   paymentTypeList = [];
@@ -46,6 +44,27 @@ export class PurchaseOrderPage extends PageBase {
       PaymentSubType: [''],
       PaymentReason: [''],
     });
+//const allCommands =               ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit',  'ShowApprove', 'ShowDisapprove', 'ShowCopyToARInvoice', 'ShowCancel', 'ShowDelete', 'ShowArchive'];
+
+this.pageConfig.ShowCommandRules = [
+    { Status: 'Draft',      ShowBtns: ['ShowChangeBranch', 'ShowSubmit', 'ShowApprove', 'ShowDisapprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
+    { Status: 'Unapproved', ShowBtns: ['ShowChangeBranch', 'ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
+    { Status: 'Submitted',  ShowBtns: ['ShowChangeBranch', 'ShowApprove', 'ShowDisapprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
+    { Status: 'Approved',   ShowBtns: ['ShowDisapprove', 'ShowCopyToReceipt', 'ShowCancel', 'ShowArchive', 'ShowSubmitOrders'] },
+    { Status: 'Ordered',    ShowBtns: ['ShowCopyToReceipt', 'ShowDelete', 'ShowArchive', 'ShowRequestOutgoingPayment'] },
+    { Status: 'Confirmed',    ShowBtns: ['ShowCopyToReceipt', 'ShowDelete', 'ShowArchive'] },
+    { Status: 'Cancelled',  ShowBtns: ['ShowDelete', 'ShowArchive'] },
+    { Status: 'Scheduled',  ShowBtns: ['ShowArchive'] },
+    { Status: 'Picking',    ShowBtns: ['ShowArchive'] },
+    { Status: 'InCarrier',  ShowBtns: ['ShowArchive'] },
+    { Status: 'InDelivery', ShowBtns: ['ShowArchive'] },
+    { Status: 'Delivered',  ShowBtns: ['ShowArchive'] },
+    { Status: 'Redelivery', ShowBtns: ['ShowArchive'] },
+    { Status: 'Splitted',   ShowBtns: ['ShowArchive'] },
+    { Status: 'Merged',     ShowBtns: ['ShowArchive'] },
+    { Status: 'Debt',       ShowBtns: ['ShowArchive'] },
+    { Status: 'Done',       ShowBtns: ['ShowArchive'] },
+  ];
   }
 
   preLoadData(event) {
@@ -374,105 +393,74 @@ export class PurchaseOrderPage extends PageBase {
   ShowSubmitForApproval;
   changeSelection(i, e = null) {
     super.changeSelection(i, e);
-    const approveSet = new Set(['Submitted', 'Draft']);
-    const disApproveSet = new Set(['Submitted', 'Draft']);
-    const submitSet = new Set(['Draft', 'Unapproved']);
-    const cancelSet = new Set(['Draft', 'Unapproved','Approved']);
-    const deleteSet = new Set(['Draft', 'Unapproved', 'Cancelled']);  
-    const copyToReceiptSet = new Set(['Approved', 'Confirmed', 'Ordered']);
-    const requestOutgoingPaymentSet = new Set(['Approved', 'Confirmed', 'Ordered','Shipping','PartiallyReceived','Received']);
-    const createInvoiceSet = new Set(['Approved', 'Confirmed', 'Ordered','Shipping','PartiallyReceived','Received']);
     const uniqueSellerIDs = new Set(this.selectedItems.map((i) => i.IDVendor));
-    const toolbarSet = new Set(['Draft', 'Unapproved', 'Submitted']);
-    this.pageConfig.canDisapprove = this.pageConfig.canApprove;
-    this.pageConfig.ShowApprove = this.selectedItems.every((i) => approveSet.has(i.Status));
-    this.pageConfig.ShowDisapprove = this.selectedItems.every((i) => disApproveSet.has(i.Status));
-    this.pageConfig.ShowSubmit = this.selectedItems.every((i) => submitSet.has(i.Status));
-    this.pageConfig.ShowCancel = this.selectedItems.every((i) => cancelSet.has(i.Status));
-    this.pageConfig.ShowDelete = this.selectedItems.every((i) => deleteSet.has(i.Status));
-    this.pageConfig.ShowCopyToReceipt = this.selectedItems.every((i) => copyToReceiptSet.has(i.Status));
-    this.pageConfig.ShowRequestOutgoingPayment = this.selectedItems.every((i) =>requestOutgoingPaymentSet.has(i.Status))
-    this.pageConfig.ShowCreateInvoice = this.selectedItems.every((i) => createInvoiceSet.has(i.Status))
-    
-    this.pageConfig.ShowChangeBranch =
-      this.pageConfig.ShowApprove =
-      this.pageConfig.ShowArchive =
-      this.pageConfig.ShowDelete =
-      this.pageConfig.ShowMerge =
-      this.pageConfig.ShowSplit =
-        this.selectedItems.every((i) => toolbarSet.has(i.Status));
-    if (uniqueSellerIDs.size > 1) {
+      if (uniqueSellerIDs.size > 1) {
       this.pageConfig.ShowRequestOutgoingPayment = false;
       this.IDBusinessPartner = null;
     } else {
       this.IDBusinessPartner = [...uniqueSellerIDs][0];
     }
   }
+
+ 
   copyToReceipt() {
     if (!this.pageConfig.canCopyToReceipt) return;
     let obj = this.selectedItems.map((d) => {
       return { Id: d.Id };
     });
-   this.env .showLoading( 'Please wait for a few moments', 
-      this.pageProvider.commonService .connect('POST', 'PURCHASE/Order/CopyToReceipt/', obj)
-      .toPromise()).then((resp: any) => {
-        let messageTitle ;
+
+    this.pageProvider.commonService
+      .connect('POST', 'PURCHASE/Order/CopyToReceipt/', obj)
+      .toPromise()
+      .then(async (resp: any) => {
+        let messageTitle = 'Đã tạo ASN thành công : ';
+        let messageSubtile = 'Nhưng có lỗi khi tạo ASN ';
         let message = '';
-        let recheckList = [];
         let ids = [];
+        let idsErr = [];
         for(const r of resp ){
-          if (r.Id) ids.push(r.Id);
-          if (r.RecheckReceipts && r.RecheckReceipts.length) recheckList = [...recheckList, ...r.RecheckReceipts];
-        }
-        if(recheckList.length > 0) message = recheckList.join(', ');
-        if(ids.length > 0) messageTitle={code:'Created ASN successfully with Id: {{value}}', value: ids.join(', ')};
-        else messageTitle='PO has entered a full amount of quantity!';
-        this.env
-          .showPrompt(
-            message != '' ?  {code:'Refer to ASN: {{value}}' ,value: message }: null,
-            messageTitle,
-          )
-          .then((_) => { 
-            if(ids.length > 0)
-              this.env.publishEvent({
-                Code: this.pageConfig.pageName,
-              });
-          })
-          .catch((e) => {
-            if(ids.length > 0)
-              this.env.publishEvent({
-                Code: this.pageConfig.pageName,
-              });
-          });
-      }).catch((err) => {
-        this.env.showMessage('Cannot create ASN, please try again later', 'danger');
-      });
-  }
-  async createInvoice() {
-    if(this.selectedItems.length==0) return;
-    this.env
-      .showLoading(
-        'Please wait for a few moments',
-        this.pageProvider.commonService
-          .connect('POST', 'PURCHASE/Order/CreateInvoice/', {
-            Ids: this.selectedItems.map(i=>i.Id),
-          })
-          .toPromise(),
-      )
-      .then((resp: any) => {
-        this.env
-          .showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
-          .then((_) => {
-            if (resp.length == 1) {
-              this.nav('/ap-invoice/' + resp[0]);
-            } else {
-              this.nav('/ap-invoice');
+          if (message != '') message += '<br>';
+          if (r.Id) {
+            ids.push(r.Id);
+          }
+          if (r.ErrorList && r.ErrorList.length) {
+            if (r.Id) {
+              idsErr.push(r.Id);
             }
-          })
-          .catch((_) => {});
+            for (let i = 0; i < r.ErrorList.length && i <= 5; i++)
+              if (i == 5) message += '<br> Còn nữa...';
+              else {
+                const e = r.ErrorList[i];
+                const translationPromises = this.env.translateResource(e.Message);
+                await translationPromises.then((translated) => {
+                  e.Message = translated;
+                });
+                message += '<br> ' + e.IDItem + ' - ' + e.Name + ': ' + e.Message;
+              }
+          } else {
+            this.env.showMessage('ASN created!', 'Success');
+          }
+        }
+        if (message != '') {
+          this.env
+            .showPrompt(
+              {
+                code: 'There was an error creating the ASN: {{value}}',
+                value: message,
+              },
+              ids.length > 0 ? messageSubtile + idsErr.join(', ') : null,
+              ids.length > 0 ? messageTitle + ids.join(', ') : 'Lỗi khi tạo ASN',
+            )
+            .then((_) => {
+              // if (messageSubtile) this.nav('/receipt/' + resp.Id);
+            })
+            .catch((e) => {});
+        } else {
+          this.env.showPrompt(null, null, messageTitle + ids.join(', '));
+        }
       })
       .catch((err) => {
-        this.env.showMessage(err);
+        this.env.showMessage('Cannot create ASN, please try again later', 'danger');
       });
   }
 }
