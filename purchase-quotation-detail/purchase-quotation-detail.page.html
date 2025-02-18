@@ -1,23 +1,14 @@
 <ion-header>
   <app-toolbar [page]="this">
-    <ion-button
-    title="{{ 'Confirm' | translate }}"
-    *ngIf="pageConfig.ShowConfirm"
-    (click)="confirmSaleQuotation()"
-  >
-    <ion-icon name="checkmark-circle-outline"></ion-icon>
-  </ion-button>
- </app-toolbar>
-    
-    <ion-button
-      (click)="copyCopyToPurchaseOrder()"
-      title="{{'Copy to purchase order' | translate}}"
+    <ion-button title="{{ 'Confirm' | translate }}" *ngIf="pageConfig.ShowConfirm" (click)="confirmSaleQuotation()">
+      <ion-icon name="checkmark-circle-outline"></ion-icon>
+    </ion-button>
 
-    >
+    <ion-button *ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder"
+     (click)="copyCopyToPurchaseOrder()" title="{{'Copy to purchase order' | translate}}">
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
       <!-- *ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder" -->
     </ion-button>
-  
   </app-toolbar>
 </ion-header>
 
@@ -256,7 +247,9 @@
                     </div>
                     <div class="col-status cell">
                       <span class="bar-holder">
-                        <ion-text class="bar-title" [color]="g.controls.StatusColor.value">{{g.controls.StatusText.value | translate}}</ion-text>
+                        <ion-text class="bar-title" [color]="g.controls.StatusColor.value"
+                          >{{g.controls.StatusText.value | translate}}</ion-text
+                        >
                         <span
                           class="bar"
                           [ngClass]="{active: s.Code==g.controls.Status.value}"

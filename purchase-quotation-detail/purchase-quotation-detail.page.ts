@@ -119,12 +119,14 @@ export class PurchaseQuotationDetailPage extends PageBase {
 
   loadedData(event) {
     if(this.item.Status != 'Open') this.pageConfig.canEdit = false;
-    super.loadedData(event, true);
+    super.loadedData(event);
     this.setQuotationLines();
     if(this.item._Vendor){
       this._vendorDataSource.selected = [... this._vendorDataSource.selected,...[this.item._Vendor]]
     }
     this._vendorDataSource.initSearch();
+    if(this.item.Status == 'Confirmed') this.pageConfig.ShowCopyToPurchaseOrder = true;
+    else this.pageConfig.ShowCopyToPurchaseOrder = false;
   }
 
   async saveChange() {

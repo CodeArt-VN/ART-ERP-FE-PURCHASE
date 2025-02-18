@@ -157,9 +157,9 @@ export class CopyToPurchaseOrderModalPage extends PageBase {
     let QuotationLines = this.formArray.getRawValue().filter(d=> d.UoMQuantityExpected > 0).map((d) => {
       return {
         UoMQuantityExpected: d.UoMQuantityExpected,
-        Id: d.Id,
-        IDItem: d.IDItem,
-        IDItemUoM: d.IDItemUoM,
+        // Id: d.Id,
+        // IDItem: d.IDItem,
+        // IDItemUoM: d.IDItemUoM,
         SourceLine: d.SourceLine,
       };
     });
@@ -168,21 +168,13 @@ export class CopyToPurchaseOrderModalPage extends PageBase {
       return;
     }
 
-    let data = {
-      IDBranch: this.item.IDBranch,
-      IDVendor: this.item._Vendor.Id,
-      // IDStorer: this.item._Storer.Id,
-      SourceType: this.item.SourceType,
-      ExpectedReceiptDate: this.item.RequiredDate,
-      SourceKey:this.item.SourceKey,
-      Code : this.item.Code,
-      Name : this.item.Name,
-      OrderLines: QuotationLines,
+    let postDATA = {
+      data: QuotationLines,
     };
     this.env
       .showLoading(
         'Please wait for a few moments',
-        this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/CopyToPO/'+this.item.Id, data).toPromise(),
+        this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/CopyToPO/'+this.item.Id, postDATA).toPromise(),
       )
       .then((result:any) => {
         this.modalController.dismiss(result);
