@@ -18,7 +18,8 @@
       (sort)="onSort($event)"
       
     >
-      <datatable-column class="col-checkbox cell" [checkbox]="true" name="" property="checked">
+      <datatable-column class="col-checkbox cell" [checkbox]="true" name="" property="Id">
+        <ng-template datatable-filter-template></ng-template>
         <ng-template datatable-header-template> </ng-template>
         <ng-template let-i="row" datatable-cell-template>
           <input (click)="changeSelection(i, $event)" class="c-checkbox" [(ngModel)]="i.checked" type="checkbox" />
@@ -46,33 +47,30 @@
 
       <datatable-column class="col-name cell" name="" property="Id">
         <ng-template datatable-header-template>
-          <div class="col-code cell" (click)="sortToggle('RequestBranchName')">{{'Department' | translate}}</div>
+          <div class="col-code cell" >{{'Branch' | translate}}</div>
         </ng-template>
 
         <ng-template let-i="row" datatable-cell-template>
-          <div *ngIf="i.RequestBranchName" class="col-code cell">
-            {{i.RequestBranchName | translate}}
+          <div *ngIf="i._BranchName" class="col-code cell">
+            {{i._BranchName | translate}}
           </div>
         </ng-template>
       </datatable-column>
 
-      <datatable-column class="col-name cell" name="Requester" property="Id">
+      <datatable-column class="col-name cell" name="Business partner" property="Id">
         <ng-template let-i="row" datatable-cell-template>
-          <div *ngIf="i._Requester?.Id"  class="col-staff cell">
-            <ion-avatar title="{{i._Requester?.Code}} - {{i._Requester?.FullName}}" class="avatar" slot="start">
-              <ion-img style= "margin-left: -8px"
-                #img
-                [src]="imgPath + i._Requester?.Code + '.jpg'"
-                (ionError)="img.src = 'assets/avartar-empty.jpg'"
-              ></ion-img>
-            </ion-avatar>
-            {{i._Requester?.FullName}}
+          <div *ngIf="i._BusinessPartnerName"  class="col-staff cell">
+            {{i._BusinessPartnerName}}
           </div>
         </ng-template>
       </datatable-column>
-
     
       <datatable-column class="col-date cell" name="" property="RequiredDate">
+        <ng-template datatable-filter-template>
+          <input  class="c-input" type="date"
+          [ngModelOptions]="{standalone: true}"
+          [(ngModel)]="query.RequiredDate" (change)="refresh()">
+        </ng-template>
         <ng-template datatable-header-template>
           <div class="col-date cell" (click)="sortToggle('RequiredDate')">
             {{'Required date' | translate}}
@@ -102,97 +100,21 @@
           </div>
         </ng-template>
       </datatable-column>
-      <!-- <datatable-column class="col-code col-expectDate cell hide-small" name="" property="PostingDate">
-        <ng-template datatable-header-template>
-          <div class="col-code cell" (click)="sortToggle('PostingDate')">
-            {{'Posting date' | translate}}
-            <ion-icon
-              class="min-btn"
-              *ngIf="sort.PostingDate"
-              [name]="sort.PostingDate == 'PostingDate'?'arrow-down': 'arrow-up'"
-            ></ion-icon>
-            <ion-icon
-              class="min-btn"
-              (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
-              *ngIf="query.PostingDate"
-              name="search"
-              color="primary"
-            ></ion-icon>
-          </div>
-        </ng-template>
-        <ng-template let-i="row" datatable-cell-template>
-          <div
-            *ngIf="i.PostingDate"
-            class="col-code col-expectDate cell"
-            (click)="nav('purchase-quotation/'+i.Id,'forward')"
-          >
-            {{i.PostingDate | date :'dd/MM/yyyy'}}
-            <small >{{i.PostingDate | date :'hh:mm'}}</small>
-          </div>
-        </ng-template>
-      </datatable-column> -->
-      <!-- <datatable-column class="col-code col-expectDate cell hide-small" name="" property="DocumentDate">
-        <ng-template datatable-header-template>
-          <div class="col-code cell" (click)="sortToggle('DocumentDate')">
-            {{'Document date' | translate}}
-            <ion-icon
-              class="min-btn"
-              *ngIf="sort.DocumentDate"
-              [name]="sort.DocumentDate == 'DocumentDate'?'arrow-down': 'arrow-up'"
-            ></ion-icon>
-            <ion-icon
-              class="min-btn"
-              (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
-              *ngIf="query.DocumentDate"
-              name="search"
-              color="primary"
-            ></ion-icon>
-          </div>
-        </ng-template>
-        <ng-template let-i="row" datatable-cell-template>
-          <div
-            *ngIf="i.DocumentDate"
-            class="col-code col-expectDate cell"
-            (click)="nav('purchase-quotation/'+i.Id,'forward')"
-          >
-            {{i.DocumentDate | date :'dd/MM/yyyy'}}
-            <small> {{i.DocumentDate | date :'hh:mm'}}</small>
-          </div>
-        </ng-template>
-      </datatable-column> -->
-      <!-- <datatable-column class="col-code col-expectDate cell hide-small" name="" property="DueDate">
-        <ng-template datatable-header-template>
-          <div class="col-code cell" (click)="sortToggle('DueDate')">
-            {{'Due date' | translate}}
-            <ion-icon
-              class="min-btn"
-              *ngIf="sort.DueDate"
-              [name]="sort.DueDate == 'DueDate'?'arrow-down': 'arrow-up'"
-            ></ion-icon>
-            <ion-icon
-              class="min-btn"
-              (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
-              *ngIf="query.DueDate"
-              name="search"
-              color="primary"
-            ></ion-icon>
-          </div>
-        </ng-template>
-        <ng-template let-i="row" datatable-cell-template>
-          <div *ngIf="i.DueDate" class="col-code col-expectDate cell" (click)="nav('purchase-quotation/'+i.Id,'forward')">
-            {{i.DueDate | date :'dd/MM/yyyy'}}
-            <small> {{i.DueDate | date :'hh:mm'}}</small>
-          </div>
-        </ng-template>
-      </datatable-column> -->
 
-      <datatable-column class="col-code cell money" name="Total" property="TotalAfterTax">
-        <ng-template let-i="row" datatable-cell-template>
-          {{i.TotalAfterTax | currency: 'VND':'':'1.0-0':''}}
+      <datatable-column class="col-status cell" name="" property="Status">
+        <ng-template datatable-filter-template>
+          <select
+            (change)="refresh()"
+            class="c-input c-dropdown"
+            [ngModelOptions]="{standalone: true}"
+            [(ngModel)]="query.Status"
+            [ngClass]="{active: query.Status}"
+          >
+            <option value="">{{'All' | translate}}</option>
+            <option disabled value="">----------</option>
+            <option *ngFor="let t of statusList" [value]="t.Code">{{t.Name}}</option>
+          </select>
         </ng-template>
-      </datatable-column>
-    
-      <datatable-column class="col-status cell" name="" property="StatusText">
         <ng-template datatable-header-template>
           <div class="col-status cell" (click)="sortToggle('Status')">
             {{'Status' | translate}}
