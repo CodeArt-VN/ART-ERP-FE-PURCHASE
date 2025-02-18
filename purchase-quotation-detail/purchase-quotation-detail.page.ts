@@ -14,7 +14,6 @@ import {
 } from 'src/app/services/static/services.service';
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
-import { PURCHASE_Quotation } from 'src/app/models/model-list-interface';
 import { lib } from 'src/app/services/static/global-functions';
 
 @Component({
@@ -119,8 +118,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
 
   loadedData(event) {
     if(this.item.Status != 'Open') this.pageConfig.canEdit = false;
-    this.setQuotationLines();
     super.loadedData(event, true);
+    this.setQuotationLines();
     if(this.item._Vendor){
       this._vendorDataSource.selected = [... this._vendorDataSource.selected,...[this.item._Vendor]]
     }
@@ -143,7 +142,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
       this.item?.QuotationLines.forEach((i) => {
         this.addLine(i);
       });
-      console.log('OrderLines: ' , this.formGroup.controls.QuotationLines.getRawValue());
+      if (!this.pageConfig.canEdit) {
+        this.formGroup.controls.QuotationLines.disable();
+      }
   }
 
   addLine(line, markAsDirty = false) {
@@ -180,7 +181,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
         line.Quantity,
         this.item.ContentType === 'Item' ? Validators.required : null, // Conditional validator
       ),
-      QuantityRemeaningOpen : new FormControl({value:line.QuantityRemeaningOpen, disabled:true}),
+      QuantityRemainingOpen : new FormControl({value:line.QuantityRemainingOpen, disabled:true}),
       QuantityRequired: new FormControl({ value: line.QuantityRequired, disabled: this.item?.SourceType != null }),
       UoMSwap: [line.UoMSwap],
       UoMSwapAlter: [line.UoMSwapAlter],

@@ -448,12 +448,12 @@ export class PurchaseRequestDetailPage extends PageBase {
           .then((resp: any) => {
             if (resp) {
               if (loading) loading.dismiss();
-              this.env.showMessage('PQ created!', 'success');
-              this.env
-               .showPrompt('Create purchase quotation successfully!','Do you want to navigate to purchase quotation?' )
-               .then((d) => {
-                  // this.nav('/purchase-quotation/' + resp.Id, 'forward');
-                });
+              this.env.showMessage('Purchase quotations created!', 'success');
+              // this.env
+              //  .showPrompt('Create purchase quotation successfully!','Do you want to navigate to purchase quotation?' )
+              //  .then((d) => {
+              //     // this.nav('/purchase-quotation/' + resp.Id, 'forward');
+              //   });
               this.refresh();
               this.env.publishEvent({
                 Code: this.pageConfig.pageName,

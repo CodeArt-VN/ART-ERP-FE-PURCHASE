@@ -1,5 +1,9 @@
 <ion-header>
   <app-toolbar [page]="this">
+    <ion-button tollbarSelected *ngIf="pageConfig.ShowSendRequestQuotation && pageConfig.canSendRequestQuotation"
+     (click)="sendRequestQuotationToVendor()" title="{{'Send request quotation' | translate}}" >
+      <ion-icon name="documents-outline"></ion-icon>
+    </ion-button>
   </app-toolbar>
 
   <section class="table">

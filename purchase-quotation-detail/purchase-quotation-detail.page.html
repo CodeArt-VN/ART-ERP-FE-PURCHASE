@@ -1,5 +1,13 @@
 <ion-header>
-  <app-toolbar [page]="this"> </app-toolbar>
+  <app-toolbar [page]="this">
+    <ion-button
+    title="{{ 'Confirm' | translate }}"
+    *ngIf="pageConfig.ShowConfirm"
+    (click)="confirmSaleQuotation()"
+  >
+    <ion-icon name="checkmark-circle-outline"></ion-icon>
+  </ion-button>
+ </app-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme class="ion-padding">
@@ -129,7 +137,7 @@
                   <div class="col-date cell">{{ 'Required date' | translate }}</div>
                   <div class="col-uom cell">{{ 'Unit' | translate }}</div>
                   <div class="col-price cell">{{ 'Required quantity' | translate }}</div>
-                  <div class="col-price cell">{{ 'Qty remeaning open' | translate }}</div>
+                  <div class="col-price cell">{{ 'Qty remaining open' | translate }}</div>
                   <div class="col-price cell">{{ 'Quantity' | translate }}</div>
                   <div class="col-price cell">{{ 'Discount' | translate }}</div>
                   <div class="col-price cell">{{ 'Info price' | translate }}</div>
@@ -193,7 +201,7 @@
                     <div class="col-price cell">
                       <app-input-control
                         (change)="saveOrder()"
-                        [field]="{ id: 'QuantityRemeaningOpen', type: 'number', form: g }"
+                        [field]="{ id: 'QuantityRemainingOpen', type: 'number', form: g }"
                       ></app-input-control>
                     </div>
                     <div class="col-price cell">
