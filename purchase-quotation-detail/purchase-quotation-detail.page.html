@@ -8,6 +8,17 @@
     <ion-icon name="checkmark-circle-outline"></ion-icon>
   </ion-button>
  </app-toolbar>
+    
+    <ion-button
+      (click)="copyCopyToPurchaseOrder()"
+      title="{{'Copy to purchase order' | translate}}"
+
+    >
+      <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
+      <!-- *ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder" -->
+    </ion-button>
+  
+  </app-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme class="ion-padding">

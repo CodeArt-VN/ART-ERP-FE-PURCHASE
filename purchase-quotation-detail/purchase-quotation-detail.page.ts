@@ -15,6 +15,7 @@ import {
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
 import { lib } from 'src/app/services/static/global-functions';
+import { CopyToPurchaseOrderModalPage } from '../copy-to-purchase-order-modal/copy-to-purchase-order-modal.page';
 
 @Component({
   selector: 'app-purchase-quotation-detail',
@@ -102,18 +103,18 @@ export class PurchaseQuotationDetailPage extends PageBase {
       { Code: 'Item', Name: 'Items' },
       { Code: 'Service', Name: 'Service' },
     ];
-    Promise.all([this.env.getStatus('PurchaseQuotation'), 
+    Promise.all([
+      this.env.getStatus('PurchaseQuotation'),
       this.contactProvider.read({ IsVendor: true, Take: 20 }),
-       this.env.getStatus('PurchaseQuotaionLine')]).then(
-      (values: any) => {
-        if (values[0]) this.statusList = values[0];
-        if (values[1] && values[1].data) {
-          this._vendorDataSource.selected.push(...values[1].data);
-        }
-        if(values[2]) this.statusLinesList = values[2];
-        super.preLoadData(event);
-      },
-    );
+      this.env.getStatus('PurchaseQuotaionLine'),
+    ]).then((values: any) => {
+      if (values[0]) this.statusList = values[0];
+      if (values[1] && values[1].data) {
+        this._vendorDataSource.selected.push(...values[1].data);
+      }
+      if (values[2]) this.statusLinesList = values[2];
+      super.preLoadData(event);
+    });
   }
 
   loadedData(event) {
@@ -124,7 +125,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
       this._vendorDataSource.selected = [... this._vendorDataSource.selected,...[this.item._Vendor]]
     }
     this._vendorDataSource.initSearch();
-
   }
 
   async saveChange() {
@@ -174,8 +174,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
       Name: [line.Name],
       Remark: [line.Remark],
       RequiredDate: [line.RequiredDate], //,Validators.required
-      InfoPrice: new FormControl({value: line.InfoPrice , disabled : this.item?.SourceType != null}),
-      Price: [line.Price,Validators.required],
+      InfoPrice: new FormControl({ value: line.InfoPrice, disabled: this.item?.SourceType != null }),
+      Price: [line.Price, Validators.required],
       UoMName: [line.UoMName],
       Quantity: new FormControl(
         line.Quantity,
@@ -186,7 +186,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
       UoMSwap: [line.UoMSwap],
       UoMSwapAlter: [line.UoMSwapAlter],
       IDTax: [line.IDTax], //,Validators.required
-      TaxRate: new FormControl({ value: line.TaxRate, disabled: this.item?.SourceType != null}),
+      TaxRate: new FormControl({ value: line.TaxRate, disabled: this.item?.SourceType != null }),
 
       TotalAfterTax: [line.TotalAfterTax],
 
@@ -201,9 +201,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
       CreatedBy: [line.CreatedBy],
       ModifiedBy: [line.ModifiedBy],
       CreatedDate: [line.CreatedDate],
-      DeletedLines : [],
-      StatusText : lib.getAttrib(line.Status, this.statusLinesList, 'Name', '--', 'Code'),
-      StatusColor : lib.getAttrib(line.Status, this.statusLinesList, 'Color', 'dark', 'Code')
+      DeletedLines: [],
+      StatusText: lib.getAttrib(line.Status, this.statusLinesList, 'Name', '--', 'Code'),
+      StatusColor: lib.getAttrib(line.Status, this.statusLinesList, 'Color', 'dark', 'Code'),
     });
     groups.push(group);
     if (selectedItem) group.get('_IDItemDataSource').value.selected.push(selectedItem);
@@ -214,31 +214,29 @@ export class PurchaseQuotationDetailPage extends PageBase {
     }
   }
 
-
   removeLine(index) {
     let groups = <FormArray>this.formGroup.controls.QuotationLines;
-    if(groups.controls[index].get('Id').value){
+    if (groups.controls[index].get('Id').value) {
       this.env
-      .showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
-      .then((_) => {
-        let Ids = [];
-        Ids.push(groups.controls[index].get('Id').value);
-        // this.removeItem.emit(Ids);
-        if(Ids && Ids.length>0){
-          // this.formGroup.get('DeletedLines').setValue(Ids);
-          // this.formGroup.get('DeletedLines').markAsDirty();
-          this.item.DeletedLines =Ids;
-          this.pageProvider.save(this.item).then(s => {
-            Ids.forEach(id=>{
-              let index = groups.controls.findIndex((x) => x.get('Id').value == id);
-              if(index >= 0) groups.removeAt(index);
+        .showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
+        .then((_) => {
+          let Ids = [];
+          Ids.push(groups.controls[index].get('Id').value);
+          // this.removeItem.emit(Ids);
+          if (Ids && Ids.length > 0) {
+            // this.formGroup.get('DeletedLines').setValue(Ids);
+            // this.formGroup.get('DeletedLines').markAsDirty();
+            this.item.DeletedLines = Ids;
+            this.pageProvider.save(this.item).then((s) => {
+              Ids.forEach((id) => {
+                let index = groups.controls.findIndex((x) => x.get('Id').value == id);
+                if (index >= 0) groups.removeAt(index);
+              });
             });
-          });
-        }
-      })
-      .catch((_) => { });
-    }
-    else  groups.removeAt(index);
+          }
+        })
+        .catch((_) => {});
+    } else groups.removeAt(index);
   }
 
   calcTotalAfterTax() {
@@ -259,7 +257,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
       .reduce((a, b) => +a + +b, 0);
   }
 
-
   // IDItemChange(e, group) {
   //   if (e) {
   //     if (e.PurchaseTaxInPercent && e.PurchaseTaxInPercent != -99) {
@@ -270,7 +267,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
   //         group.controls.IDItemUoM.setValue(e.PurchasingUoM);
   //         group.controls.IDItemUoM.markAsDirty();
   //         var baseUoM = e.UoMs.find((d) => d.IsBaseUoM);
-  //         if(baseUoM) { 
+  //         if(baseUoM) {
   //           group.controls.IDBaseUoM.setValue(baseUoM.Id);
   //           group.controls.IDItemUoM.markAsDirty();
   //         }
@@ -285,7 +282,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
   //           group.get('IDVendor').markAsDirty();
   //         }
   //       group.controls._Vendors.setValue(e._Vendors)
-        
+
   //       this.IDUoMChange(group);
   //       return;
   //     }
@@ -332,10 +329,25 @@ export class PurchaseQuotationDetailPage extends PageBase {
   //   }
   // }
 
-
   saveOrder() {
     this.debounce(() => {
       super.saveChange2();
     }, 300);
+  }
+
+  async copyCopyToPurchaseOrder() {
+    this.item._qtyReceipted = this.item._Receipts;
+    const modal = await this.modalController.create({
+      component: CopyToPurchaseOrderModalPage,
+      componentProps: { _item: this.item },
+      cssClass: 'modal90',
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
+        this.nav('/purchase-order/' + data.Id);
+      });
+    }
   }
 }

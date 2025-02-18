@@ -25,6 +25,7 @@ export class CopyToPurchaseOrderModalPage extends PageBase {
   formArray;
   showButtonSave = false;
   listIDASN = [];
+  TotalAfterTax = 0;
   _IDItemDataSource = this.buildSelectDataSource((term) => {
     return this.itemProvider.search({
       SortBy: ['Id_desc'],
@@ -35,7 +36,6 @@ export class CopyToPurchaseOrderModalPage extends PageBase {
   });
   constructor(
     public pageProvider: PURCHASE_OrderProvider,
-    public receiptProvider: WMS_ReceiptProvider,
     public itemProvider: WMS_ItemProvider,
     public env: EnvService,
     public navCtrl: NavController,
@@ -58,74 +58,93 @@ export class CopyToPurchaseOrderModalPage extends PageBase {
 
   loadedData(event) {
     super.loadedData();
-    this.item.OrderLines = this.item.OrderLines.map((x) => {
-      return { ...x, QuantityImport: 0 };
+    this.item.QuotationLines = this.item.QuotationLines.map((x) => {
+      return { ...x, UoMQuantityExpected: 0 };
     });
-    this.item.OrderLines.forEach((d) => {
+    this.item.QuotationLines.forEach((d) => {
       this.addRow(d);
-      this.listIDASN = [... this.listIDASN, ...d._Receipts.map(x=> x.IDReceipt)];
+      // this.listIDASN = [... this.listIDASN, ...d._Receipts.map(x=> x.IDReceipt)];
     });
-    this.listIDASN = [...new Set(this.listIDASN)];
-    this._IDItemDataSource.selected = [...this.item._Items];
+    // this.listIDASN = [...new Set(this.listIDASN)];
+   
     this._IDItemDataSource.initSearch();
     console.log(this.item);
     console.log(this.formArray);
   }
 
+  calcTotalAfterTax(i) {
+    i.controls.Total.setValue((i.controls.UoMQuantityExpected.value
+      * i.controls.Price.value
+      - i.controls.Discount.value)* (1 + i.controls.TaxRate.value / 100))
+     this.item.QuotationLines.forEach(d=> {
+       this.TotalAfterTax = d._formGroup.controls.Total.value;
+     });
+  }
+
   addRow(row: any) {
-    let selectedItem = this.item._Items.find((d) => d.Id == row.IDItem);
-    let _qtyReceipted = row._Receipts.reduce((accumulator, receipt) => {
-      return accumulator + receipt.UoMQuantityExpected;
-    }, 0);
+    let selectedItem = row._Item;
+    // let _qtyReceipted = row._Receipts.reduce((accumulator, receipt) => {
+    //   return accumulator + receipt.UoMQuantityExpected;
+    // }, 0);
     row._formGroup = this.formBuilder.group({
       _IDUoMDataSource: [selectedItem ? selectedItem.UoMs : []],
       Id: [0],
       IDItem: new FormControl({ value: row.IDItem, disabled: true }),
-      IDUoM: new FormControl({ value: row.IDUoM, disabled: true }),
-      IDPO: [row.IDOrder],
-      IDPOLine: [row.Id],
-      UoMQuantityExpected: new FormControl({ value: row.UoMQuantityExpected, disabled: true }),
-      QuantityReceived: new FormControl({ value: _qtyReceipted, disabled: true }),
-      QuantityImport: new FormControl({ value: row.QuantityImport, disabled: row.UoMQuantityExpected - _qtyReceipted == 0 }),
-      Lottable5: ['2021/01/01'],
-      Lottable6: ['2099/01/01'],
-      Lottable0: new FormControl({ value: '-', disabled: true }),
+      IDItemUoM: new FormControl({ value: row.IDItemUoM, disabled: true }),
+      // IDPO: [row.IDOrder],
+      // IDPOLine: [row.Id],
+      SourceLine: [row.Id],
+      Quantity : new FormControl({ value: row.Quantity, disabled: true }),
+      QuantityRemainingOpen : new FormControl({ value: row.QuantityRemainingOpen, disabled: true }),
+      UoMQuantityExpected: [row.UoMQuantityExpected],
+      Price: new FormControl({ value: row.Price, disabled: true }),
+      Discount :  new FormControl({ value: row.TotalDiscount??0, disabled: true }),
+      TaxRate : new FormControl({ value: row.TaxRate, disabled: true }),
+      Total :  new FormControl({ value: 0, disabled: true }),
+      // QuantityReceived: new FormControl({ value: _qtyReceipted, disabled: true }),
+      // QuantityImport: new FormControl({ value: row.QuantityImport, disabled: row.UoMQuantityExpected - _qtyReceipted == 0 }),
+      // Lottable5: ['2021/01/01'],
+      // Lottable6: ['2099/01/01'],
+      // Lottable0: new FormControl({ value: '-', disabled: true }),
     });
-    if(row.UoMQuantityExpected - _qtyReceipted != 0 ){
-      this.showButtonSave = true;
-    }
+    this._IDItemDataSource.selected.push(selectedItem);
+    // if(row.UoMQuantityExpected - _qtyReceipted != 0 ){
+    //   this.showButtonSave = true;
+    // }
     this.formArray.push(row._formGroup);
   }
 
-  toggleAllShippedQty() {
+  toggleAllUoMQtyExpected() {
     this.item._IsShippedAll = !this.item._IsShippedAll;
     var farr = this.formArray as FormArray;
     if (this.item._IsShippedAll) {
       for (var i of farr.controls) {
-        i.get('QuantityImport').setValue(i.get('UoMQuantityExpected').value - i.get('QuantityReceived').value);
-        i.get('QuantityImport').markAsDirty();
+        i.get('UoMQuantityExpected').setValue(i.get('QuantityRemainingOpen').value);
+        i.get('UoMQuantityExpected').markAsDirty();
+        this.calcTotalAfterTax(i);
       }
     } else {
       for (var i of farr.controls) {
-        i.get('QuantityImport').setValue(0);
-        i.get('QuantityImport').markAsDirty();
+        i.get('UoMQuantityExpected').setValue(0);
+        i.get('UoMQuantityExpected').markAsDirty();
+        this.calcTotalAfterTax(i);
       }
     }
     console.log('toggleAll');
   }
 
-  toggleShippedQty(group) {
+  toggleUoMQtyExpected(group) {
     if (
-      group.controls.UoMQuantityExpected.value - group.controls.QuantityReceived.value ==
-      group.controls.QuantityImport.value
+      group.controls.UoMQuantityExpected.value ==
+      group.controls.QuantityRemainingOpen.value
     ) {
-      group.controls.QuantityImport.setValue(0);
-      group.controls.QuantityImport.markAsDirty();
+      group.controls.UoMQuantityExpected.setValue(0);
+      group.controls.UoMQuantityExpected.markAsDirty();
+      this.calcTotalAfterTax(group);
     } else {
-      group.controls.QuantityImport.setValue(
-        group.controls.UoMQuantityExpected.value - group.controls.QuantityReceived.value,
-      );
-      group.controls.QuantityImport.markAsDirty();
+      group.controls.UoMQuantityExpected.setValue(group.controls.QuantityRemainingOpen.value);
+      group.controls.UoMQuantityExpected.markAsDirty();
+      this.calcTotalAfterTax(group);
     }
   }
 
@@ -135,20 +154,16 @@ export class CopyToPurchaseOrderModalPage extends PageBase {
   }
 
   submitForm() {
-    let OrderLines = this.formArray.getRawValue().filter(d=> d.QuantityImport > 0).map((d) => {
+    let QuotationLines = this.formArray.getRawValue().filter(d=> d.UoMQuantityExpected > 0).map((d) => {
       return {
-        UoMQuantityExpected: d.QuantityImport,
-        Lottable5: d.Lottable5,
-        Lottable6: d.Lottable6,
-        Lottable0: d.Lottable0,
+        UoMQuantityExpected: d.UoMQuantityExpected,
         Id: d.Id,
         IDItem: d.IDItem,
-        IDUoM: d.IDUoM,
-        IDPO: d.IDPO,
-        IDPOLine: d.IDPOLine,
+        IDItemUoM: d.IDItemUoM,
+        SourceLine: d.SourceLine,
       };
     });
-    if(!(OrderLines.length > 0)){
+    if(!(QuotationLines.length > 0)){
       this.modalController.dismiss(null);
       return;
     }
@@ -156,17 +171,18 @@ export class CopyToPurchaseOrderModalPage extends PageBase {
     let data = {
       IDBranch: this.item.IDBranch,
       IDVendor: this.item._Vendor.Id,
-      IDStorer: this.item._Storer.Id,
-      IDPurchaseOrder: this.item.Id,
-      ExpectedReceiptDate: this.item.ExpectedReceiptDate,
-      Type:'FromPO',
-      POCode: this.item.Code,
-      Lines: OrderLines,
+      // IDStorer: this.item._Storer.Id,
+      SourceType: this.item.SourceType,
+      ExpectedReceiptDate: this.item.RequiredDate,
+      SourceKey:this.item.SourceKey,
+      Code : this.item.Code,
+      Name : this.item.Name,
+      OrderLines: QuotationLines,
     };
     this.env
       .showLoading(
         'Please wait for a few moments',
-        this.receiptProvider.commonService.connect('POST', 'WMS/Receipt', data).toPromise(),
+        this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/CopyToPO/'+this.item.Id, data).toPromise(),
       )
       .then((result:any) => {
         this.modalController.dismiss(result);
