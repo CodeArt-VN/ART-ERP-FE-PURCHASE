@@ -36,7 +36,7 @@ export class PurchaseQuotationPage extends PageBase {
    }
    let sysConfigQuery = ['PRUsedApprovalModule'];
    Promise.all([
-     this.env.getStatus('PurchaseRequest'),
+     this.env.getStatus('PurchaseQuotation'),
      this.sysConfigProvider.read({ Code_in: sysConfigQuery }),
    ]).then((values) => {
      this.statusList = values[0];

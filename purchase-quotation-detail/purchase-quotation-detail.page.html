@@ -1,6 +1,5 @@
 <ion-header>
-  <app-toolbar [page]="this">
-  </app-toolbar> 
+  <app-toolbar [page]="this"> </app-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme class="ion-padding">
@@ -15,64 +14,88 @@
             </ion-list-header>
           </ion-col>
           <ion-col size="12" size-sm size-xl="4">
-            <app-form-control (change)="saveChange();"
-            [field]="{id:'Name', type : 'text', label:'Name', form : formGroup}"></app-form-control>
+            <app-form-control
+              (change)="saveChange();"
+              [field]="{id:'Name', type : 'text', label:'Name', form : formGroup}"
+            ></app-form-control>
 
-              <app-form-control (change)="saveChange()"
+            <app-form-control
+              (change)="saveChange()"
               [field]="{id :'Code', label:'Code' ,
-              type:'text',form:formGroup}">
+              type:'text',form:formGroup}"
+            >
             </app-form-control>
-     
+
             <app-form-control
               [field]="{id:'IDBusinessPartner',label:'Vendor', type : 'ng-select-bp', form : formGroup,  dataSource: _vendorDataSource,  bindLabel: 'Name',  bindValue: 'Id',clearable:true, appendTo:'#ng-select-header' }"
-              (change)="changeVendor($event)"></app-form-control>
-           
-            <app-form-control [field]="{id :'ContentType', label:'Content type' ,
-               type:'ng-select',dataSource:contentTypeList,
-               bindLabel:'Name',bindValue:'Code' ,form:formGroup}" (change)="changeContentType($event)">
-            </app-form-control>
-            <app-form-control (change)="saveChange();"
-            [field]="{id:'Status', type : 'ng-select', dataSource:statusList, bindLabel:'Name', bindValue:'Code', label:'Status', form : formGroup}">
-          </app-form-control>
-						<app-form-control [field]="{id:'Remark', type : 'textarea', label: 'Remark', form : formGroup }" (change)="saveChange()"></app-form-control>
+              (change)="changeVendor($event)"
+            ></app-form-control>
 
+            <app-form-control
+              [field]="{id :'ContentType', label:'Content type' ,
+               type:'ng-select',dataSource:contentTypeList,
+               bindLabel:'Name',bindValue:'Code' ,form:formGroup}"
+              (change)="changeContentType($event)"
+            >
+            </app-form-control>
+            <app-form-control
+              (change)="saveChange();"
+              [field]="{id:'Status', type : 'ng-select', dataSource:statusList, bindLabel:'Name', bindValue:'Code', label:'Status', form : formGroup}"
+            >
+            </app-form-control>
+            <app-form-control
+              [field]="{id:'Remark', type : 'textarea', label: 'Remark', form : formGroup }"
+              (change)="saveChange()"
+            ></app-form-control>
           </ion-col>
           <ion-col size="12" size-sm size-xl="4">
-        
-            <app-form-control [field]="{id :'RequiredDate', label:'Required date' ,
+            <app-form-control
+              [field]="{id :'RequiredDate', label:'Required date' ,
               type:'datetime-local',form:formGroup}"
-              (change) = "changeRequiredDate($event)">
+              (change)="changeRequiredDate($event)"
+            >
             </app-form-control>
 
-            <app-form-control [field]="{id :'ValidUntilDate', label:'Valid until date' ,
+            <app-form-control
+              [field]="{id :'ValidUntilDate', label:'Valid until date' ,
             type:'datetime-local',form:formGroup}"
-           > 
-           <!-- (change) = "changeRequiredDate($event)" -->
-          </app-form-control>
-
-            <app-form-control [field]="{id :'DocumentDate', label:'Document date' ,
-            type:'datetime-local',form:formGroup}"
-            (change) = "changeDate($event)">
-          </app-form-control>
-
-            <app-form-control [field]="{id :'PostingDate', label:'Posting date' ,
-              type:'datetime-local',form:formGroup}"
-              (change) = "changeDate($event)">
+            >
+              <!-- (change) = "changeRequiredDate($event)" -->
             </app-form-control>
 
-            <app-form-control [field]="{id :'DueDate', label:'Due date' ,
+            <app-form-control
+              [field]="{id :'DocumentDate', label:'Document date' ,
+            type:'datetime-local',form:formGroup}"
+              (change)="changeDate($event)"
+            >
+            </app-form-control>
+
+            <app-form-control
+              [field]="{id :'PostingDate', label:'Posting date' ,
               type:'datetime-local',form:formGroup}"
-              (change) = "changeDate($event)">
+              (change)="changeDate($event)"
+            >
+            </app-form-control>
+
+            <app-form-control
+              [field]="{id :'DueDate', label:'Due date' ,
+              type:'datetime-local',form:formGroup}"
+              (change)="changeDate($event)"
+            >
             </app-form-control>
             <!-- <app-form-control [clearable]="true" 
             [field]="{id:'IDRequester', label:'Requester', type : 'ng-select-staff', form : formGroup,  dataSource: _staffDataSource,  bindLabel: 'FullName',  bindValue: 'Id' }"
             (change)="saveChange()"></app-form-control> -->
 
             <div class="c-control">
-              <label class="c-label" for="TotalAfterTax">{{'Value' | translate}}
+              <label class="c-label" for="TotalAfterTax"
+                >{{'Value' | translate}}
                 <span
                   *ngIf="!formGroup.controls.TotalAfterTax.valid && !formGroup.controls.TotalAfterTax.pending && (formGroup.controls.TotalAfterTax.dirty || submitAttempt)"
-                  ion-text color="danger">(*)</span>
+                  ion-text
+                  color="danger"
+                  >(*)</span
+                >
               </label>
               <span class="c-input disable">
                 <b>{{calcTotalAfterTax() | number: '1.0-0'}}</b>
@@ -94,7 +117,7 @@
           </ion-segment-button>
         </ion-segment>
       </ion-toolbar>
-      <div *ngIf="segmentView == 's1'" >
+      <div *ngIf="segmentView == 's1'">
         <form [formGroup]="formGroup">
           <ng-container formArrayName="QuotationLines">
             <div class="table-contain">
@@ -106,23 +129,24 @@
                   <div class="col-date cell">{{ 'Required date' | translate }}</div>
                   <div class="col-uom cell">{{ 'Unit' | translate }}</div>
                   <div class="col-price cell">{{ 'Required quantity' | translate }}</div>
+                  <div class="col-price cell">{{ 'Qty remeaning open' | translate }}</div>
                   <div class="col-price cell">{{ 'Quantity' | translate }}</div>
                   <div class="col-price cell">{{ 'Discount' | translate }}</div>
                   <div class="col-price cell">{{ 'Info price' | translate }}</div>
                   <div class="col-price cell">{{ 'Price' | translate }}</div>
                   <div class="col-price cell">{{ '%VAT' | translate }}</div>
                   <div class="col-price cell">{{ 'Amount' | translate }}</div>
+                  <div class="col-status cell">{{ 'Status' | translate }}</div>
                   <div class="col-remark cell">{{ 'Ghi chú' | translate }}</div>
-                  <div class="col-del cell" ></div>
-                  <!-- *ngIf="_canEdit" -->
+                  <div class="col-del cell" *ngIf="pageConfig.canEdit"></div>
                 </header>
-      
+
                 <div class="row" *ngFor="let g of formGroup.get('QuotationLines')['controls']; let idx = index">
                   <ng-container [formGroup]="g">
                     <div class="col-id cell">{{ idx + 1 }}</div>
-                   
+
                     <div class="col-name cell">
-                      <app-input-control 
+                      <app-input-control
                         [field]="{
                           id: 'IDItem',
                           label: 'Item',
@@ -159,11 +183,17 @@
                         (change)="IDUoMChange(g)"
                       ></app-input-control>
                     </div>
-      
+
                     <div class="col-price cell">
                       <app-input-control
                         (change)="changeQuantity(g)"
-                        [field]="{ id: 'RequiredQuantity', type: 'number', form: g }"
+                        [field]="{ id: 'QuantityRequired', type: 'number', form: g }"
+                      ></app-input-control>
+                    </div>
+                    <div class="col-price cell">
+                      <app-input-control
+                        (change)="saveOrder()"
+                        [field]="{ id: 'QuantityRemeaningOpen', type: 'number', form: g }"
                       ></app-input-control>
                     </div>
                     <div class="col-price cell">
@@ -172,39 +202,50 @@
                         [field]="{ id: 'Quantity', type: 'number', form: g }"
                       ></app-input-control>
                     </div>
-      
+
                     <div class="col-price cell">
-                      <app-input-control (change)="saveOrder()" [field]="{ id: 'TotalDiscount', type: 'number', form: g }">
+                      <app-input-control
+                        (change)="saveOrder()"
+                        [field]="{ id: 'TotalDiscount', type: 'number', form: g }"
+                      >
                       </app-input-control>
                     </div>
-      
+
                     <div class="col-price cell">
                       <!-- [readonly]="!(_canEdit && _canEditPrice)" -->
-                      <app-input-control
-                        (change)="saveOrder()"
-                        [field]="{ id: 'InfoPrice', type: 'number', form: g }"
-                      >
+                      <app-input-control (change)="saveOrder()" [field]="{ id: 'InfoPrice', type: 'number', form: g }">
                       </app-input-control>
                     </div>
                     <div class="col-price cell">
-                      <app-input-control
-                        (change)="saveOrder()"
-                        [field]="{ id: 'Price', type: 'number', form: g }"
-                      >
+                      <app-input-control (change)="saveOrder()" [field]="{ id: 'Price', type: 'number', form: g }">
                       </app-input-control>
                     </div>
                     <div class="col-price cell">
                       <app-input-control [field]="{ id: 'TaxRate', type: 'number', form: g }"></app-input-control>
                     </div>
-                    <div class="col-price cell" title="{{
+                    <div
+                      class="col-price cell"
+                      title="{{
                     g.controls.Quantity.value *
                     (g.controls.Price.value - (g.controls.TotalDiscount.value || 0)) *
-                    (1 + g.controls.TaxRate.value / 100) | number: '1.0-0'}}">
-                      <span  class="c-input disable ellipsis">{{
-                        g.controls.Quantity.value *
-                          (g.controls.Price.value - (g.controls.TotalDiscount.value || 0)) *
-                          (1 + g.controls.TaxRate.value / 100) | number: '1.0-0'
-                      }}</span>
+                    (1 + g.controls.TaxRate.value / 100) | number: '1.0-0'}}"
+                    >
+                      <span class="c-input disable ellipsis"
+                        >{{ g.controls.Quantity.value * (g.controls.Price.value - (g.controls.TotalDiscount.value || 0))
+                        * (1 + g.controls.TaxRate.value / 100) | number: '1.0-0' }}</span
+                      >
+                    </div>
+                    <div class="col-status cell">
+                      <span class="bar-holder">
+                        <ion-text class="bar-title" [color]="g.controls.StatusColor.value">{{g.controls.StatusText.value | translate}}</ion-text>
+                        <span
+                          class="bar"
+                          [ngClass]="{active: s.Code==g.controls.Status.value}"
+                          [ngStyle]="{'background-color': 'var(--ion-color-'+s.Color+')'}"
+                          *ngFor="let s of statusLinesList"
+                          [title]="s.Name | translate"
+                        ></span>
+                      </span>
                     </div>
                     <div class="col-remark cell">
                       <app-input-control
@@ -213,31 +254,26 @@
                       >
                       </app-input-control>
                     </div>
-                    <div class="col-del cell"  (click)="removeLine(idx)">
+                    <div class="col-del cell" *ngIf="pageConfig.canEdit" (click)="removeLine(idx)">
                       <ion-icon color="danger" class="min-btn" name="trash-outline"></ion-icon>
                     </div>
-                    <!-- *ngIf="_canEdit" -->
                   </ng-container>
                 </div>
-      
+
                 <div class="row">
                   <div class="col-id cell"></div>
                   <!-- <div *ngIf="!_IDVendor && _contentType=='Item'" class="col-name cell"></div> -->
                   <div class="col-name cell"></div>
-                  <div class="col-date cell">
-                  </div>
-                  <div class="col-uom cell">
-                   
-                  </div>
-                 
+                  <div class="col-date cell"></div>
+                  <div class="col-uom cell"></div>
+
                   <div class="col-price cell">
                     <b>{{ 'Total' | translate }}:</b>
                   </div>
                   <div class="col-price cell"></div>
+                  <div class="col-price cell"></div>
                   <div class="col-price cell">
-                    <span class="c-input disable"
-                      ><b>{{ calcTotalDiscount() | number: '1.0-0' }}</b></span
-                    >
+                    <span class="c-input disable"><b>{{ calcTotalDiscount() | number: '1.0-0' }}</b></span>
                   </div>
                   <div class="col-price cell"></div>
                   <div class="col-price cell"></div>
@@ -247,9 +283,9 @@
                       <b>{{ calcTotalAfterTax() | number: '1.0-0' }}</b>
                     </span>
                   </div>
+                  <div class="col-status cell"></div>
                   <div class="col-remark cell"></div>
-                  <div class="col-del cell" ></div>
-                  <!-- *ngIf="_canEdit" -->
+                  <div class="col-del cell" *ngIf="pageConfig.canEdit"></div>
                 </div>
               </section>
             </div>
@@ -265,32 +301,39 @@
             </div>
           </div>
         </div>
-
-
       </div>
       <div *ngIf="segmentView == 's2'">
         <div class="ion-padding">
           <ion-grid fixed>
-				<ion-row class="hr-group" *ngIf="item?.Id">
-					<ion-col size="12" size-sm="12" size-md="12" size-xl="3">
-						<ion-list-header class="ion-no-padding">
-							<ion-label color="primary">{{'Other information' | translate}}</ion-label>
-						</ion-list-header>
-					</ion-col>
-					<ion-col size="12" size-sm size-xl="4">
-						<app-form-control [field]="{id:'CreatedBy', type : 'text', label: 'Created by', form : formGroup }"></app-form-control>
-						<app-form-control [field]="{id:'CreatedDate', type : 'span-datetime', label: 'Created date', form : formGroup }"></app-form-control>
-						<app-form-control [field]="{id:'ModifiedBy', type : 'text', label: 'Last modified by', form : formGroup }"></app-form-control>
-						<app-form-control [field]="{id:'ModifiedDate', type : 'span-datetime', label: 'Last modified date', form : formGroup }"></app-form-control>
-					</ion-col>
-					<ion-col size="12" size-sm size-xl="4">
-						<app-form-control [field]="{id:'IDBranch', type : 'branch-breadcrumbs', label: 'Branch', form : formGroup, dataSource:env.branchList }"></app-form-control>
-					</ion-col>
-				</ion-row>
-        </ion-grid>
+            <ion-row class="hr-group" *ngIf="item?.Id">
+              <ion-col size="12" size-sm="12" size-md="12" size-xl="3">
+                <ion-list-header class="ion-no-padding">
+                  <ion-label color="primary">{{'Other information' | translate}}</ion-label>
+                </ion-list-header>
+              </ion-col>
+              <ion-col size="12" size-sm size-xl="4">
+                <app-form-control
+                  [field]="{id:'CreatedBy', type : 'text', label: 'Created by', form : formGroup }"
+                ></app-form-control>
+                <app-form-control
+                  [field]="{id:'CreatedDate', type : 'span-datetime', label: 'Created date', form : formGroup }"
+                ></app-form-control>
+                <app-form-control
+                  [field]="{id:'ModifiedBy', type : 'text', label: 'Last modified by', form : formGroup }"
+                ></app-form-control>
+                <app-form-control
+                  [field]="{id:'ModifiedDate', type : 'span-datetime', label: 'Last modified date', form : formGroup }"
+                ></app-form-control>
+              </ion-col>
+              <ion-col size="12" size-sm size-xl="4">
+                <app-form-control
+                  [field]="{id:'IDBranch', type : 'branch-breadcrumbs', label: 'Branch', form : formGroup, dataSource:env.branchList }"
+                ></app-form-control>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
         </div>
-			</div>
-      
+      </div>
     </div>
   </div>
   <app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>

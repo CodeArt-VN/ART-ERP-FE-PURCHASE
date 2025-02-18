@@ -15,6 +15,7 @@ import {
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
 import { PURCHASE_Quotation } from 'src/app/models/model-list-interface';
+import { lib } from 'src/app/services/static/global-functions';
 
 @Component({
   selector: 'app-purchase-quotation-detail',
@@ -25,6 +26,7 @@ import { PURCHASE_Quotation } from 'src/app/models/model-list-interface';
 export class PurchaseQuotationDetailPage extends PageBase {
   @ViewChild('importfile') importfile: any;
   statusList = [];
+  statusLinesList = [];
   contentTypeList = [];
   markAsPristine = false;
   _currentVendor;
@@ -101,23 +103,28 @@ export class PurchaseQuotationDetailPage extends PageBase {
       { Code: 'Item', Name: 'Items' },
       { Code: 'Service', Name: 'Service' },
     ];
-    Promise.all([this.env.getStatus('PurchaseRequest'), this.contactProvider.read({ IsVendor: true, Take: 20 })]).then(
+    Promise.all([this.env.getStatus('PurchaseQuotation'), 
+      this.contactProvider.read({ IsVendor: true, Take: 20 }),
+       this.env.getStatus('PurchaseQuotaionLine')]).then(
       (values: any) => {
+        if (values[0]) this.statusList = values[0];
         if (values[1] && values[1].data) {
           this._vendorDataSource.selected.push(...values[1].data);
         }
+        if(values[2]) this.statusLinesList = values[2];
         super.preLoadData(event);
       },
     );
   }
 
   loadedData(event) {
+    if(this.item.Status != 'Open') this.pageConfig.canEdit = false;
+    this.setQuotationLines();
     super.loadedData(event, true);
     if(this.item._Vendor){
       this._vendorDataSource.selected = [... this._vendorDataSource.selected,...[this.item._Vendor]]
     }
     this._vendorDataSource.initSearch();
-    this.setQuotationLines();
 
   }
 
@@ -173,7 +180,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
         line.Quantity,
         this.item.ContentType === 'Item' ? Validators.required : null, // Conditional validator
       ),
-      RequiredQuantity: new FormControl({ value: line.RequiredQuantity, disabled: this.item?.SourceType != null }),
+      QuantityRemeaningOpen : new FormControl({value:line.QuantityRemeaningOpen, disabled:true}),
+      QuantityRequired: new FormControl({ value: line.QuantityRequired, disabled: this.item?.SourceType != null }),
       UoMSwap: [line.UoMSwap],
       UoMSwapAlter: [line.UoMSwapAlter],
       IDTax: [line.IDTax], //,Validators.required
@@ -192,7 +200,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
       CreatedBy: [line.CreatedBy],
       ModifiedBy: [line.ModifiedBy],
       CreatedDate: [line.CreatedDate],
-      DeletedLines : []
+      DeletedLines : [],
+      StatusText : lib.getAttrib(line.Status, this.statusLinesList, 'Name', '--', 'Code'),
+      StatusColor : lib.getAttrib(line.Status, this.statusLinesList, 'Color', 'dark', 'Code')
     });
     groups.push(group);
     if (selectedItem) group.get('_IDItemDataSource').value.selected.push(selectedItem);
@@ -205,7 +215,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 
 
   removeLine(index) {
-    let groups = <FormArray>this.formGroup.controls.OrderLines;
+    let groups = <FormArray>this.formGroup.controls.QuotationLines;
     if(groups.controls[index].get('Id').value){
       this.env
       .showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
@@ -214,9 +224,10 @@ export class PurchaseQuotationDetailPage extends PageBase {
         Ids.push(groups.controls[index].get('Id').value);
         // this.removeItem.emit(Ids);
         if(Ids && Ids.length>0){
-          this.formGroup.get('DeletedLines').setValue(Ids);
-          this.formGroup.get('DeletedLines').markAsDirty();
-          this.saveChange().then(s=>{
+          // this.formGroup.get('DeletedLines').setValue(Ids);
+          // this.formGroup.get('DeletedLines').markAsDirty();
+          this.item.DeletedLines =Ids;
+          this.pageProvider.save(this.item).then(s => {
             Ids.forEach(id=>{
               let index = groups.controls.findIndex((x) => x.get('Id').value == id);
               if(index >= 0) groups.removeAt(index);
@@ -227,8 +238,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
       .catch((_) => { });
     }
     else  groups.removeAt(index);
-
-   
   }
 
   calcTotalAfterTax() {
