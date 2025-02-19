@@ -28,6 +28,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
   statusList = [];
   statusLinesList = [];
   contentTypeList = [];
+  vendorView = false;
   markAsPristine = false;
   _currentVendor;
   _isVendorSearch = false;
@@ -96,6 +97,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
       TotalAfterTax: new FormControl({ value: '', disabled: true }),
       DeletedLines: [''],
     });
+    if (this.env.user.IDBusinessPartner > 0 && !this.env.user.SysRoles.includes('STAFF') && this.env.user.SysRoles.includes('VENDOR')) {
+      this.vendorView = true;
+    }
   }
 
   preLoadData(event) {
@@ -103,18 +107,18 @@ export class PurchaseQuotationDetailPage extends PageBase {
       { Code: 'Item', Name: 'Items' },
       { Code: 'Service', Name: 'Service' },
     ];
-    Promise.all([
-      this.env.getStatus('PurchaseQuotation'),
+    Promise.all([this.env.getStatus('PurchaseQuotation'), 
       this.contactProvider.read({ IsVendor: true, Take: 20 }),
-      this.env.getStatus('PurchaseQuotaionLine'),
-    ]).then((values: any) => {
-      if (values[0]) this.statusList = values[0];
-      if (values[1] && values[1].data) {
-        this._vendorDataSource.selected.push(...values[1].data);
-      }
-      if (values[2]) this.statusLinesList = values[2];
-      super.preLoadData(event);
-    });
+       this.env.getStatus('PurchaseQuotaionLine')]).then(
+      (values: any) => {
+        if (values[0]) this.statusList = values[0];
+        if (values[1] && values[1].data) {
+          this._vendorDataSource.selected.push(...values[1].data);
+        }
+        if(values[2]) this.statusLinesList = values[2];
+        super.preLoadData(event);
+      },
+    );
   }
 
   loadedData(event) {
@@ -127,6 +131,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
     this._vendorDataSource.initSearch();
     if(this.item.Status == 'Confirmed') this.pageConfig.ShowCopyToPurchaseOrder = true;
     else this.pageConfig.ShowCopyToPurchaseOrder = false;
+    if(this.vendorView && this.item.Status == 'Open') this.pageConfig.ShowConfirm = true;
+    else this.pageConfig.ShowCanConfirm = false;
   }
 
   async saveChange() {
@@ -176,8 +182,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
       Name: [line.Name],
       Remark: [line.Remark],
       RequiredDate: [line.RequiredDate], //,Validators.required
-      InfoPrice: new FormControl({ value: line.InfoPrice, disabled: this.item?.SourceType != null }),
-      Price: [line.Price, Validators.required],
+      InfoPrice: new FormControl({value: line.InfoPrice , disabled : this.item?.SourceType != null}),
+      Price: [line.Price,Validators.required],
       UoMName: [line.UoMName],
       Quantity: new FormControl(
         line.Quantity,
@@ -188,7 +194,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
       UoMSwap: [line.UoMSwap],
       UoMSwapAlter: [line.UoMSwapAlter],
       IDTax: [line.IDTax], //,Validators.required
-      TaxRate: new FormControl({ value: line.TaxRate, disabled: this.item?.SourceType != null }),
+      TaxRate: new FormControl({ value: line.TaxRate, disabled: this.item?.SourceType != null}),
 
       TotalAfterTax: [line.TotalAfterTax],
 
@@ -203,9 +209,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
       CreatedBy: [line.CreatedBy],
       ModifiedBy: [line.ModifiedBy],
       CreatedDate: [line.CreatedDate],
-      DeletedLines: [],
-      StatusText: lib.getAttrib(line.Status, this.statusLinesList, 'Name', '--', 'Code'),
-      StatusColor: lib.getAttrib(line.Status, this.statusLinesList, 'Color', 'dark', 'Code'),
+      DeletedLines : [],
+      StatusText : lib.getAttrib(line.Status, this.statusLinesList, 'Name', '--', 'Code'),
+      StatusColor : lib.getAttrib(line.Status, this.statusLinesList, 'Color', 'dark', 'Code')
     });
     groups.push(group);
     if (selectedItem) group.get('_IDItemDataSource').value.selected.push(selectedItem);
@@ -216,29 +222,31 @@ export class PurchaseQuotationDetailPage extends PageBase {
     }
   }
 
+
   removeLine(index) {
     let groups = <FormArray>this.formGroup.controls.QuotationLines;
-    if (groups.controls[index].get('Id').value) {
+    if(groups.controls[index].get('Id').value){
       this.env
-        .showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
-        .then((_) => {
-          let Ids = [];
-          Ids.push(groups.controls[index].get('Id').value);
-          // this.removeItem.emit(Ids);
-          if (Ids && Ids.length > 0) {
-            // this.formGroup.get('DeletedLines').setValue(Ids);
-            // this.formGroup.get('DeletedLines').markAsDirty();
-            this.item.DeletedLines = Ids;
-            this.pageProvider.save(this.item).then((s) => {
-              Ids.forEach((id) => {
-                let index = groups.controls.findIndex((x) => x.get('Id').value == id);
-                if (index >= 0) groups.removeAt(index);
-              });
+      .showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
+      .then((_) => {
+        let Ids = [];
+        Ids.push(groups.controls[index].get('Id').value);
+        // this.removeItem.emit(Ids);
+        if(Ids && Ids.length>0){
+          // this.formGroup.get('DeletedLines').setValue(Ids);
+          // this.formGroup.get('DeletedLines').markAsDirty();
+          this.item.DeletedLines =Ids;
+          this.pageProvider.save(this.item).then(s => {
+            Ids.forEach(id=>{
+              let index = groups.controls.findIndex((x) => x.get('Id').value == id);
+              if(index >= 0) groups.removeAt(index);
             });
-          }
-        })
-        .catch((_) => {});
-    } else groups.removeAt(index);
+          });
+        }
+      })
+      .catch((_) => { });
+    }
+    else  groups.removeAt(index);
   }
 
   calcTotalAfterTax() {
@@ -259,83 +267,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
       .reduce((a, b) => +a + +b, 0);
   }
 
-  // IDItemChange(e, group) {
-  //   if (e) {
-  //     if (e.PurchaseTaxInPercent && e.PurchaseTaxInPercent != -99) {
-  //       group.controls._IDUoMDataSource.setValue(e.UoMs);
-  //       group.controls.IDTax.setValue(e.IDPurchaseTaxDefinition);
-  //       group.controls.IDTax.markAsDirty();
-  //       if(e.UoMs?.length>0){
-  //         group.controls.IDItemUoM.setValue(e.PurchasingUoM);
-  //         group.controls.IDItemUoM.markAsDirty();
-  //         var baseUoM = e.UoMs.find((d) => d.IsBaseUoM);
-  //         if(baseUoM) {
-  //           group.controls.IDBaseUoM.setValue(baseUoM.Id);
-  //           group.controls.IDItemUoM.markAsDirty();
-  //         }
-  //       }
-  //       group.controls.TaxRate.setValue(e.PurchaseTaxInPercent);
-  //       group.controls.TaxRate.markAsDirty();
-  //       group.controls._Item.setValue(e._Item);
-
-  //       if(!e._Vendors.some(o => o.Id == group.get('IDVendor').value))
-  //         {
-  //           group.get('IDVendor').setValue(null);
-  //           group.get('IDVendor').markAsDirty();
-  //         }
-  //       group.controls._Vendors.setValue(e._Vendors)
-
-  //       this.IDUoMChange(group);
-  //       return;
-  //     }
-  //     if (e.PurchaseTaxInPercent != -99) this.env.showMessage('The item has not been set tax');
-  //   }
-  // }
-  // IDUoMChange(group) {
-  //   let idUoM = group.controls.IDItemUoM.value;
-
-  //   if (idUoM) {
-  //     let UoMs = group.controls._IDUoMDataSource.value;
-  //     let u = UoMs.find((d) => d.Id == idUoM);
-  //     if (u && u.PriceList) {
-  //       let p = u.PriceList.find((d) => d.Type == 'PriceListForVendor');
-  //       let taxRate = group.controls.TaxRate.value;
-  //       if (p && taxRate != null) {
-  //         let priceBeforeTax = null;
-
-  //         if (taxRate < 0) taxRate = 0; //(-1 || -2) In case goods are not taxed
-
-  //         if (p.IsTaxIncluded) {
-  //           priceBeforeTax = p.Price / (1 + taxRate / 100);
-  //         } else {
-  //           priceBeforeTax = p.Price;
-  //         }
-  //         let baseUOM = UoMs.find((d) => d.IsBaseUoM);
-  //         if(baseUOM) {
-  //           group.controls.IDBaseUoM.setValue(baseUOM.Id);
-  //           group.controls.IDBaseUoM.markAsDirty();
-  //         }
-  //         group.controls.UoMPrice.setValue(priceBeforeTax);
-  //         group.controls.UoMPrice.markAsDirty();
-
-  //         this.submitData(group);
-  //         return;
-  //       }
-  //     }
-  //   }
-  //   else{
-  //     group.controls.UoMPrice.setValue(null);
-  //     group.controls.UoMPrice.markAsDirty();
-  //     group.controls.IDBaseUoM.setValue(null);
-  //     group.controls.IDBaseUoM.markAsDirty();
-  //   }
-  // }
-
-  saveOrder() {
-    this.debounce(() => {
-      super.saveChange2();
-    }, 300);
-  }
 
   async copyCopyToPurchaseOrder() {
     this.item._qtyReceipted = this.item._Receipts;
@@ -351,5 +282,27 @@ export class PurchaseQuotationDetailPage extends PageBase {
         this.nav('/purchase-order/' + data.Id);
       });
     }
+  }
+  confirm() {
+    let Ids = [this.item.Id];
+    this.env.showPrompt(null, null, 'Do you want to confirm?').then((_) => {
+      this.env
+        .showLoading(
+          'Please wait for a few moments',
+          this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/Confirm/', { Ids: Ids }).toPromise(),
+        )
+        .then((x) => {
+          this.env.showMessage('Confirmed', 'success');
+          this.refresh();
+        })
+        .catch((x) => {
+          this.env.showMessage('Failed', 'danger');
+        });
+    });
+  }
+  saveOrder() {
+    this.debounce(() => {
+      super.saveChange2();
+    }, 300);
   }
 }

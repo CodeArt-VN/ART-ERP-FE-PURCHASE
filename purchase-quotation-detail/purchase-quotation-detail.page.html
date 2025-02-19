@@ -1,6 +1,6 @@
 <ion-header>
   <app-toolbar [page]="this">
-    <ion-button title="{{ 'Confirm' | translate }}" *ngIf="pageConfig.ShowConfirm" (click)="confirmSaleQuotation()">
+    <ion-button title="{{ 'Confirm' | translate }}" *ngIf="pageConfig.ShowConfirm && pageConfig.canConfirm" (click)="confirm()">
       <ion-icon name="checkmark-circle-outline"></ion-icon>
     </ion-button>
 

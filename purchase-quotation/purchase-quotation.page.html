@@ -44,7 +44,14 @@
           <div (click)="nav('purchase-quotation/'+i.Id,'forward')" class="col-id cell">{{i.Id}}</div>
         </ng-template>
       </datatable-column>
-
+      <datatable-column class="col-name cell" name="Source" property="SourceKey">
+        
+        <ng-template let-i="row" datatable-cell-template>
+          <ng-container *ngIf="i.SourceType=='FromPurchaseRequest'" (click)="nav('purchase-request/'+i.SourceLine,'forward')" class="col-id cell">
+            #{{i.SourceType}}: {{i.SourceKey}}</ng-container>
+          <ng-container v *ngIf="i.SourceType!='FromPurchaseRequest'">{{i.SourceKey}}</ng-container>
+        </ng-template>
+      </datatable-column>
       <datatable-column class="col-name cell" name="" property="Id">
         <ng-template datatable-header-template>
           <div class="col-code cell" >{{'Branch' | translate}}</div>
