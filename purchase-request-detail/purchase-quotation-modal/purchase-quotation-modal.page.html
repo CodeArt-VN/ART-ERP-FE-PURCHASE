@@ -27,7 +27,7 @@
 
     <header class="bold">
       <!-- <div class="col-checkbox cell"></div> -->
-      <div class="col-id cell">
+      <div class="col-id cell" >
         {{'Id' | translate}}
         <ion-icon class="min-btn" *ngIf="sort.Id" [name]="sort.Id == 'Id'?'arrow-down': 'arrow-up'"></ion-icon>
         <ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.Id"
@@ -62,7 +62,7 @@
 
     <div *ngFor="let i of items; let j = index;" class="row" [ngClass]="{odd: j % 2 != 0}"
       [ngClass]="{selected: i.checked}">
-      <div class="col-id cell">
+      <div class="col-id cell" style="align-items: start;">
         <span *ngIf="i.IDItem"> {{i.IDItem}} </span>
       </div>
 
@@ -82,7 +82,7 @@
         </div>
       </div>
 
-      <div class="col-number cell" *ngIf="i.IDItem">
+      <div class="col-number cell" *ngIf="i.IDItem" style="align-items: start;">
         <b *ngIf="i.IDItem">{{i.Quantity}} <small>{{i.UoMName}}</small></b>
       </div>
       <div class="col-checkbox vendor-name cell">
@@ -96,7 +96,7 @@
           </div>
         </div>
       </div>
-      <div class="col-number cell">
+      <div class="col-number cell" style="align-items: start;">
         <span *ngIf="i.IDItem">{{i.UoMPrice | number: '1.0-0'}}</span>
       </div>
 

@@ -2,9 +2,21 @@
   <ion-toolbar>
     <ion-title> {{'Copy to purchase order'| translate}}</ion-title>
     <ion-buttons slot="end">
-      <ion-buttons *ngIf="TotalAfterTax != 0">
-          {{'Total:' | translate}}
-          <span>{{TotalAfterTax | number}}</span>
+      <ion-buttons >
+        <div class="total">
+          <span>{{'Total: ' | translate}}</span>
+          <input
+            [ngModelOptions]="{standalone: true}"
+            [(ngModel)]="TotalAfterTax"
+            class="c-input"
+            [ngClass]="{active: TotalAfterTax}"
+            type="text"
+            [disabled]="true"
+            mask="separator.2"
+            thousandSeparator=","
+            suffix=" ₫"
+          />
+        </div>
       </ion-buttons>
       <ion-button (click)="closeModal()">
         <ion-icon name="close"></ion-icon>

@@ -76,8 +76,9 @@ export class CopyToPurchaseOrderModalPage extends PageBase {
     i.controls.Total.setValue((i.controls.UoMQuantityExpected.value
       * i.controls.Price.value
       - i.controls.Discount.value)* (1 + i.controls.TaxRate.value / 100))
+      this.TotalAfterTax = 0;
      this.item.QuotationLines.forEach(d=> {
-       this.TotalAfterTax = d._formGroup.controls.Total.value;
+       this.TotalAfterTax += d._formGroup.controls.Total.value;
      });
   }
 

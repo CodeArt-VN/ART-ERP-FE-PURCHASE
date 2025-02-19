@@ -75,7 +75,7 @@ export class PurchaseRequestDetailPage extends PageBase {
       ForeignRemark: [''],
       ContentType: ['Item', Validators.required],
       Status: new FormControl({ value: 'Draft', disabled: true }, Validators.required),
-      RequiredDate: [''],
+      RequiredDate: ['',Validators.required],
       PostingDate: [''],
       DueDate: [''],
       DocumentDate: [''],
