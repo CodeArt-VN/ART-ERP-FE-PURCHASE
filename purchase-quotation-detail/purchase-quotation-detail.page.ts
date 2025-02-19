@@ -130,7 +130,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
     super.loadedData(event);
     if (this.item.SourceType == 'FromPurchaseRequest') {
       this.formGroup.disable();
-      if (this.item.Status == 'Open') this.formGroup.controls.ValidUntilDate.enable();
+      let enableValid = [ 'Submitted' , 'Approved' , 'Closed' ];
+      if (!enableValid.includes(this.item.Status)) this.formGroup.controls.ValidUntilDate.enable();
     }
     this.setQuotationLines();
 
@@ -163,7 +164,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
       this.formGroup.controls.QuotationLines.disable();
     }
   }
-
+                       
   addLine(line, markAsDirty = false) {
     let groups = <FormArray>this.formGroup.controls.QuotationLines;
     let selectedItem = line._Item;

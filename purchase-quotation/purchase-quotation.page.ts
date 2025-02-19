@@ -25,6 +25,16 @@ export class PurchaseQuotationPage extends PageBase {
     public location: Location,
   ) {
     super();
+    this.pageConfig.ShowCommandRules = [
+      { Status: 'Open',       ShowBtns: [ 'ShowSubmit',  'ShowApprove',                    'ShowCancel',] },
+      { Status: 'Unapproved', ShowBtns: [ 'ShowSubmit',  'ShowApprove',                    'ShowCancel',] }, 
+      { Status: 'Submitted',  ShowBtns: [                'ShowApprove', 'ShowDisapprove',  'ShowCancel',] }, 
+      { Status: 'Approved',   ShowBtns: [                               'ShowDisapprove',  'ShowCancel',] }, 
+      { Status: 'Confirmed',  ShowBtns: [                'ShowApprove', 'ShowDisapprove',  'ShowCancel',] },                                           
+      { Status: 'Cancelled',  ShowBtns: [ 'ShowSubmit',  'ShowApprove', 'ShowDisapprove',              ]  },   
+      ];
+
+
   }
 
   preLoadData(event) {
