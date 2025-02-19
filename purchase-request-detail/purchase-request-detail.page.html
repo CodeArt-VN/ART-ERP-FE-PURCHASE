@@ -68,6 +68,11 @@
               type:'datetime-local',form:formGroup}"
               (change) = "changeDate($event)">
             </app-form-control>
+
+            <app-form-control  
+            [field]="{branchConfig:{showingType:'Department',selectedBranch:selectedRequestBranch},
+              id:'IDRequestBranch', label:'Branch request', type : 'ng-select-branch', form : formGroup,  dataSource: branchList,  bindLabel: 'Name',  bindValue: 'Id' }"
+            (change)="saveChange()"></app-form-control>
             <app-form-control [clearable]="true" 
             [field]="{id:'IDRequester', label:'Requester', type : 'ng-select-staff', form : formGroup,  dataSource: _staffDataSource,  bindLabel: 'FullName',  bindValue: 'Id' }"
             (change)="saveChange()"></app-form-control>

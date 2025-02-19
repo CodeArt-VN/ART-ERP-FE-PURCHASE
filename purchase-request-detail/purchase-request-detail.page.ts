@@ -28,6 +28,7 @@ export class PurchaseRequestDetailPage extends PageBase {
   @ViewChild('importfile') importfile: any;
   statusList = [];
   contentTypeList = [];
+  branchList
   markAsPristine = false;
   _currentVendor;
   _isVendorSearch = false;
@@ -98,6 +99,8 @@ export class PurchaseRequestDetailPage extends PageBase {
       { Code: 'Item', Name: 'Items' },
       { Code: 'Service', Name: 'Service' },
     ];
+    this.branchList=[...this.env.branchList];
+
     Promise.all([this.env.getStatus('PurchaseRequest'), this.contactProvider.read({ IsVendor: true, Take: 20 })]).then(
       (values: any) => {
         if (values[0]) this.statusList = values[0];
@@ -148,6 +151,7 @@ export class PurchaseRequestDetailPage extends PageBase {
       this.pageConfig.canCreatePO = true;
       // todo : check theem dk da đủ line chưa
     }
+    this.getNearestCompany(this.env.selectedBranch)
     // if(this.item.Status )
   }
 
@@ -468,43 +472,20 @@ export class PurchaseRequestDetailPage extends PageBase {
       });
     }
 
-    // if (data && data.IDVendor && data.OrderLines.length > 0) {
-    //   const loading = await this.loadingController.create({
-    //     cssClass: 'my-custom-class',
-    //     message: 'Xin vui lòng chờ tạo PO...',
-    //   });
-    //   await loading.present().then(() => {
-    //     let postData = {
-    //       // SelectedRecommendations: this.items.filter((d) => d.checked).map((m) => ({ Id: m.Id, IDVendor: m.VendorId })),
-    //       IDVendor: data.IDVendor,
-    //       IDOrderlines: data.OrderLines.map((o) => o.Id),
-    //     };
-    //     this.commonService
-    //       .connect('POST', 'PURCHASE/Request/CopyToPO/' + this.formGroup.get('Id').value, postData)
-    //       .toPromise()
-    //       .then((resp: any) => {
-    //         if (resp) {
-    //           if (loading) loading.dismiss();
-    //           this.env.showMessage('PO created!', 'success');
-    //           this.env
-    //            .showPrompt('Create purchase order successfully!','Do you want to navigate to purchase order?' )
-    //            .then((d) => {
-    //               this.nav('/purchase-order/' + resp.Id, 'forward');
-    //             });
-    //           this.refresh();
-    //           this.env.publishEvent({
-    //             Code: this.pageConfig.pageName,
-    //           });
-    //         }
-    //       })
-    //       .catch((err) => {
-    //         console.log(err);
-    //         this.env.showMessage('Cannot create PO, please try again later', 'danger');
-    //         if (loading) loading.dismiss();
-    //       });
-    //   });
-    
-    
-    // }
+  }
+  selectedRequestBranch
+  getNearestCompany(IDBranch) {
+    let currentBranch = this.env.branchList.find((d) => d.Id == IDBranch);
+    if (currentBranch) {
+      if (currentBranch.Type == 'Company') {
+        this.selectedRequestBranch = currentBranch.Id;
+        return true;
+      } else {
+        let parentBranch: any = this.env.branchList.find((d) => d.Id == currentBranch.IDParent);
+        if (this.getNearestCompany(parentBranch.Id)) {
+          return true;
+        }
+      }
+    }
   }
 }
