@@ -23,80 +23,32 @@
 </ion-header>
 
 <ion-content appScrollbarTheme class="header-table scrollx" forceOverscroll="false">
-  <section class="table" style="min-width: calc(1024px)">
-    <header class="bold">
-      <!-- <div class="col-checkbox cell"></div> -->
-      <!-- <div class="col-id cell" >
-        {{'Id' | translate}}
-        <ion-icon class="min-btn" *ngIf="sort.Id" [name]="sort.Id == 'Id'?'arrow-down': 'arrow-up'"></ion-icon>
-        <ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.Id"
-          name="search" color="primary"></ion-icon>
-      </div> -->
-      <div class="col-checkbox vendor-name cell">
-        <span>
-          <input class="c-checkbox" type="checkbox" (change)="checkAllVendor($event)" />
-        </span>
-      </div>
-      <div class="col-name cell">
-        {{'Item' | translate}}
-        <ion-icon class="min-btn" *ngIf="sort.Name" [name]="sort.Name == 'Name'?'arrow-down': 'arrow-up'"></ion-icon>
-        <ion-icon
-          class="min-btn"
-          (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
-          *ngIf="query.Name"
-          name="search"
-          color="primary"
-        ></ion-icon>
-      </div>
+  <app-data-table
+    class="box-shadow responsive"
+    [rows]="items"
+    [trackBy]="'Id'"
+    [showSpinner]="pageConfig.showSpinner"
+    [showFilter]="pageConfig.isShowSearch"
+    [(query)]="query"
+  >
 
-      <div class="col-number cell">
-        {{'Quantity' | translate}}
-        <ion-icon
-          class="min-btn"
-          *ngIf="sort.DinnerPax"
-          [name]="sort.DinnerPax == 'DinnerPax'?'arrow-down': 'arrow-up'"
-        ></ion-icon>
-        <ion-icon
-          class="min-btn"
-          (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
-          *ngIf="query.DinnerPax"
-          name="search"
-          color="primary"
-        ></ion-icon>
-      </div>
+    <datatable-column [checkbox]="true" class="col-checkbox" name="" property="Id">
+      <ng-template datatable-header-template>
+        <input class="c-checkbox" type="checkbox" (change)="checkAllVendor($event)" />
+      </ng-template>
+      <ng-template let-i="row" datatable-cell-template>
+        <ng-container *ngIf="!i.IDItem">
+          <input class="c-checkbox" type="checkbox" [(ngModel)]="i.checked" (change)="changeVendor(i,z)" />
+        </ng-container> 
+      </ng-template>
+    </datatable-column>
 
-      <!-- <div class="col-checkbox cell">{{'Order' | translate}}</div> -->
-
-      <!-- <div class="col-number cell">
-        {{'Price' | translate}}
-        <ion-icon class="min-btn" *ngIf="sort.DinnerPax"
-          [name]="sort.DinnerPax == 'DinnerPax'?'arrow-down': 'arrow-up'"></ion-icon>
-        <ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.DinnerPax"
-          name="search" color="primary"></ion-icon>
-      </div> -->
-    </header>
-
-    <div
-      *ngFor="let i of items; let j = index;"
-      class="row"
-      [ngClass]="{odd: j % 2 != 0}"
-      [ngClass]="{selected: i.checked}"
-    >
-      <div class="col-checkbox vendor-name cell">
-        <div *ngIf="!i.IDItem">
-          <span>
-            <input class="c-checkbox" type="checkbox" [(ngModel)]="i.checked" (change)="changeVendor(i,z)" />
-          </span>
-        </div>
-      </div>
-
-      <ng-container *ngIf="i.IDItem">
-        <div class="col-name vendor-name cell">
+    <datatable-column class="col-name" name="Item" property="Id">
+      <ng-template let-i="row" datatable-cell-template>
+        <ng-container *ngIf="i.IDItem">
           <span *ngIf="i.IDItem"><b>{{i._Item?.Code}} - {{i._Item?.Name}} </b> </span>
-        </div>
-      </ng-container>
-      <ng-container *ngIf="!i.IDItem">
-        <div class="col-name cell">
+        </ng-container>
+        <ng-container *ngIf="!i.IDItem">
           <span>
             <a
               [href]="'#/'+'business-partner/'+i.Id"
@@ -108,14 +60,16 @@
             </a>
             {{i.Name}}
           </span>
-        </div>
-      </ng-container>
+        </ng-container>
+      </ng-template>
+    </datatable-column>
 
-      <div class="col-number cell" *ngIf="i.IDItem" style="align-items: start">
+    <datatable-column class="col-remark" name="Quantity" property="Id">
+      <ng-template let-i="row" datatable-cell-template>
         <b *ngIf="i.IDItem">{{i.Quantity}} <small>{{i.UoMName}}</small></b>
-      </div>
-    </div>
-  </section>
+      </ng-template>
+    </datatable-column>
+  </app-data-table>
 </ion-content>
 
 <!-- <ion-footer>

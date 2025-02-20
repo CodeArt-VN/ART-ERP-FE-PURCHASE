@@ -51,6 +51,7 @@ export class PurchaseQuotationModalPage extends PageBase {
   }
 
   loadedData(event?: any, ignoredFromGroup?: boolean): void {
+    super.loadedData(event)
     console.log(this.items);
     let list = [...this.itemInVendors];
     list.forEach((x) => {

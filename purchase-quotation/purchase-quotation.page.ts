@@ -69,12 +69,6 @@ export class PurchaseQuotationPage extends PageBase {
     console.log(this.items);
   }
 
-  changeSelection(i: any, e?: any): void {
-    super.changeSelection(i, e);
-    if(!i.IsFilledQuantity){
-      this.pageConfig.ShowSubmit = this.pageConfig.ShowApprove = false;
-    }
-  }
 
   submit() {
     if (this.submitAttempt) return;

@@ -127,14 +127,17 @@ export class PurchaseQuotationDetailPage extends PageBase {
 
   loadedData(event) {
   
-    if (!([ 'Open' , 'Confirmed' ,'Disapproved'].includes(this.item.Status))) this.pageConfig.canEdit = false;
+    if (!([ 'Open' , 'Confirmed' ,'Unapproved'].includes(this.item.Status))) this.pageConfig.canEdit = false;
+    if(this.item.Status == 'Confirmed' && this.vendorView) this.pageConfig.canEdit = false;
     super.loadedData(event);
+    this.setQuotationLines();
+
     if (this.item.SourceType == 'FromPurchaseRequest') {
       this.formGroup.disable();
       let enableValid = [ 'Submitted' , 'Approved' , 'Closed' ];
       if (!enableValid.includes(this.item.Status)) this.formGroup.controls.ValidUntilDate.enable();
     }
-    this.setQuotationLines();
+  
 
     if (this.item._Vendor) {
       this._vendorDataSource.selected = [...this._vendorDataSource.selected, ...[this.item._Vendor]];
