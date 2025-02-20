@@ -14,10 +14,9 @@ import {
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
 import { lib } from 'src/app/services/static/global-functions';
-import { concat, of, Subject } from 'rxjs';
-import { catchError, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { ApiSetting } from 'src/app/services/static/api-setting';
-import { PurchaseOrderModalPage } from '../purchase-order-modal/purchase-order-modal.page';
+import { PurchaseOrderModalPage } from './purchase-order-modal/purchase-order-modal.page';
+import { PurchaseQuotationModalPage } from './purchase-quotation-modal/purchase-quotation-modal.page';
 
 @Component({
   selector: 'app-purchase-request-detail',
@@ -29,6 +28,7 @@ export class PurchaseRequestDetailPage extends PageBase {
   @ViewChild('importfile') importfile: any;
   statusList = [];
   contentTypeList = [];
+  branchList
   markAsPristine = false;
   _currentVendor;
   _isVendorSearch = false;
@@ -76,7 +76,7 @@ export class PurchaseRequestDetailPage extends PageBase {
       ForeignRemark: [''],
       ContentType: ['Item', Validators.required],
       Status: new FormControl({ value: 'Draft', disabled: true }, Validators.required),
-      RequiredDate: [''],
+      RequiredDate: ['',Validators.required],
       PostingDate: [''],
       DueDate: [''],
       DocumentDate: [''],
@@ -99,6 +99,8 @@ export class PurchaseRequestDetailPage extends PageBase {
       { Code: 'Item', Name: 'Items' },
       { Code: 'Service', Name: 'Service' },
     ];
+    this.branchList=[...this.env.branchList];
+
     Promise.all([this.env.getStatus('PurchaseRequest'), this.contactProvider.read({ IsVendor: true, Take: 20 })]).then(
       (values: any) => {
         if (values[0]) this.statusList = values[0];
@@ -149,6 +151,7 @@ export class PurchaseRequestDetailPage extends PageBase {
       this.pageConfig.canCreatePO = true;
       // todo : check theem dk da đủ line chưa
     }
+    this.getNearestCompany(this.env.selectedBranch)
     // if(this.item.Status )
   }
 
@@ -271,7 +274,8 @@ export class PurchaseRequestDetailPage extends PageBase {
           this._currentVendor = e;
           this.saveChange()
         };;
-    }
+        console.log(this.formGroup.get('IDVendor').value)
+      }
     else{
       this._currentVendor = e;
       this.saveChange();
@@ -351,7 +355,7 @@ export class PurchaseRequestDetailPage extends PageBase {
       else
       {
         vendorList = [...vendorList, ...o._Vendors.filter(v=> !vendorList.some(vd => v.Id == vd.Id ))];
-      }
+      } 
     });
     
     const modal = await this.modalController.create({
@@ -403,6 +407,85 @@ export class PurchaseRequestDetailPage extends PageBase {
             if (loading) loading.dismiss();
           });
       });
+    }
+  }
+  async sendRequestQuotationToVendor(){
+    let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
+	  let vendorList = [] ;
+    this.formGroup.get('OrderLines').value.forEach(o=> {
+      if(o.IDVendor){
+        vendorList = [...vendorList, ...o._Vendors.filter(v=> v.Id == o.IDVendor &&  !vendorList.some(vd => v.Id == vd.Id ))];
+      }
+      else
+      {
+        vendorList = [...vendorList, ...o._Vendors.filter(v=> !vendorList.some(vd => v.Id == vd.Id ))];
+      } 
+    });
+    
+    const modal = await this.modalController.create({
+      component: PurchaseQuotationModalPage,
+      componentProps: {
+        itemInVendors: orderLines,
+        isMultiple : true,
+        defaultVendor: this._currentVendor
+        // vendorList : vendorList,
+      },
+
+      cssClass: 'modal90',
+    });
+
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+
+    if(data && data.some(d=> d.Vendors.length > 0)){
+         const loading = await this.loadingController.create({
+        cssClass: 'my-custom-class',
+        message: 'Xin vui lòng chờ tạo PQ...',
+      });
+      await loading.present().then(()=>{
+        let postData = {
+          data : data.filter(d=> d.Vendors.length > 0)
+        }
+             this.commonService
+          .connect('POST', 'PURCHASE/Request/SendRequestQuotationToVendor/' + this.formGroup.get('Id').value, postData)
+          .toPromise()
+          .then((resp: any) => {
+            if (resp) {
+              if (loading) loading.dismiss();
+              this.env.showMessage('Purchase quotations created!', 'success');
+              // this.env
+              //  .showPrompt('Create purchase quotation successfully!','Do you want to navigate to purchase quotation?' )
+              //  .then((d) => {
+              //     // this.nav('/purchase-quotation/' + resp.Id, 'forward');
+              //   });
+              this.refresh();
+              this.env.publishEvent({
+                Code: this.pageConfig.pageName,
+              });
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            this.env.showMessage('Cannot create PQ, please try again later', 'danger');
+            if (loading) loading.dismiss();
+          });
+      });
+    }
+
+  }
+  selectedRequestBranch
+  getNearestCompany(IDBranch) {
+    let currentBranch = this.env.branchList.find((d) => d.Id == IDBranch);
+    if (currentBranch) {
+      if (currentBranch.Type == 'Company') {
+        this.selectedRequestBranch = currentBranch.Id;
+        return true;
+      } else {
+        let parentBranch: any = this.env.branchList.find((d) => d.Id == currentBranch.IDParent);
+        if (this.getNearestCompany(parentBranch.Id)) {
+          return true;
+        }
+      }
     }
   }
 }

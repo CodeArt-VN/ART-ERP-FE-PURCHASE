@@ -1,0 +1,260 @@
+.cell small {
+  /* border-left: solid 2px; */
+  margin-left: 5px;
+  padding: 2px 4px;
+  background-color: rgba(var(--ion-color-primary-rgb, 0, 0, 0), 0.1);
+  border-radius: 2px;
+
+  &.right {
+    margin-left: auto;
+    order: 2;
+  }
+}
+
+
+.money {
+  font-weight: bold;
+  color: var(--ion-color-primary) !important;
+}
+.row .col-seperator {
+  display: none;
+}
+::ng-deep{
+  ion-avatar{
+    width: 24px;
+    height: 24px;
+  }
+}
+@media screen and (max-width: calc(1164px + 0px)) {
+  section > header {
+    display: none;
+  }
+
+  .filter {
+    width: 100%;
+    height: 115px;
+    display: block;
+    padding-right: 0;
+
+    ion-text {
+      display: block;
+      font-size: calc(10/16 * 1rem);
+      color: #000;
+    }
+
+    .cell {
+      padding: 10px 10px 0 10px;
+      max-width: fit-content;
+      width: 50%;
+      max-width: 1000px;
+      float: left;
+      display: block;
+    }
+
+    .c-input {
+      width: 100%;
+      font-size: calc(10/16 * 1rem);
+      text-align: left !important;
+      padding: 0px 3px 0 5px;
+      max-width: 1000px;
+    }
+
+    .min-btn {
+      position: absolute;
+      margin-top: 5px;
+    }
+
+    .col-checkbox {
+      display: none;
+    }
+
+    .col-code {
+      .c-dropdown {
+        width: 100%;
+      }
+    }
+
+    .col-name {
+      min-width: 0 !important;
+      max-width: 1000px !important;
+    }
+    .requester{
+      min-width: 150px;
+      max-width: 150px;
+    }
+
+    .money {
+      display: none;
+    }
+  }
+  .small-screen {
+    display: flex;
+  }
+
+  .hide-screen {
+    display: none !important;
+  }
+
+  .row {
+    flex-wrap: wrap;
+    padding: 10px 110px 10px 35px !important;
+
+    .cell {
+      padding: 1px 7px 1px 0 !important;
+    }
+
+    .col-id,
+    .col-code,
+    .col-expectDate,
+    .col-OrderDate,
+    .col-SellerName,
+    .col-DiscountFromSalesman,
+    .col-ReceivedDiscountFromSalesman {
+      min-width: fit-content !important;
+      max-width: fit-content !important;
+      order: 4;
+      margin-bottom: 5px;
+      margin-right: 5px;
+    }
+
+    .col-checkbox {
+      order: 0;
+      margin-left: -35px;
+      padding: 0 !important;
+    }
+
+    .col-id {
+      order: 1;
+      padding: 1px 7px !important;
+      border-radius: 3px;
+      background-color: var(--ion-color-primary);
+      color: var(--ion-color-primary-contrast) !important;
+    }
+
+    .col-code {
+      order: 2;
+      font-weight: bold;
+      font-size: 90%;
+    }
+
+    .col-orderDate {
+      order: 3;
+      border-left: solid 3px rgba(var(--ion-color-primary-rgb, 0, 0, 0), 0.2);
+      background-color: rgba(var(--ion-color-primary-rgb, 0, 0, 0), 0.1);
+      border-radius: 2px;
+      font-size: 70%;
+      font-weight: normal;
+      padding-right: 0 !important;
+    }
+
+    .col-expectDate {
+      order: 3;
+      border-left: solid 3px rgba(183, 50, 42, 0.2);
+      background-color: rgba(183, 50, 42, 0.1);
+      border-radius: 2px;
+      font-size: 70%;
+      font-weight: normal;
+      padding-right: 0 !important;
+    }
+
+    .money,
+    .col-status {
+      width: 400px;
+      position: absolute;
+      right: 0px;
+
+      .bar-holder {
+        justify-content: right;
+        height: 16px;
+
+        .bar-title {
+          text-align: right;
+        }
+      }
+    }
+
+    .money {
+      margin-top: 25px;
+      font-size: 80%;
+      margin-right: 0;
+      //color: var(--ion-color-success) !important;
+    }
+
+    .col-vendor {
+      order: 7;
+      font-size: 80%;
+      min-width: 150px;
+      margin-bottom: 5px;
+    }
+
+    .col-vendorCode {
+      order: 5;
+      font-weight: bold;
+      margin-bottom: 5px;
+      margin-right: 0;
+      // border-left: solid 3px rgba(var(--ion-color-medium-rgb, 0, 0, 0), .2);
+      // background-color: rgba(var(--ion-color-medium-rgb, 0, 0, 0), .1);
+      // border-radius: 2px;
+      font-size: 70%;
+    }
+
+    .col-seperator {
+      order: 6;
+      min-width: 100%;
+      display: block;
+    }
+
+    .col-name {
+      order: 7;
+      font-size: 80%;
+      color: var(--ion-color-medium) !important;
+    }
+
+    .requester{
+      min-width: 150px;
+      max-width: 150px;
+    }
+
+    .empty-field {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+@media screen and (max-width: calc(415px + 0px)) {
+  .row {
+    .col-vendor,
+    .col-vendorCode {
+      margin-bottom: 0;
+    }
+  }
+}
+
+@media screen and (min-width: 475px) and (max-width: 1163px) {
+  .row {
+    .col-vendor {
+      min-width: 100%;
+      margin-bottom: 0;
+    }
+  }
+}
+
+@media screen and (min-width: 1164px) and (max-width: 1600px) {
+  .col-owner {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 1164px) and (max-width: 1366px) {
+  .col-expectDate,
+  .col-orderDate,
+  .col-code {
+    min-width: 120px !important;
+    max-width: 120px !important;
+  }
+
+  .col-vendor {
+    min-width: 210px !important;
+  }
+}

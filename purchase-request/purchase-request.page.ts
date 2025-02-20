@@ -35,6 +35,16 @@ export class PurchaseRequestPage extends PageBase {
   ) {
     super();
     this.imgPath = environment.staffAvatarsServer;
+    this.pageConfig.ShowCommandRules = [
+      { Status: 'Draft',      ShowBtns: ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit',  'ShowApprove',                  'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Mới
+      { Status: 'Unapproved', ShowBtns: ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit',  'ShowApprove',                    'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Không duyệt
+      { Status: 'Submitted',  ShowBtns: ['ShowApprove', 'ShowDisapprove',  'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Chờ duyệt
+      { Status: 'Approved',   ShowBtns: [                                                                            'ShowDisapprove',  'ShowCancel',               'ShowArchive','ShowSendRequestQuotation'] }, // Đã duyệt
+      { Status: 'QuotationSent',  ShowBtns: [] }, // Đã giao hàng
+      { Status: 'Closed',       ShowBtns: [] }, // Đã xong
+      { Status: 'Cancelled',  ShowBtns: [] }  // Đã hủy
+    ];
+
   }
 
   preLoadData(event) {
@@ -46,7 +56,7 @@ export class PurchaseRequestPage extends PageBase {
     let sysConfigQuery = ['PRUsedApprovalModule'];
     Promise.all([
       this.env.getStatus('PurchaseRequest'),
-      this.sysConfigProvider.read({ Code_in: sysConfigQuery }),
+        this.sysConfigProvider.read({ Code_in: sysConfigQuery,  IDBranch: this.env.selectedBranch}),
     ]).then((values) => {
       this.statusList = values[0];
       values[1]['data'].forEach((e) => {
@@ -73,43 +83,6 @@ export class PurchaseRequestPage extends PageBase {
 
   mergeSaleOrders() { }
   splitSaleOrder() { }
-
-  changeSelection(i, e = null) {
-    super.changeSelection(i, e);
-    this.pageConfig.ShowCancel = this.pageConfig.canCancel;
-    this.pageConfig.ShowApprove = this.showDisapprove = this.pageConfig.canApprove;
-    this.pageConfig.ShowSubmit = this.pageConfig.canSubmit;
-
-    this.selectedItems?.forEach((i) => {
-      // let ShowSubmit = ['Draft', 'Unapproved'];
-      // let ShowApprove = ['Submitted'];
-      // let ShowCancel = ['Submitted', 'Approved', 'Unapproved'];
-
-      let notShowSubmit = ['Submitted', 'Approved']
-      let notShowApprove = ['Approved', 'Unapproved', 'Cancel'];//'Draft', 
-      let notShowDisApprove = ['Unapproved', 'Draft', 'Cancel'];
-      let notShowCancel = ['Draft']
-
-
-      if (notShowSubmit.indexOf(i.Status) != -1) {
-        this.pageConfig.ShowSubmit = false;
-      }
-
-      if (notShowApprove.indexOf(i.Status) != -1) {
-        this.pageConfig.ShowApprove = false;
-      }
-      if (notShowDisApprove.indexOf(i.Status) != -1) {
-        this.pageConfig.ShowDisapprove = false;
-      }
-      if (notShowCancel.indexOf(i.Status) != -1) {
-        this.pageConfig.ShowCancel = false;
-      }
-
-    });
-    if (this.selectedItems?.length == 0) {
-      this.pageConfig.ShowCancel = this.pageConfig.ShowApprove = this.pageConfig.ShowSubmit = false;
-    }
-  }
 
 
   submit() { // submit PO
@@ -302,4 +275,6 @@ export class PurchaseRequestPage extends PageBase {
     }
   }
 
+
+  
 }

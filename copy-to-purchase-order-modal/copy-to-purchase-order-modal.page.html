@@ -1,7 +1,23 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title> {{'Copy to goods receipt'| translate}}</ion-title>
+    <ion-title> {{'Copy to purchase order'| translate}}</ion-title>
     <ion-buttons slot="end">
+      <ion-buttons >
+        <div class="total">
+          <span>{{'Total: ' | translate}}</span>
+          <input
+            [ngModelOptions]="{standalone: true}"
+            [(ngModel)]="TotalAfterTax"
+            class="c-input"
+            [ngClass]="{active: TotalAfterTax}"
+            type="text"
+            [disabled]="true"
+            mask="separator.2"
+            thousandSeparator=","
+            suffix=" ₫"
+          />
+        </div>
+      </ion-buttons>
       <ion-button (click)="closeModal()">
         <ion-icon name="close"></ion-icon>
       </ion-button>
@@ -11,7 +27,7 @@
 <ion-content appScrollbarTheme class="header-table">
   <app-data-table
     class="box-shadow responsive"
-    [rows]="item.OrderLines"
+    [rows]="item.QuotationLines"
     [trackBy]="'IDItem'"
     [showSpinner]="pageConfig.showSpinner"
     [showFilter]="pageConfig.isShowSearch"
@@ -24,11 +40,11 @@
         ></app-input-control>
       </ng-template>
     </datatable-column>
-    <datatable-column class="col-uom" name="Unit" property="IDUoM">
+    <datatable-column class="col-uom" name="Unit" property="IDItemUoM">
       <ng-template let-i="row" datatable-cell-template>
         <app-input-control
           [field]="{
-        id: 'IDUoM',
+        id: 'IDItemUoM',
         type: 'ng-select',
         form: i._formGroup,
         dataSource: i._formGroup.controls._IDUoMDataSource.value,
@@ -40,35 +56,36 @@
         <!-- appendTo: '#ng-select-table' -->
       </ng-template>
     </datatable-column>
-    <datatable-column class="col-number" name="Quantity" property="UoMQuantityExpected">
+    <datatable-column class="col-number" name="Quantity" property="Quantity">
       <ng-template let-i="row" datatable-cell-template>
         <app-input-control
           [field]="{
-        id: 'UoMQuantityExpected',
+        id: 'Quantity',
         type: 'number',
         form: i._formGroup,
       }"
         ></app-input-control>
       </ng-template>
     </datatable-column>
-    <datatable-column class="col-number" name="Quantity received" property="QuantityReceived">
+
+    <datatable-column class="col-number" name="Quantity remaining open" property="QuantityRemainingOpen">
       <ng-template let-i="row" datatable-cell-template>
         <app-input-control
           [field]="{
-      id: 'QuantityReceived',
-      type: 'number',
-      form: i._formGroup,
-    }"
+        id: 'QuantityRemainingOpen',
+        type: 'number',
+        form: i._formGroup,
+      }"
         ></app-input-control>
       </ng-template>
     </datatable-column>
-
-    <datatable-column class="col-name" name="Quantity import" property="QuantityImport">
+    <datatable-column class="col-name" name="UoM quantity expected" property="UoMQuantityExpected">
       <ng-template datatable-header-template>
-        <span>{{'Quantity import'|| translate}}</span>
+        <span>{{'UoM quantity expected'|| translate}}</span>
+
+        <!-- *ngIf="showButtonSave" -->
         <ion-icon
-        *ngIf="showButtonSave"
-          (click)="toggleAllShippedQty()"
+          (click)="toggleAllUoMQtyExpected()"
           [color]="item._IsShippedAll? 'danger': 'success'"
           [name]="item._IsShippedAll? 'remove-circle-outline': 'checkmark-done-circle-outline' "
         ></ion-icon>
@@ -76,63 +93,76 @@
       <ng-template let-i="row" datatable-cell-template>
         <app-input-control
           [field]="{
-            id: 'QuantityImport',
+            id: 'UoMQuantityExpected',
             type: 'number',
             form: i._formGroup,
             }"
-          (change)="qtyImportedChange(i._formGroup)"
+          (change)="calcTotalAfterTax(i._formGroup)"
         ></app-input-control>
         <ion-icon
-        *ngIf="(i._formGroup.controls.UoMQuantityExpected.value - i._formGroup.controls.QuantityReceived.value) != 0 "
-          (click)="toggleShippedQty(i._formGroup)"
-          [color]="i._formGroup.controls.UoMQuantityExpected.value == i._formGroup.controls.QuantityImport.value ? 'danger' : 'primary'"
+          *ngIf="i._formGroup.controls.QuantityRemainingOpen.value != 0 "
+          (click)="toggleUoMQtyExpected(i._formGroup)"
+          [color]="i._formGroup.controls.UoMQuantityExpected.value == i._formGroup.controls.QuantityRemainingOpen.value ? 'danger' : 'primary'"
           class="min-btn"
-          [name]="i._formGroup.controls.UoMQuantityExpected.value == i._formGroup.controls.QuantityImport.value ? 'remove-circle-outline' : 'checkmark-circle-outline'"
+          [name]="i._formGroup.controls.UoMQuantityExpected.value == i._formGroup.controls.QuantityRemainingOpen.value ? 'remove-circle-outline' : 'checkmark-circle-outline'"
         ></ion-icon>
       </ng-template>
     </datatable-column>
-
-    <datatable-column class="col-uom" name="LOT/Batch" property="IDItem">
+    <datatable-column class="col-price" name="Discount" property="TotalDiscount">
       <ng-template let-i="row" datatable-cell-template>
         <app-input-control
           [field]="{
-            id: 'Lottable0',
-            type: 'text',
-            form: i._formGroup,
-            }"
-        ></app-input-control>
-      </ng-template>
-    </datatable-column>
-
-    <datatable-column class="col-date" name="Manufacture date" property="IDItem">
-      <ng-template let-i="row" datatable-cell-template>
-        <app-input-control
-          [field]="{
-          id: 'Lottable5',
-          type: 'span-date',
-          form: i._formGroup,
-          }"
-        ></app-input-control>
-      </ng-template>
-    </datatable-column>
-
-    <datatable-column class="col-date" name="Expiration date" property="IDItem">
-      <ng-template let-i="row" datatable-cell-template>
-        <app-input-control
-          [field]="{
-        id: 'Lottable6',
-        type: 'span-date',
+        id: 'Discount',
+        type: 'number',
         form: i._formGroup,
-        }"
-        ></app-input-control
-      ></ng-template>
+      }"
+        ></app-input-control>
+      </ng-template>
+    </datatable-column>
+
+    <datatable-column class="col-price" name="Price" property="Price">
+      <ng-template let-i="row" datatable-cell-template>
+        <app-input-control
+          [field]="{
+        id: 'Price',
+        type: 'number',
+        form: i._formGroup,
+      }"
+        ></app-input-control>
+      </ng-template>
+    </datatable-column>
+
+    <datatable-column class="col-price" name="%VAT" property="TaxRate">
+      <ng-template let-i="row" datatable-cell-template>
+        <app-input-control
+          [field]="{
+        id: 'TaxRate',
+        type: 'number',
+        form: i._formGroup,
+      }"
+        ></app-input-control>
+      </ng-template>
+    </datatable-column>
+
+    <datatable-column class="col-price" name="Amount" property="TotalAfterTax">
+      <ng-template let-i="row" datatable-cell-template>
+        <app-input-control
+          [field]="{
+        id: 'Total',
+        type: 'number',
+        form: i._formGroup,
+      }"
+        ></app-input-control>
+      </ng-template>
     </datatable-column>
   </app-data-table>
+
 </ion-content>
 <ion-footer>
   <ion-toolbar>
-    <ion-button *ngIf="showButtonSave" size="large" slot="end" (click)="submitForm()">{{'Save' | translate}}</ion-button>
-    <ion-title *ngIf="!showButtonSave">
+    <!-- *ngIf="showButtonSave" -->
+    <ion-button size="large" slot="end" (click)="submitForm()">{{'Save' | translate}}</ion-button>
+    <!-- <ion-title *ngIf="!showButtonSave">
       <ion-chip>
         <ion-icon name="alert-circle-outline" color="warning"> </ion-icon>
         <ion-label>{{'PO has been entered into the warehouse. See more at ASN:' | translate}} 
@@ -147,6 +177,6 @@
           
         </ion-label>
       </ion-chip>
-    </ion-title>
+    </ion-title> -->
   </ion-toolbar>
 </ion-footer>
