@@ -2,17 +2,18 @@ import { Component } from '@angular/core';
 import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
-import {  PURCHASE_QuotationProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
+import { PURCHASE_QuotationProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
 import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
+import { ApiSetting } from 'src/app/services/static/api-setting';
 @Component({
-    selector: 'app-purchase-quotation',
-    templateUrl: 'purchase-quotation.page.html',
-    styleUrls: ['purchase-quotation.page.scss'],
-    standalone: false
+  selector: 'app-purchase-quotation',
+  templateUrl: 'purchase-quotation.page.html',
+  styleUrls: ['purchase-quotation.page.scss'],
+  standalone: false,
 })
 export class PurchaseQuotationPage extends PageBase {
-  statusList: any =[];
+  statusList: any = [];
   constructor(
     public pageProvider: PURCHASE_QuotationProvider,
     public sysConfigProvider: SYS_ConfigProvider,
@@ -26,49 +27,185 @@ export class PurchaseQuotationPage extends PageBase {
   ) {
     super();
     this.pageConfig.ShowCommandRules = [
-      { Status: 'Open',       ShowBtns: [ 'ShowSubmit',  'ShowApprove',                    'ShowCancel',] },
-      { Status: 'Unapproved', ShowBtns: [ 'ShowSubmit',  'ShowApprove',                    'ShowCancel',] }, 
-      { Status: 'Submitted',  ShowBtns: [                'ShowApprove', 'ShowDisapprove',  'ShowCancel',] }, 
-      { Status: 'Approved',   ShowBtns: [                               'ShowDisapprove',  'ShowCancel',] }, 
-      { Status: 'Confirmed',  ShowBtns: [                'ShowApprove', 'ShowDisapprove',  'ShowCancel',] },                                           
-      { Status: 'Cancelled',  ShowBtns: [ 'ShowSubmit',  'ShowApprove', 'ShowDisapprove',              ]  },   
-      ];
-
-
+      { Status: 'Open', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel'] },
+      { Status: 'Unapproved', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel'] },
+      { Status: 'Submitted', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel'] },
+      { Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel'] },
+      { Status: 'Confirmed', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel'] },
+      { Status: 'Cancelled', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowDisapprove'] },
+    ];
   }
 
   preLoadData(event) {
-   super.preLoadData(event);
-   this.query.Type = 'PurchaseRequest';
-   if (!this.sort.Id) {
-     this.sort.Id = 'Id';
-     this.sortToggle('Id', true);
-   }
-   let sysConfigQuery = ['PRUsedApprovalModule'];
-   Promise.all([
-     this.env.getStatus('PurchaseQuotation'),
-     this.sysConfigProvider.read({ Code_in: sysConfigQuery }),
-   ]).then((values) => {
-     this.statusList = values[0];
-     values[1]['data'].forEach((e) => {
-       if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
-         e.Value = e._InheritedConfig.Value;
-       }
-       this.pageConfig[e.Code] = JSON.parse(e.Value);
-     });
-     super.preLoadData(event);
-   });
+    super.preLoadData(event);
+    this.query.Type = 'PurchaseRequest';
+    if (!this.sort.Id) {
+      this.sort.Id = 'Id';
+      this.sortToggle('Id', true);
+    }
+    let sysConfigQuery = ['PRUsedApprovalModule'];
+    Promise.all([
+      this.env.getStatus('PurchaseQuotation'),
+      this.sysConfigProvider.read({ Code_in: sysConfigQuery }),
+    ]).then((values) => {
+      this.statusList = values[0];
+      values[1]['data'].forEach((e) => {
+        if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
+          e.Value = e._InheritedConfig.Value;
+        }
+        this.pageConfig[e.Code] = JSON.parse(e.Value);
+      });
+      super.preLoadData(event);
+    });
   }
 
   loadedData(event) {
-  this.items.forEach((i) => {
-        i.RequestBranchName = this.env.branchList.find(d=> d.Id == i.IDRequestBranch)?.Name;
-        i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
-        i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
-      });
+    this.items.forEach((i) => {
+      i.RequestBranchName = this.env.branchList.find((d) => d.Id == i.IDRequestBranch)?.Name;
+      i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
+      i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
+    });
     super.loadedData(event);
     console.log(this.items);
   }
 
+  changeSelection(i: any, e?: any): void {
+    super.changeSelection(i, e);
+    this.pageConfig.ShowSubmit = this.pageConfig.ShowApprove = i.IsFilledQuantity;
+  }
 
+  submit() {
+    if (this.submitAttempt) return;
+    this.env
+      .showPrompt(
+        {
+          code: 'Bạn có chắc muốn gửi duyệt {{value}} báo giá đang chọn?',
+          value: this.selectedItems.length,
+        },
+        null,
+        { code: 'Gửi duyệt {{value}} báo giá', value: this.selectedItems.length },
+      )
+      .then((_) => {
+        this.submitAttempt = true;
+        let postDTO = { Ids: [] };
+        postDTO.Ids = this.selectedItems.map((e) => e.Id);
+
+        this.pageProvider.commonService
+          .connect('POST', ApiSetting.apiDomain('PURCHASE/Quotation/Submit/'), postDTO)
+          .toPromise()
+          .then((savedItem: any) => {
+            this.env.publishEvent({
+              Code: this.pageConfig.pageName,
+            });
+            this.submitAttempt = false;
+
+            if (savedItem > 0) {
+              this.env.showMessage('{{value}} orders sent for approval', 'success', savedItem);
+            } else {
+              this.env.showMessage('Please check again, orders must have at least 1 item to be approved', 'warning');
+            }
+          })
+          .catch((err) => {
+            this.submitAttempt = false;
+            console.log(err);
+          });
+      });
+  }
+
+  approve() {
+    if (this.submitAttempt) return;
+
+    this.env
+      .showPrompt(
+        { code: 'Bạn có chắc muốn DUYỆT {{value}} báo giá đang chọn?', value: this.selectedItems.length },
+        null,
+        { code: 'Duyệt {{value}} báo giá', value: this.selectedItems.length },
+      )
+      .then((_) => {
+        this.submitAttempt = true;
+        let postDTO = { Ids: [] };
+        postDTO.Ids = this.selectedItems.map((e) => e.Id);
+
+        this.pageProvider.commonService
+          .connect('POST', ApiSetting.apiDomain('PURCHASE/Quotation/Approve/'), postDTO)
+          .toPromise()
+          .then((savedItem: any) => {
+            this.env.publishEvent({
+              Code: this.pageConfig.pageName,
+            });
+            this.submitAttempt = false;
+
+            if (savedItem > 0) {
+              this.env.showMessage('{{value}} orders approved', 'success', savedItem);
+            } else {
+              this.env.showMessage('Please check again, orders must have at least 1 item to be approved', 'warning');
+            }
+          })
+          .catch((err) => {
+            this.submitAttempt = false;
+            console.log(err);
+          });
+      });
+  }
+
+  disapprove() {
+    if (this.submitAttempt) return;
+    this.env
+      .showPrompt(
+        { code: 'Bạn có chắc muốn không duyệt {{value}} báo giá đang chọn?', value: this.selectedItems.length },
+        null,
+        { code: 'Không phê duyệt {{value}} báo giá', value: this.selectedItems.length },
+      )
+      .then((_) => {
+        this.submitAttempt = true;
+        let postDTO = { Ids: [] };
+        postDTO.Ids = this.selectedItems.map((e) => e.Id);
+
+        this.pageProvider.commonService
+          .connect('POST', ApiSetting.apiDomain('PURCHASE/Quotation/Disapprove/'), postDTO)
+          .toPromise()
+          .then((savedItem: any) => {
+            this.env.publishEvent({
+              Code: this.pageConfig.pageName,
+            });
+            this.env.showMessage('Saving completed!', 'success');
+            this.submitAttempt = false;
+          })
+          .catch((err) => {
+            this.submitAttempt = false;
+            console.log(err);
+          });
+      });
+  }
+
+  cancel() {
+    if (this.submitAttempt) return;
+
+    this.env
+      .showPrompt(
+        { code: 'Bạn có chắc muốn HỦY {{value}} báo giá đang chọn?', value: this.selectedItems.length },
+        null,
+        { code: 'Huỷ {{value}} báo giá', value: this.selectedItems.length },
+      )
+      .then((_) => {
+        this.submitAttempt = true;
+        let postDTO = { Ids: [] };
+        postDTO.Ids = this.selectedItems.map((e) => e.Id);
+
+        this.pageProvider.commonService
+          .connect('POST', ApiSetting.apiDomain('PURCHASE/Quotation/Cancel/'), postDTO)
+          .toPromise()
+          .then((savedItem: any) => {
+            this.env.publishEvent({
+              Code: this.pageConfig.pageName,
+            });
+            this.env.showMessage('Saving completed!', 'success');
+            this.submitAttempt = false;
+          })
+          .catch((err) => {
+            this.submitAttempt = false;
+            console.log(err);
+          });
+      });
+  }
 }

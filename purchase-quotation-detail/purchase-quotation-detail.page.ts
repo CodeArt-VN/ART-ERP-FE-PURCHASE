@@ -126,7 +126,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
   }
 
   loadedData(event) {
-    if (this.item.Status != 'Open') this.pageConfig.canEdit = false;
+  
+    if (!([ 'Open' , 'Confirmed' ,'Disapproved'].includes(this.item.Status))) this.pageConfig.canEdit = false;
     super.loadedData(event);
     if (this.item.SourceType == 'FromPurchaseRequest') {
       this.formGroup.disable();
@@ -139,7 +140,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
       this._vendorDataSource.selected = [...this._vendorDataSource.selected, ...[this.item._Vendor]];
     }
     this._vendorDataSource.initSearch();
-    if (this.item.Status == 'Confirmed') this.pageConfig.ShowCopyToPurchaseOrder = true;
+    if (this.item.Status == 'Approved') this.pageConfig.ShowCopyToPurchaseOrder = true;
     else this.pageConfig.ShowCopyToPurchaseOrder = false;
     if (this.vendorView && this.item.Status == 'Open') this.pageConfig.ShowConfirm = true;
     else this.pageConfig.ShowCanConfirm = false;

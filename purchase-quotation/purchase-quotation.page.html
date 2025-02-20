@@ -108,6 +108,13 @@
         </ng-template>
       </datatable-column>
 
+      <datatable-column class="col-status cell" name="Quoted" property="IsFilledQuantity">
+        <ng-template datatable-filter-template></ng-template>
+        <ng-template let-i="row" datatable-cell-template>
+          <ion-icon *ngIf="i.IsFilledQuantity" class="menu-icon" name="checkmark"></ion-icon>
+        </ng-template>
+      </datatable-column>
+
       <datatable-column class="col-status cell" name="" property="Status">
         <ng-template datatable-filter-template>
           <select
@@ -150,6 +157,7 @@
           </span>
         </ng-template>
       </datatable-column>
+
 
     </app-data-table>
  
