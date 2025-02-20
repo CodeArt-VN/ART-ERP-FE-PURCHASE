@@ -27,12 +27,12 @@ export class PurchaseQuotationPage extends PageBase {
   ) {
     super();
     this.pageConfig.ShowCommandRules = [
-      { Status: 'Open', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel'] },
-      { Status: 'Unapproved', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel'] },
+      { Status: 'Open', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel','ShowDelete','ShowArchive'] },
+      { Status: 'Unapproved', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel','ShowDelete','ShowArchive'] },
       { Status: 'Submitted', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel'] },
-      { Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel'] },
-      { Status: 'Confirmed', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel'] },
-      { Status: 'Cancelled', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowDisapprove'] },
+      { Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel','ShowConfirm'] },
+      { Status: 'Confirmed', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel','ShowDelete'] },
+      { Status: 'Cancelled', ShowBtns: ['ShowDelete','ShowArchive'] },
     ];
   }
 
@@ -71,7 +71,9 @@ export class PurchaseQuotationPage extends PageBase {
 
   changeSelection(i: any, e?: any): void {
     super.changeSelection(i, e);
-    this.pageConfig.ShowSubmit = this.pageConfig.ShowApprove = i.IsFilledQuantity;
+    if(!i.IsFilledQuantity){
+      this.pageConfig.ShowSubmit = this.pageConfig.ShowApprove = false;
+    }
   }
 
   submit() {
