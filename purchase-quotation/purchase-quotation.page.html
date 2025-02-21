@@ -1,5 +1,9 @@
 <ion-header>
   <app-toolbar [page]="this">
+    <ion-button tollbarSelected 
+    (click)="updatePriceList()" title="{{'Update price list' | translate}}" >
+     <ion-icon name="documents-outline"></ion-icon>
+   </ion-button>
   </app-toolbar>
 </ion-header>
 
@@ -64,7 +68,7 @@
         </ng-template>
       </datatable-column>
 
-      <datatable-column class="col-name cell" name="Business partner" property="Id">
+      <datatable-column class="col-name cell" name="Vendor" property="Id">
         <ng-template let-i="row" datatable-cell-template>
           <div *ngIf="i._BusinessPartnerName"  class="col-staff cell">
             {{i._BusinessPartnerName}}

@@ -8,6 +8,10 @@
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
       <!-- *ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder" -->
     </ion-button>
+    <ion-button  
+    (click)="updatePriceList()" title="{{'Update price list' | translate}}" >
+     <ion-icon name="documents-outline"></ion-icon>
+   </ion-button>
   </app-toolbar>
 </ion-header>
 

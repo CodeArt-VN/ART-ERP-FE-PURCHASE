@@ -6,6 +6,7 @@ import { PURCHASE_QuotationProvider, SYS_ConfigProvider } from 'src/app/services
 import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
+import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
 @Component({
   selector: 'app-purchase-quotation',
   templateUrl: 'purchase-quotation.page.html',
@@ -27,12 +28,12 @@ export class PurchaseQuotationPage extends PageBase {
   ) {
     super();
     this.pageConfig.ShowCommandRules = [
-      { Status: 'Open', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel','ShowDelete','ShowArchive'] },
-      { Status: 'Unapproved', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel','ShowDelete','ShowArchive'] },
+      { Status: 'Open', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
+      { Status: 'Unapproved', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
       { Status: 'Submitted', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel'] },
-      { Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel','ShowConfirm'] },
-      { Status: 'Confirmed', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel','ShowDelete'] },
-      { Status: 'Cancelled', ShowBtns: ['ShowDelete','ShowArchive'] },
+      { Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel', 'ShowConfirm'] },
+      { Status: 'Confirmed', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete'] },
+      { Status: 'Cancelled', ShowBtns: ['ShowDelete', 'ShowArchive'] },
     ];
   }
 
@@ -68,7 +69,6 @@ export class PurchaseQuotationPage extends PageBase {
     super.loadedData(event);
     console.log(this.items);
   }
-
 
   submit() {
     if (this.submitAttempt) return;
@@ -203,5 +203,18 @@ export class PurchaseQuotationPage extends PageBase {
             console.log(err);
           });
       });
+  }
+
+  async updatePriceList() {
+    const modal = await this.modalController.create({
+      component: PriceListVersionModalPage,
+      componentProps: { ids: this.selectedItems.map((d) => d.Id) },
+      cssClass: 'modal90',
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      this.env.showMessage('Updated price success', 'success');
+    }
   }
 }
