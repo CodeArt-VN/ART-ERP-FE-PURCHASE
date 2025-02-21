@@ -16,6 +16,7 @@ import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@ang
 import { CommonService } from 'src/app/services/core/common.service';
 import { lib } from 'src/app/services/static/global-functions';
 import { CopyToPurchaseOrderModalPage } from '../copy-to-purchase-order-modal/copy-to-purchase-order-modal.page';
+import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
 
 @Component({
   selector: 'app-purchase-quotation-detail',
@@ -72,6 +73,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
       IDRequester: [''],
       IDRequestBranch: [''],
       IDBusinessPartner: [''],
+      SourceKey:new FormControl({ value: '', disabled: true }),
+      SourceType:new FormControl({ value: '', disabled: true }),
       Id: new FormControl({ value: '', disabled: true }),
       Code: [''],
       Name: [''],
@@ -126,18 +129,18 @@ export class PurchaseQuotationDetailPage extends PageBase {
   }
 
   loadedData(event) {
-  
-    if (!([ 'Open' , 'Confirmed' ,'Unapproved'].includes(this.item.Status))) this.pageConfig.canEdit = false;
-    if(this.item.Status == 'Confirmed' && this.vendorView) this.pageConfig.canEdit = false;
+    if (!['Open', 'Confirmed', 'Unapproved'].includes(this.item.Status)) this.pageConfig.canEdit = false;
+    if (this.item.Status == 'Confirmed' && this.vendorView) this.pageConfig.canEdit = false;
     super.loadedData(event);
     this.setQuotationLines();
+    if (['Closed', 'Approved'].includes(this.item.Status)) this.pageConfig.ShowAddPriceListVersion = true;
+    else this.pageConfig.ShowAddPriceListVersion = false;
 
     if (this.item.SourceType == 'FromPurchaseRequest') {
       this.formGroup.disable();
-      let enableValid = [ 'Submitted' , 'Approved' , 'Closed' ];
+      let enableValid = ['Submitted', 'Approved', 'Closed'];
       if (!enableValid.includes(this.item.Status)) this.formGroup.controls.ValidUntilDate.enable();
     }
-  
 
     if (this.item._Vendor) {
       this._vendorDataSource.selected = [...this._vendorDataSource.selected, ...[this.item._Vendor]];
@@ -168,7 +171,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
       this.formGroup.controls.QuotationLines.disable();
     }
   }
-                       
+
   addLine(line, markAsDirty = false) {
     let groups = <FormArray>this.formGroup.controls.QuotationLines;
     let selectedItem = line._Item;
@@ -315,5 +318,16 @@ export class PurchaseQuotationDetailPage extends PageBase {
     this.debounce(() => {
       super.saveChange2();
     }, 300);
+  }
+
+  async updatePriceList() {
+    const modal = await this.modalController.create({
+      component: PriceListVersionModalPage,
+      componentProps: { ids: [this.item.Id] },
+      cssClass: 'modal90',
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) this.env.showMessage('Updated price success', 'success');
   }
 }

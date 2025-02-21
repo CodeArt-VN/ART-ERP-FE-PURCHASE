@@ -372,6 +372,26 @@
                   <app-form-control
                     [field]="{ id: 'PaymentStatus', type: 'ng-select', label: 'Payment status', dataSource: paymentStatusList, bindValue: 'Code', bindLabel: 'Name', form: formGroup }"
                   ></app-form-control>
+
+                  <app-form-control *ngIf="formGroup.get('SourceType').value && formGroup.get('SourceKey').value "
+                  [field]="{id:'SourceKey', type : 'text',
+                   label: 
+                   item.SourceType == 'FromPurchaseRequest'?'Purchase request' :
+                   item.SourceType =='FromPurchaseQuotation'?'Purchase quotation' : 'Source'
+                  , form : formGroup}"
+                >
+  
+                  <small label class="danger" *ngIf="formGroup.get('SourceType').value">
+                    <a [ngClass]="{ 'no-check-dirty': noCheckDirty }" class="clickable"
+                    (click)="nav(
+                      (item.SourceType == 'FromPurchaseRequest'?'/purchase-request/':
+                      item.SourceType =='FromPurchaseQuotation'?'/purchase-quotation/':item.SourceType)
+                      + formGroup.get('SourceKey').value)"
+                    (mousedown)="$event.stopPropagation()"
+                    >#{{formGroup.get('SourceKey').value }} <ion-icon name="open-outline"></ion-icon
+                    ></a>
+                  </small>
+              </app-form-control>
                 </ion-col>
                 <ion-col size="12" size-sm size-xl="4">
                   <div class="c-control">

@@ -8,6 +8,10 @@
       <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
       <!-- *ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder" -->
     </ion-button>
+    <ion-button *ngIf="pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion"
+    (click)="updatePriceList()" title="{{'Update price list' | translate}}" >
+    <ion-icon name="pricetags-outline"></ion-icon>
+   </ion-button>
   </app-toolbar>
 </ion-header>
 
@@ -358,6 +362,22 @@
                 <app-form-control
                   [field]="{id:'IDBranch', type : 'branch-breadcrumbs', label: 'Branch', form : formGroup, dataSource:env.branchList }"
                 ></app-form-control>
+                <app-form-control *ngIf="formGroup.get('SourceType').value && formGroup.get('SourceKey').value "
+                [field]="{id:'SourceKey', type : 'text',
+                 label: formGroup.get('SourceType').value =='FromPurchaseRequest'?'Purchase request':'Source'
+                , form : formGroup}"
+              >
+
+              <small label class="danger"><ng-container *ngIf="formGroup.get('SourceType').value =='FromPurchaseRequest'">
+                <a
+                [ngClass]="{ 'no-check-dirty': noCheckDirty }"
+                class="clickable"
+                (click)="nav('/purchase-request/' + formGroup.get('SourceKey').value)"
+                (mousedown)="$event.stopPropagation()"
+                >#{{formGroup.get('SourceKey').value }} <ion-icon name="open-outline"></ion-icon
+              ></a>
+              </ng-container> </small>
+            </app-form-control>
               </ion-col>
             </ion-row>
           </ion-grid>

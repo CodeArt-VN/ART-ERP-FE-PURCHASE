@@ -8,6 +8,7 @@ import { PurchaseRequestDetailPage } from './purchase-request-detail.page';
 import { PurchaseItemsComponentPageModule } from './purchase-items/purchase-items.component.module';
 import { PurchaseOrderModalPage } from './purchase-order-modal/purchase-order-modal.page';
 import { PurchaseQuotationModalPage } from './purchase-quotation-modal/purchase-quotation-modal.page';
+import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
 
 const routes: Routes = [
   {
@@ -18,7 +19,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [CommonModule, FormsModule,IonicModule,ReactiveFormsModule, PurchaseItemsComponentPageModule,ShareModule, RouterModule.forChild(routes)],
-  declarations: [PurchaseRequestDetailPage,PurchaseOrderModalPage,PurchaseQuotationModalPage],
-  exports : [PurchaseOrderModalPage,PurchaseQuotationModalPage]
+  declarations: [PurchaseRequestDetailPage,PurchaseOrderModalPage,PurchaseQuotationModalPage,PriceListVersionModalPage],
+  exports : [PurchaseOrderModalPage,PurchaseQuotationModalPage,PriceListVersionModalPage]
 })
 export class PurchaseRequestDetailPageModule {}
