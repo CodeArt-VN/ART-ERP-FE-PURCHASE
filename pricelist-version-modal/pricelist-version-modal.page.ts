@@ -111,7 +111,7 @@ export class PriceListVersionModalPage extends PageBase {
 
   submitForm() {
     let postDATA = {
-      isApply: this.applyPrice,
+      IsApply: this.applyPrice,
       lines: this.items.filter((d) => !d.IDBusinessPartner && d.checked).map((d) => d.Id),
     };
     this.env
@@ -122,9 +122,12 @@ export class PriceListVersionModalPage extends PageBase {
           .toPromise(),
       )
       .then((result: any) => {
-        this.modalController.dismiss(result);
+        this.modal.dismiss(result);
       })
-      .catch((err) => this.env.showMessage(err, 'danger'));
+      .catch((err) => {
+        console.log(err);
+        this.env.showMessage('Failed', 'danger');
+      });
   }
 
   selectItem(item: any) {

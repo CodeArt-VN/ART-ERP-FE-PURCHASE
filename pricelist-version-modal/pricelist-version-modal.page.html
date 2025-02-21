@@ -7,16 +7,16 @@
     <ion-buttons slot="end">
       <ion-buttons style="justify-content: flex-end">
         <ng-container *ngIf="priceListForVendor?.length == 1">
-          <div class="c-control" style="margin-bottom: 0px; max-width: 250px; min-width: 250px">
+          <div class="c-control" style="margin-bottom: 0px; max-width: 250px; min-width: 250px; margin-right: 0.5rem;">
             <input class="c-input" type="text" disabled="true" [value]="priceListForVendor[0]?._PriceList?.Name" />
           </div>
         </ng-container>
-        <div class="c-control" style="margin-bottom: 0px; max-width: 250px; min-width: 250px">
-          <label class="c-label">{{'Áp dụng giá' | translate}} </label>
+        <div class="c-control" style="display: flex; align-items: center; margin-bottom: 0px; max-width: 250px; min-width: 120px">
+          <label class="c-label" style="margin-bottom: 0;">{{'Áp dụng giá' | translate}} </label>
           <input class="c-checkbox" type="checkbox" [(ngModel)]="applyPrice" />
         </div>
       </ion-buttons>
-      <ion-button fill="solid" size="small" (click)="submitForm()">{{'Submit' | translate}}</ion-button>
+      <ion-button *ngIf="!(priceListForVendor?.length == 0)" fill="solid" size="small" (click)="submitForm()">{{'Submit' | translate}}</ion-button>
       <ion-button (click)="modal.dismiss()">
         <ion-icon name="close"></ion-icon>
       </ion-button>
@@ -99,8 +99,14 @@
   </app-data-table>
 </ion-content>
 
-<!-- <ion-footer>
+<ion-footer *ngIf="priceListForVendor?.length == 0">
   <ion-toolbar>
-    <ion-button size="large" slot="end" (click)="submitForm()">{{'Submit' | translate}}</ion-button>
+    <ion-title >
+      <ion-chip>
+        <ion-icon name="alert-circle-outline" color="warning"> </ion-icon>
+        <ion-label>{{'Không tìm thấy bảng giá của NCC' | translate}} 
+        </ion-label>
+      </ion-chip>
+    </ion-title>
   </ion-toolbar>
-</ion-footer> -->
+</ion-footer>

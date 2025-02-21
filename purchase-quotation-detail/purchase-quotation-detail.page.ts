@@ -324,11 +324,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
     });
     await modal.present();
     const { data } = await modal.onWillDismiss();
-    if (data) {
-      // this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
-      //   this.nav('/purchase-order/' + data.Id);
-      // });
-      this.env.showMessage('Updated price success', 'success');
-    }
+    if (data) this.env.showMessage('Updated price success', 'success');
   }
 }
