@@ -31,9 +31,10 @@ export class PurchaseQuotationPage extends PageBase {
       { Status: 'Open', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
       { Status: 'Unapproved', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
       { Status: 'Submitted', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel'] },
-      { Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel', 'ShowConfirm'] },
+      { Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel', 'ShowConfirm','ShowAddPriceListVersion'] },
       { Status: 'Confirmed', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete'] },
       { Status: 'Cancelled', ShowBtns: ['ShowDelete', 'ShowArchive'] },
+      { Status: 'Closed', ShowBtns: ['ShowAddPriceListVersion'] },
     ];
   }
 

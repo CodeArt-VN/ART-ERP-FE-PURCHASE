@@ -114,6 +114,8 @@ export class PurchaseOrderDetailPage extends PageBase {
       // ForeignName: [''],
       Remark: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
       // ForeignRemark: [''],
+      SourceKey:new FormControl({ value: '', disabled: true }),
+      SourceType:new FormControl({ value: '', disabled: true }),
       OrderDate: new FormControl({ value: '', disabled: true }),
       ExpectedReceiptDate: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
       ReceiptedDate: new FormControl({ value: '', disabled: true }),

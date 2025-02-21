@@ -68,7 +68,7 @@ export class PriceListVersionModalPage extends PageBase {
           ];
         } else {
           let id = lib.generateUID();
-          this.items.push({ ...p, Id: id, Name: 'Vendor #' + p.IDBusinessPartner });
+          this.items.push({ ...p, Id: id, Name: p.IDBusinessPartner+' - '+ p.Name });
           this.items = [
             ...this.items,
             ...p.QuotationLines.map((d) => {

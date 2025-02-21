@@ -73,6 +73,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
       IDRequester: [''],
       IDRequestBranch: [''],
       IDBusinessPartner: [''],
+      SourceKey:new FormControl({ value: '', disabled: true }),
+      SourceType:new FormControl({ value: '', disabled: true }),
       Id: new FormControl({ value: '', disabled: true }),
       Code: [''],
       Name: [''],
@@ -131,6 +133,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
     if (this.item.Status == 'Confirmed' && this.vendorView) this.pageConfig.canEdit = false;
     super.loadedData(event);
     this.setQuotationLines();
+    if (['Closed', 'Approved'].includes(this.item.Status)) this.pageConfig.ShowAddPriceListVersion = true;
+    else this.pageConfig.ShowAddPriceListVersion = false;
 
     if (this.item.SourceType == 'FromPurchaseRequest') {
       this.formGroup.disable();
