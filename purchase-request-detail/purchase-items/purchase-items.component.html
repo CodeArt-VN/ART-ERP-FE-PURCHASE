@@ -2,7 +2,7 @@
 	<form [formGroup]="formGroup">
 		<ng-container formArrayName="OrderLines">
 			<div class="table-contain">
-				<div id="ng-select-table" style="position: absolute; z-index: 30005"></div>
+				
 				<app-data-table [rows]="formGroup.get('OrderLines')['controls']" [showSpinner]="pageConfig.showSpinner">
 					<datatable-empty-message subMessage="Please click add new to start...">
 						<ng-template datatable-empty-message-template>

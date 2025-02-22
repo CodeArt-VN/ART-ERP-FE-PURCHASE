@@ -15,6 +15,8 @@
 
 <ion-content appScrollbarTheme class="ion-padding">
 	<div id="ng-select-header" style="position: absolute; z-index: 30005"></div>
+	<div id="ng-select-table" style="position: absolute; z-index: 30005"></div>
+	
 	<div class="main-view" *ngIf="item && pageConfig.showSpinner==false">
 		<ion-grid fixed>
 			<form [formGroup]="formGroup">
@@ -36,7 +38,7 @@
 							(change)="saveChange()"
 						></app-form-control>
 
-						<app-form-control (change)="saveChange();" [field]="{id: 'Name', type: 'text', label: 'Name', form: formGroup}"></app-form-control>
+						<app-form-control (change)="saveChange();" [field]="{id: 'Name', type: 'text', label: 'Title', form: formGroup}"></app-form-control>
 
 						<app-form-control
 							[field]="{id: 'IDVendor', label: 'Vendor', type: 'ng-select-bp', form: formGroup, dataSource: _vendorDataSource, bindLabel: 'Name', bindValue: 'Id', clearable: true, appendTo: '#ng-select-header' }"
@@ -69,7 +71,7 @@
 			</form>
 		</ion-grid>
 
-		<div class="row-full shadow full-screen">
+		<div class="row-full shadow safe-max-width" style="max-width: 1710px;">
 			<ion-toolbar color="primary">
 				<ion-segment scrollable="true" (ionChange)="segmentChanged($event)" [value]="segmentView">
 					<ion-segment-button value="s1">
