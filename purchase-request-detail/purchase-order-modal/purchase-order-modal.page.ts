@@ -87,11 +87,20 @@ export class PurchaseOrderModalPage extends PageBase {
 		// this.selectedItems = this.isAllChecked ? [...this.items.filter(d=> d.checked)] : [];
 	}
 	changeVendor(e) {
+		this.selectedItems = [];
 		this.orderLines.forEach((i) => {
-			i.disabled = i.IDVendor ? i.IDVendor != e.Id : !i.Vendor && i._Vendors.some((v) => v.Id == e.Id) ? false : true;
-			i.checked = i.IDVendor == e.Id;
-			super.changeSelection(i);
+			i.checked = false;
+			i.disabled = false;
 		});
+
+		setTimeout(() => {
+			this.orderLines.forEach((i) => {
+				const canNotSelect = i.IDVendor ? i.IDVendor != e.Id : !i.Vendor && i._Vendors.some((v) => v.Id == e.Id) ? false : true;
+				i.disabled = canNotSelect;
+				i.checked = !canNotSelect;
+				super.changeSelection(i);
+			});
+		}, 10);
 	}
 	changeSelection(i, e = null) {
 		i.checked = !i.checked;

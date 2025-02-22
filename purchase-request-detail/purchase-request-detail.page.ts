@@ -60,7 +60,6 @@ export class PurchaseRequestDetailPage extends PageBase {
 	) {
 		super();
 		this.pageConfig.isDetailPage = true;
-		this.pageConfig.canCopyToPO = false;
 		this.formGroup = this.formBuilder.group({
 			IDBranch: [this.env.selectedBranch, Validators.required],
 			IDRequester: [''],
@@ -112,8 +111,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 	}
 
 	loadedData(event) {
-		//this.setOrderLines();
-		// this.formGroup.get('Type').markAsDirty();
+
 		if (!this.item.Id) {
 			this.item.IDRequester = this.env.user.StaffID;
 			this.item._Requester = {
@@ -146,12 +144,9 @@ export class PurchaseRequestDetailPage extends PageBase {
 			this.formGroup.disable();
 			this.pageConfig.canEdit = false;
 		}
-		if (this.formGroup.get('Status').value == 'Approved' || this.formGroup.get('Status').value == 'Open') {
-			this.pageConfig.canCopyToPO = true;
-			// todo : check theem dk da đủ line chưa
-		}
+		
 		this.getNearestCompany(this.env.selectedBranch);
-		// if(this.item.Status )
+		
 	}
 
 	removeItem(Ids) {

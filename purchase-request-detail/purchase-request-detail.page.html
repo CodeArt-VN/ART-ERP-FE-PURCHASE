@@ -1,6 +1,10 @@
 <ion-header>
 	<app-toolbar [page]="this">
-		<ion-button *ngIf="pageConfig.canCopyToPO && formGroup.get('ContentType').value != 'Service'" (click)="createPO()" title="{{'Create PO' | translate}}">
+		<ion-button
+			*ngIf="pageConfig.canCopyToPO && formGroup.get('ContentType').value != 'Service' && (formGroup.get('Status').value == 'Approved' || formGroup.get('Status').value == 'Open')"
+			(click)="createPO()"
+			title="{{'Cpoy to purchase order' | translate}}"
+		>
 			<ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
 		</ion-button>
 		<ion-button
@@ -137,4 +141,6 @@
 		</div>
 	</div>
 	<app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>
+
+	{{pageConfig | json}}
 </ion-content>

@@ -1,7 +1,7 @@
 <ion-header>
 	<ion-toolbar>
-		<ion-buttons slot="start" class="ion-hide-sm-down_">
-			<ion-button color="dark" class="ion-hide-sm-down"> {{'Select order' | translate}} </ion-button>
+		<ion-buttons slot="start">
+			<ion-button color="dark"> {{'Copy to purchase order' | translate}} </ion-button>
 		</ion-buttons>
 
 		<ion-buttons slot="primary">
@@ -9,19 +9,16 @@
 				<span>{{'Vendor'|translate}}</span> &nbsp;
 				<div class="c-control" style="margin-bottom: 0px; max-width: 250px; min-width: 250px">
 					<app-input-control
-						[field]="{ id:'IDVendor',label:'Vendor',type:'ng-select',
-        dataSource:vendorList,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
-        form:formGroup}"
+						[field]="{ id:'IDVendor',label:'Vendor',type:'ng-select', dataSource:vendorList,bindLabel:'Name',bindValue:'Id', form:formGroup}"
 						(change)="changeVendor($event)"
-					>
-					</app-input-control>
+					></app-input-control>
 				</div>
 			</ion-buttons>
 
 			<span class="split ion-hide-sm-down">|</span>
 
 			<ion-button [disabled]="selectedItems.length==0" fill="solid" size="small" color="primary" (click)="submit()">
-				&nbsp;{{'Add' | translate}} {{selectedItems.length}} {{'Order' | translate}}&nbsp;
+				&nbsp;{{'Copy {{value}} item(s) to PO' | translate}} {{selectedItems.length}} &nbsp;
 			</ion-button>
 
 			<ion-button (click)="refresh()" title="{{'Refresh' | translate}}">
