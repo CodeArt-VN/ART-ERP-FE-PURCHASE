@@ -8,7 +8,7 @@
     >
       <ion-icon name="cart-outline"></ion-icon>
     </ion-button>
-    <ion-button title="Tạo hóa đơn" *ngIf="pageConfig.canCreateInvoice" (click)="createInvoice()">
+    <ion-button title="{{'Copy to A/P invoice' | translate}}" *ngIf="pageConfig.canCopyToAPInvoice" (click)="createInvoice()">
       <ion-icon slot="icon-only" name="receipt-outline"></ion-icon>
     </ion-button>
     <ion-button

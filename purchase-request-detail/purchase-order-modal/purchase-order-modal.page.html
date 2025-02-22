@@ -47,7 +47,7 @@
     (filter)="onDatatableFilter($event)"
     (sort)="onSort($event)" 
     [(query)]="query"
-    (activate)="changeSelection($event)"
+    (selectedRowsChange)="showCommandBySelectedRows($event)"
     (dataInfinite)="loadData($event)"
 		[showFilter]="pageConfig.isShowSearch"
     [showSpinner]="pageConfig.showSpinner" >

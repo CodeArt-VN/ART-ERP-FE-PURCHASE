@@ -1,143 +1,140 @@
 <ion-header>
-  <app-toolbar [page]="this">
-  
-    <ion-button *ngIf="pageConfig.canCreatePO && formGroup.get('ContentType').value != 'Service'" (click)="createPO()" title="{{'Create PO' | translate}}" >
-      <ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
-    </ion-button>
-    <ion-button *ngIf="pageConfig.canSendRequestQuotation 
-    && formGroup.get('ContentType').value != 'Service'
-    && formGroup.get('Status').value == 'Approved'"
-     (click)="sendRequestQuotationToVendor()" title="{{'Send request quotation' | translate}}" >
-      <ion-icon name="documents-outline"></ion-icon>
-    </ion-button>
-  </app-toolbar>
+	<app-toolbar [page]="this">
+		<ion-button *ngIf="pageConfig.canCopyToPO && formGroup.get('ContentType').value != 'Service'" (click)="createPO()" title="{{'Create PO' | translate}}">
+			<ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
+		</ion-button>
+		<ion-button
+			*ngIf="pageConfig.canCopyToPurchaseQuotation && formGroup.get('ContentType').value != 'Service' && formGroup.get('Status').value == 'Approved'"
+			(click)="sendRequestQuotationToVendor()"
+			title="{{'Send quote request' | translate}}"
+		>
+			<ion-icon name="documents-outline"></ion-icon>
+		</ion-button>
+	</app-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme class="ion-padding">
-  <div id="ng-select-header" style="position: absolute; z-index: 30005"></div>
-  <div class="main-view" *ngIf="item && pageConfig.showSpinner==false">
-    <ion-grid fixed>
-      <form [formGroup]="formGroup">
-        <ion-row class="hr-group">
-          <ion-col size="12" size-sm="12" size-md="12" size-xl="3">
-            <ion-list-header class="ion-no-padding">
-              <ion-label color="primary">{{'Purchase order' | translate}}</ion-label>
-            </ion-list-header>
-          </ion-col>
-          <ion-col size="12" size-sm size-xl="4">
-            <app-form-control (change)="saveChange();"
-            [field]="{id:'Name', type : 'text', label:'Name', form : formGroup}"></app-form-control>
-
-              <app-form-control (change)="saveChange()"
-              [field]="{id :'Code', label:'Code' ,
-              type:'text',form:formGroup}">
-            </app-form-control>
-     
-            <app-form-control
-              [field]="{id:'IDVendor',label:'Vendor', type : 'ng-select-bp', form : formGroup,  dataSource: _vendorDataSource,  bindLabel: 'Name',  bindValue: 'Id',clearable:true, appendTo:'#ng-select-header' }"
-              (change)="changeVendor($event)"></app-form-control>
-           
-            <app-form-control [field]="{id :'ContentType', label:'Content type' ,
-               type:'ng-select',dataSource:contentTypeList,
-               bindLabel:'Name',bindValue:'Code' ,form:formGroup}" (change)="changeContentType($event)">
-            </app-form-control>
-            <app-form-control (change)="saveChange();"
-            [field]="{id:'Status', type : 'ng-select', dataSource:statusList, bindLabel:'Name', bindValue:'Code', label:'Status', form : formGroup}">
-          </app-form-control>
-						<app-form-control [field]="{id:'Remark', type : 'textarea', label: 'Remark', form : formGroup }" (change)="saveChange()"></app-form-control>
-
-          </ion-col>
-          <ion-col size="12" size-sm size-xl="4">
-        
-            <app-form-control [field]="{id :'RequiredDate', label:'Required date' ,
-              type:'datetime-local',form:formGroup}"
-              (change) = "changeRequiredDate($event)">
-            </app-form-control>
-
-            <app-form-control [field]="{id :'DocumentDate', label:'Document date' ,
-            type:'datetime-local',form:formGroup}"
-            (change) = "changeDate($event)">
-          </app-form-control>
-
-            <app-form-control [field]="{id :'PostingDate', label:'Posting date' ,
-              type:'datetime-local',form:formGroup}"
-              (change) = "changeDate($event)">
-            </app-form-control>
-
-            <app-form-control [field]="{id :'DueDate', label:'Due date' ,
-              type:'datetime-local',form:formGroup}"
-              (change) = "changeDate($event)">
-            </app-form-control>
-
-            <app-form-control  
-            [field]="{branchConfig:{showingType:'Department',selectedBranch:selectedRequestBranch},
-              id:'IDRequestBranch', label:'Branch request', type : 'ng-select-branch', form : formGroup,  dataSource: branchList,  bindLabel: 'Name',  bindValue: 'Id' }"
-            (change)="saveChange()"></app-form-control>
-            <app-form-control [clearable]="true" 
-            [field]="{id:'IDRequester', label:'Requester', type : 'ng-select-staff', form : formGroup,  dataSource: _staffDataSource,  bindLabel: 'FullName',  bindValue: 'Id' }"
-            (change)="saveChange()"></app-form-control>
-
-            <div class="c-control">
-              <label class="c-label" for="TotalAfterTax">{{'Value' | translate}}
-                <span
-                  *ngIf="!formGroup.controls.TotalAfterTax.valid && !formGroup.controls.TotalAfterTax.pending && (formGroup.controls.TotalAfterTax.dirty || submitAttempt)"
-                  ion-text color="danger">(*)</span>
-              </label>
-              <span class="c-input disable">
-                <b>{{calcTotalAfterTax() | number: '1.0-0'}}</b>
-              </span>
-            </div>
-          </ion-col>
-        </ion-row>
-      </form>
-    </ion-grid>
-
-    <div class="row-full shadow full-screen">
-      <ion-toolbar color="primary">
-        <ion-segment scrollable="true" (ionChange)="segmentChanged($event)" [value]="segmentView">
-          <ion-segment-button value="s1">
-            <ion-label>{{'Product list' | translate}}</ion-label>
-          </ion-segment-button>
-          <ion-segment-button value="s2">
-            <ion-label>{{'Other information' | translate}}</ion-label>
-          </ion-segment-button>
-        </ion-segment>
-      </ion-toolbar>
-      <div *ngIf="segmentView == 's1'" >
-        <app-purchase-items (renderFormArray)="renderFormArray($event)"
-        [contentType]="_currentContentType"
-        [IDPurchaseRequest]="formGroup.get('Id').value"
-        [canEdit]="pageConfig.canEdit" (onChange)="saveChange()"
-        [IDVendor]="formGroup.get('IDVendor').value"
-        [orderLines]="item.OrderLines"
-         (removeItem)="removeItem($event)"
-         (onRefresh)="refresh()">
-        </app-purchase-items>
-      </div>
-      <div *ngIf="segmentView == 's2'">
-        <div class="ion-padding">
-          <ion-grid fixed>
-				<ion-row class="hr-group" *ngIf="item?.Id">
+	<div id="ng-select-header" style="position: absolute; z-index: 30005"></div>
+	<div class="main-view" *ngIf="item && pageConfig.showSpinner==false">
+		<ion-grid fixed>
+			<form [formGroup]="formGroup">
+				<ion-row class="hr-group">
 					<ion-col size="12" size-sm="12" size-md="12" size-xl="3">
 						<ion-list-header class="ion-no-padding">
-							<ion-label color="primary">{{'Other information' | translate}}</ion-label>
+							<ion-label color="primary">{{'Purchase request' | translate}}</ion-label>
 						</ion-list-header>
 					</ion-col>
 					<ion-col size="12" size-sm size-xl="4">
-						<app-form-control [field]="{id:'CreatedBy', type : 'text', label: 'Created by', form : formGroup }"></app-form-control>
-						<app-form-control [field]="{id:'CreatedDate', type : 'span-datetime', label: 'Created date', form : formGroup }"></app-form-control>
-						<app-form-control [field]="{id:'ModifiedBy', type : 'text', label: 'Last modified by', form : formGroup }"></app-form-control>
-						<app-form-control [field]="{id:'ModifiedDate', type : 'span-datetime', label: 'Last modified date', form : formGroup }"></app-form-control>
+						<app-form-control
+							[field]="{branchConfig: {showingType: 'ne_[Warehouse,TitlePosition]', selectedBranch: selectedRequestBranch}, id: 'IDRequestBranch', label: 'Department requires purchasing', type: 'ng-select-branch', form: formGroup, dataSource: branchList, bindLabel: 'Name', bindValue: 'Id' }"
+							(change)="saveChange()"
+						></app-form-control>
+
+						<app-form-control
+							[clearable]="true"
+							[field]="{id: 'IDRequester', label: 'Requester', type: 'ng-select-staff', form: formGroup, dataSource: _staffDataSource, bindLabel: 'FullName', bindValue: 'Id' }"
+							(change)="saveChange()"
+						></app-form-control>
+
+						<app-form-control (change)="saveChange();" [field]="{id: 'Name', type: 'text', label: 'Name', form: formGroup}"></app-form-control>
+
+						<app-form-control
+							[field]="{id: 'IDVendor', label: 'Vendor', type: 'ng-select-bp', form: formGroup, dataSource: _vendorDataSource, bindLabel: 'Name', bindValue: 'Id', clearable: true, appendTo: '#ng-select-header' }"
+							(change)="changeVendor($event)"
+						></app-form-control>
 					</ion-col>
 					<ion-col size="12" size-sm size-xl="4">
-						<app-form-control [field]="{id:'IDBranch', type : 'branch-breadcrumbs', label: 'Branch', form : formGroup, dataSource:env.branchList }"></app-form-control>
+						<app-form-control
+							(change)="saveChange();"
+							[field]="{id: 'Status', label: 'Status', type: 'ng-select-status', dataSource: statusList, bindLabel: 'Name', bindValue: 'Code', form: formGroup}"
+						></app-form-control>
+
+						<app-form-control [field]="{id: 'TotalAfterTax', label: 'Total', type: 'span-text', form: formGroup}">
+							<ng-template input-control-template>
+								<b>{{calcTotalAfterTax() | number: '1.0-0'}}</b>
+							</ng-template>
+						</app-form-control>
+
+						<app-form-control
+							[field]="{id: 'RequiredDate', label: 'Required date', type: 'datetime-local', form: formGroup}"
+							(change)="changeRequiredDate($event)"
+						></app-form-control>
+
+						<app-form-control
+							[field]="{id: 'ContentType', label: 'Content type', type: 'ng-select', dataSource: contentTypeList, bindLabel: 'Name', bindValue: 'Code', form: formGroup}"
+							(change)="changeContentType($event)"
+						></app-form-control>
 					</ion-col>
 				</ion-row>
-        </ion-grid>
-        </div>
+			</form>
+		</ion-grid>
+
+		<div class="row-full shadow full-screen">
+			<ion-toolbar color="primary">
+				<ion-segment scrollable="true" (ionChange)="segmentChanged($event)" [value]="segmentView">
+					<ion-segment-button value="s1">
+						<ion-label>{{'Product list' | translate}}</ion-label>
+					</ion-segment-button>
+					<ion-segment-button value="s2">
+						<ion-label>{{'Other information' | translate}}</ion-label>
+					</ion-segment-button>
+				</ion-segment>
+			</ion-toolbar>
+			<div *ngIf="segmentView == 's1'">
+				<app-purchase-items
+					(renderFormArray)="renderFormArray($event)"
+					[contentType]="_currentContentType"
+					[IDPurchaseRequest]="formGroup.get('Id').value"
+					[canEdit]="pageConfig.canEdit"
+					(onChange)="saveChange()"
+					[IDVendor]="formGroup.get('IDVendor').value"
+					[orderLines]="item.OrderLines"
+					(removeItem)="removeItem($event)"
+					(onRefresh)="refresh()"
+				>
+				</app-purchase-items>
 			</div>
-      
-    </div>
-  </div>
-  <app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>
+			<div *ngIf="segmentView == 's2'">
+				<div class="ion-padding">
+					<ion-grid fixed>
+						<ion-row class="hr-group" *ngIf="item?.Id">
+							<ion-col size="12" size-sm="12" size-md="12" size-xl="3">
+								<ion-list-header class="ion-no-padding">
+									<ion-label color="primary">{{'Other information' | translate}}</ion-label>
+								</ion-list-header>
+							</ion-col>
+							<ion-col size="12" size-sm size-xl="4">
+								<app-form-control
+									[field]="{id: 'IDBranch', type: 'branch-breadcrumbs', label: 'Branch', form: formGroup, dataSource: env.branchList }"
+								></app-form-control>
+								<app-form-control [field]="{id: 'CreatedBy', type: 'text', label: 'Created by', form: formGroup }"></app-form-control>
+								<app-form-control [field]="{id: 'CreatedDate', type: 'span-datetime', label: 'Created date', form: formGroup }"></app-form-control>
+								<app-form-control [field]="{id: 'ModifiedBy', type: 'text', label: 'Last modified by', form: formGroup }"></app-form-control>
+								<app-form-control [field]="{id: 'ModifiedDate', type: 'span-datetime', label: 'Last modified date', form: formGroup }"></app-form-control>
+							</ion-col>
+							<ion-col size="12" size-sm size-xl="4">
+								
+
+								<app-form-control
+									[field]="{id: 'DocumentDate', label: 'Document date', type: 'datetime-local', form: formGroup}"
+									(change)="changeDate($event)"
+								></app-form-control>
+
+								<app-form-control
+									[field]="{id: 'PostingDate', label: 'Posting date', type: 'datetime-local', form: formGroup}"
+									(change)="changeDate($event)"
+								></app-form-control>
+
+								<app-form-control [field]="{id: 'DueDate', label: 'Due date', type: 'datetime-local', form: formGroup}" (change)="changeDate($event)">
+								</app-form-control>
+
+								<app-form-control [field]="{id: 'Remark', type: 'textarea', form: formGroup }" (change)="saveChange()"></app-form-control>
+							</ion-col>
+						</ion-row>
+					</ion-grid>
+				</div>
+			</div>
+		</div>
+	</div>
+	<app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>
 </ion-content>

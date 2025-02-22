@@ -1,12 +1,10 @@
-import { Component } from '@angular/core';
-import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
-import { EnvService } from 'src/app/services/core/env.service';
-import { PageBase } from 'src/app/page-base';
-import {  PURCHASE_RequestProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
 import { Location } from '@angular/common';
-import { lib } from 'src/app/services/static/global-functions';
+import { Component } from '@angular/core';
+import { AlertController, LoadingController, ModalController, NavController, PopoverController } from '@ionic/angular';
+import { PageBase } from 'src/app/page-base';
+import { EnvService } from 'src/app/services/core/env.service';
 import { ApiSetting } from 'src/app/services/static/api-setting';
-import { environment } from 'src/environments/environment';
+import { PURCHASE_RequestProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
 
 @Component({
     selector: 'app-purchase-request',
@@ -16,12 +14,7 @@ import { environment } from 'src/environments/environment';
 })
 export class PurchaseRequestPage extends PageBase {
   statusList = [];
-  paymentStatusList = [];
-  showSubmit = false;
-  showApprove = false;
-  showCancel = false;
-  showDisapprove = false;
-  imgPath ='';
+
   constructor(
     public pageProvider: PURCHASE_RequestProvider,
     public sysConfigProvider: SYS_ConfigProvider,
@@ -34,21 +27,33 @@ export class PurchaseRequestPage extends PageBase {
     public location: Location,
   ) {
     super();
-    this.imgPath = environment.staffAvatarsServer;
+   
+    // this.pageConfig.ShowCommandRules = [
+    //   { Status: 'Draft',      ShowBtns: ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit',  'ShowApprove',                  'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Mới
+    //   { Status: 'Unapproved', ShowBtns: ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit',  'ShowApprove',                    'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Không duyệt
+    //   { Status: 'Submitted',  ShowBtns: ['ShowApprove', 'ShowDisapprove',  'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Chờ duyệt
+    //   { Status: 'Approved',   ShowBtns: [                                                                            'ShowDisapprove',  'ShowCancel',               'ShowArchive','ShowCopyToPurchaseQuotation'] }, // Đã duyệt
+    //   { Status: 'QuotationSent',  ShowBtns: [] }, // Đã giao hàng
+    //   { Status: 'Closed',       ShowBtns: [] }, // Đã xong
+    //   { Status: 'Cancelled',  ShowBtns: [] }  // Đã hủy
+    // ];
+
     this.pageConfig.ShowCommandRules = [
-      { Status: 'Draft',      ShowBtns: ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit',  'ShowApprove',                  'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Mới
-      { Status: 'Unapproved', ShowBtns: ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit',  'ShowApprove',                    'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Không duyệt
-      { Status: 'Submitted',  ShowBtns: ['ShowApprove', 'ShowDisapprove',  'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Chờ duyệt
-      { Status: 'Approved',   ShowBtns: [                                                                            'ShowDisapprove',  'ShowCancel',               'ShowArchive','ShowSendRequestQuotation'] }, // Đã duyệt
-      { Status: 'QuotationSent',  ShowBtns: [] }, // Đã giao hàng
-      { Status: 'Closed',       ShowBtns: [] }, // Đã xong
-      { Status: 'Cancelled',  ShowBtns: [] }  // Đã hủy
+			{ Status: 'Draft', ShowBtns: ['ShowChangeBranch', 'ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Mới
+			{ Status: 'Unapproved', ShowBtns: ['ShowChangeBranch', 'ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Không duyệt
+			{ Status: 'Submitted', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Chờ duyệt
+			{ Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel', 'ShowArchive', 'ShowCopyToPurchaseQuotation'] }, // Đã duyệt
+
+			{ Status: 'Open', ShowBtns: ['ShowArchive'] }, // Đang xử lý
+			{ Status: 'Closed', ShowBtns: ['ShowArchive'] }, // Đã xong
+
+			{ Status: 'Splitted', ShowBtns: ['ShowArchive'] }, // Đơn đã chia
+			{ Status: 'Merged', ShowBtns: ['ShowArchive'] }, // Đơn đã gộp
     ];
 
   }
 
   preLoadData(event) {
-    this.query.Type = 'PurchaseRequest';
     if (!this.sort.Id) {
       this.sort.Id = 'Id';
       this.sortToggle('Id', true);
@@ -71,9 +76,9 @@ export class PurchaseRequestPage extends PageBase {
 
   loadedData(event) {
     this.items.forEach((i) => {
-      i.RequestBranchName = this.env.branchList.find(d=> d.Id == i.IDRequestBranch)?.Name;
-      i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
-      i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
+      i._Status = this.statusList.find((d) => d.Code == i.Status);
+      i._requestBranchName = this.env.branchList.find(d=> d.Id == i.IDRequestBranch)?.Name;
+      i._requesterName = i._Requester?.FullName;
     });
     super.loadedData(event);
     if (this.pageConfig['PRUsedApprovalModule']) {

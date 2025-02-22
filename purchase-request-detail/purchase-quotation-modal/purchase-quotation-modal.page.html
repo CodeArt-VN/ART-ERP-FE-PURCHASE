@@ -49,6 +49,7 @@
           <span *ngIf="i.IDItem"><b>{{i._Item?.Code}} - {{i._Item?.Name}} </b> </span>
         </ng-container>
         <ng-container *ngIf="!i.IDItem">
+          <span class="spacing"></span>
           <span>
             <a
               [href]="'#/'+'business-partner/'+i.Id"

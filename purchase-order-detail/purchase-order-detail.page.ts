@@ -571,7 +571,7 @@ export class PurchaseOrderDetailPage extends PageBase {
       .showLoading(
         'Please wait for a few moments',
         this.pageProvider.commonService
-          .connect('POST', 'PURCHASE/Order/CreateInvoice/', { Ids: [this.item.Id] })
+          .connect('POST', 'PURCHASE/Order/CopyToAPInvoice/', { Ids: [this.item.Id] })
           .toPromise(),
       )
       .then((resp: any) => {
