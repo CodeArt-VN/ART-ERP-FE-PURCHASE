@@ -7,13 +7,7 @@ import { PurchaseOrderPage } from './purchase-order.page';
 import { ShareModule } from 'src/app/share.module';
 
 @NgModule({
-  imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    ShareModule,
-    RouterModule.forChild([{ path: '', component: PurchaseOrderPage }]),
-  ],
-  declarations: [PurchaseOrderPage],
+	imports: [IonicModule, CommonModule, FormsModule, ShareModule, RouterModule.forChild([{ path: '', component: PurchaseOrderPage }])],
+	declarations: [PurchaseOrderPage],
 })
 export class PurchaseOrderPageModule {}

@@ -6,7 +6,6 @@ import { PageBase } from 'src/app/page-base';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PROD_ItemInVendorProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
 
-
 @Component({
 	selector: 'app-purchase-items',
 	templateUrl: './purchase-items.component.html',
@@ -67,7 +66,6 @@ export class PurchaseItemsComponent extends PageBase {
 	loadData() {
 		this.items = [];
 		super.loadedData();
-		
 	}
 	setOrderLines() {
 		this.formGroup.controls.OrderLines = new FormArray([]);

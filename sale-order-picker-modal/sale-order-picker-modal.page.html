@@ -1,11 +1,11 @@
 <ion-header>
-  <ion-toolbar class="no-padding">
-    <ion-buttons slot="start" class="ion-hide-sm-down">
-      <ion-button color="dark"> {{'Select order' | translate}} </ion-button>
-    </ion-buttons>
+	<ion-toolbar class="no-padding">
+		<ion-buttons slot="start" class="ion-hide-sm-down">
+			<ion-button color="dark"> {{'Select order' | translate}} </ion-button>
+		</ion-buttons>
 
-    <ion-buttons slot="primary">
-      <!-- <select (change)="quickSelectChange('route')" [(ngModel)]="quickSelect.idRoute">
+		<ion-buttons slot="primary">
+			<!-- <select (change)="quickSelectChange('route')" [(ngModel)]="quickSelect.idRoute">
                 <option value="-1">Chọn nhanh đơn theo tuyến</option>
                 <option [value]="i.Id" *ngFor="let i of routeList">{{i.Name}} ({{i.Count}}) đơn</option>
             </select>
@@ -15,225 +15,133 @@
                 <option [value]="i.Id" *ngFor="let i of sellerList">{{i.Name}} ({{i.Count}}) đơn</option>
             </select> -->
 
-      <!-- <span class="split ion-hide-sm-down">|</span> -->
+			<!-- <span class="split ion-hide-sm-down">|</span> -->
 
-      <ion-button
-        [disabled]="selectedItems.length==0"
-        fill="solid"
-        size="small"
-        color="primary"
-        (click)="SaveSelectedOrders()"
-      >
-        &nbsp;{{'Add' | translate}} {{selectedItems.length}} {{'Order' | translate}}&nbsp;
-      </ion-button>
+			<ion-button [disabled]="selectedItems.length==0" fill="solid" size="small" color="primary" (click)="SaveSelectedOrders()">
+				&nbsp;{{'Add' | translate}} {{selectedItems.length}} {{'Order' | translate}}&nbsp;
+			</ion-button>
 
-      <ion-button (click)="refresh()" title="{{'Refresh' | translate}}">
-        <ion-icon slot="icon-only" name="reload-outline"></ion-icon>
-      </ion-button>
+			<ion-button (click)="refresh()" title="{{'Refresh' | translate}}">
+				<ion-icon slot="icon-only" name="reload-outline"></ion-icon>
+			</ion-button>
 
-      <ion-button title="{{'Help' | translate}}" (click)="help()">
-        <ion-icon slot="icon-only" name="help-circle-outline"></ion-icon>
-      </ion-button>
+			<ion-button title="{{'Help' | translate}}" (click)="help()">
+				<ion-icon slot="icon-only" name="help-circle-outline"></ion-icon>
+			</ion-button>
 
-      <ion-button title="{{'Close' | translate}}" color="secondary" (click)="closeModal()">
-        <ion-icon slot="icon-only" name="close"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-  <section class="table">
-    <header class="bold">
-      <div class="col-checkbox cell">
-        <input (change)="toggleSelectAll()" [(ngModel)]="isAllChecked" class="c-checkbox" type="checkbox" />
-      </div>
-      <div class="col-id cell" (click)="sortToggle('Id')">
-        #{{'Order' | translate}}
-        <ion-icon class="min-btn" *ngIf="sort.Id" [name]="sort.Id == 'Id'?'arrow-down': 'arrow-up'"></ion-icon>
-        <ion-icon
-          class="min-btn"
-          (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
-          *ngIf="query.Id"
-          name="search"
-          color="primary"
-        ></ion-icon>
-      </div>
+			<ion-button title="{{'Close' | translate}}" color="secondary" (click)="closeModal()">
+				<ion-icon slot="icon-only" name="close"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
+	<section class="table">
+		<header class="bold">
+			<div class="col-checkbox cell">
+				<input (change)="toggleSelectAll()" [(ngModel)]="isAllChecked" class="c-checkbox" type="checkbox" />
+			</div>
+			<div class="col-id cell" (click)="sortToggle('Id')">
+				#{{'Order' | translate}}
+				<ion-icon class="min-btn" *ngIf="sort.Id" [name]="sort.Id == 'Id'?'arrow-down': 'arrow-up'"></ion-icon>
+				<ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.Id" name="search" color="primary"></ion-icon>
+			</div>
 
-      <div class="col-code cell" (click)="sortToggle('OrderDate')">
-        {{'Order created date' | translate}}
-        <ion-icon
-          class="min-btn"
-          *ngIf="sort.OrderDate"
-          [name]="sort.OrderDate == 'OrderDate'?'arrow-down': 'arrow-up'"
-        ></ion-icon>
-        <ion-icon
-          class="min-btn"
-          (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
-          *ngIf="query.OrderDate"
-          name="search"
-          color="primary"
-        ></ion-icon>
-      </div>
+			<div class="col-code cell" (click)="sortToggle('OrderDate')">
+				{{'Order created date' | translate}}
+				<ion-icon class="min-btn" *ngIf="sort.OrderDate" [name]="sort.OrderDate == 'OrderDate'?'arrow-down': 'arrow-up'"></ion-icon>
+				<ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.OrderDate" name="search" color="primary"></ion-icon>
+			</div>
 
-      <div class="col-name cell" (click)="sortToggle('CustomerName')">
-        {{'Customer' | translate}}
-        <small>#Id</small>
+			<div class="col-name cell" (click)="sortToggle('CustomerName')">
+				{{'Customer' | translate}}
+				<small>#Id</small>
 
-        <ion-icon
-          class="min-btn"
-          *ngIf="sort.CustomerName"
-          [name]="sort.CustomerName == 'CustomerName'?'arrow-down': 'arrow-up'"
-        ></ion-icon>
-        <ion-icon
-          class="min-btn"
-          (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
-          *ngIf="query.CustomerName"
-          name="search"
-          color="primary"
-        ></ion-icon>
+				<ion-icon class="min-btn" *ngIf="sort.CustomerName" [name]="sort.CustomerName == 'CustomerName'?'arrow-down': 'arrow-up'"></ion-icon>
+				<ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.CustomerName" name="search" color="primary"></ion-icon>
 
-        <small class="right">
-          <ion-text color="dark"> {{'Address' | translate}}</ion-text>
-        </small>
-      </div>
-      <div class="col-code cell money" (click)="sortToggle('TotalAfterTax')">
-        {{'Total' | translate}}
-        <ion-icon
-          class="min-btn"
-          *ngIf="sort.TotalAfterTax"
-          [name]="sort.TotalAfterTax == 'TotalAfterTax'?'arrow-down': 'arrow-up'"
-        ></ion-icon>
-        <ion-icon
-          class="min-btn"
-          (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
-          *ngIf="query.TotalAfterTax"
-          name="search"
-          color="primary"
-        ></ion-icon>
-      </div>
-      <div class="col-code cell" (click)="sortToggle('Code')">
-        {{'Vendor code' | translate}}
-        <ion-icon class="min-btn" *ngIf="sort.Code" [name]="sort.Code == 'Code'?'arrow-down': 'arrow-up'"></ion-icon>
-        <ion-icon
-          class="min-btn"
-          (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch"
-          *ngIf="query.Code"
-          name="search"
-          color="primary"
-        ></ion-icon>
-      </div>
-    </header>
+				<small class="right">
+					<ion-text color="dark"> {{'Address' | translate}}</ion-text>
+				</small>
+			</div>
+			<div class="col-code cell money" (click)="sortToggle('TotalAfterTax')">
+				{{'Total' | translate}}
+				<ion-icon class="min-btn" *ngIf="sort.TotalAfterTax" [name]="sort.TotalAfterTax == 'TotalAfterTax'?'arrow-down': 'arrow-up'"></ion-icon>
+				<ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.TotalAfterTax" name="search" color="primary"></ion-icon>
+			</div>
+			<div class="col-code cell" (click)="sortToggle('Code')">
+				{{'Vendor code' | translate}}
+				<ion-icon class="min-btn" *ngIf="sort.Code" [name]="sort.Code == 'Code'?'arrow-down': 'arrow-up'"></ion-icon>
+				<ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.Code" name="search" color="primary"></ion-icon>
+			</div>
+		</header>
 
-    <form (submit)="refresh()" action="#">
-      <header class="filter">
-        <div
-          class="col-checkbox cell clickable"
-          title="{{'Unselect all' | translate}}"
-          (click)="isAllChecked = false; toggleSelectAll()"
-        >
-          <ion-icon color="danger" class="min-btn" name="close-circle-outline"></ion-icon>
-        </div>
-        <div class="col-id cell">
-          <input
-            [ngModelOptions]="{standalone: true}"
-            [(ngModel)]="query.Id"
-            class="c-input"
-            [ngClass]="{active: query.Id}"
-            type="text"
-          />
-          <ion-icon
-            class="min-btn"
-            (click)="query.Id=''; refresh()"
-            *ngIf="query.Id"
-            name="close-circle-outline"
-          ></ion-icon>
-        </div>
-        <div class="col-code cell">
-          <input
-            (change)="refresh()"
-            [ngModelOptions]="{standalone: true}"
-            [(ngModel)]="query.OrderDate"
-            class="c-input"
-            [ngClass]="{active: query.OrderDate}"
-            type="date"
-          />
-          <ion-icon
-            class="min-btn"
-            (click)="query.OrderDate=''; refresh()"
-            *ngIf="query.OrderDate"
-            name="close-circle-outline"
-          ></ion-icon>
-        </div>
-        <div class="col-name cell">
-          <input
-            [ngModelOptions]="{standalone: true}"
-            [(ngModel)]="query.CustomerName"
-            class="c-input"
-            [ngClass]="{active: query.CustomerName}"
-            type="text"
-          />
-          <ion-icon
-            class="min-btn"
-            (click)="query.CustomerName=''; refresh()"
-            *ngIf="query.CustomerName"
-            name="close-circle-outline"
-          ></ion-icon>
+		<form (submit)="refresh()" action="#">
+			<header class="filter">
+				<div class="col-checkbox cell clickable" title="{{'Unselect all' | translate}}" (click)="isAllChecked = false; toggleSelectAll()">
+					<ion-icon color="danger" class="min-btn" name="close-circle-outline"></ion-icon>
+				</div>
+				<div class="col-id cell">
+					<input [ngModelOptions]="{standalone: true}" [(ngModel)]="query.Id" class="c-input" [ngClass]="{active: query.Id}" type="text" />
+					<ion-icon class="min-btn" (click)="query.Id=''; refresh()" *ngIf="query.Id" name="close-circle-outline"></ion-icon>
+				</div>
+				<div class="col-code cell">
+					<input
+						(change)="refresh()"
+						[ngModelOptions]="{standalone: true}"
+						[(ngModel)]="query.OrderDate"
+						class="c-input"
+						[ngClass]="{active: query.OrderDate}"
+						type="date"
+					/>
+					<ion-icon class="min-btn" (click)="query.OrderDate=''; refresh()" *ngIf="query.OrderDate" name="close-circle-outline"></ion-icon>
+				</div>
+				<div class="col-name cell">
+					<input [ngModelOptions]="{standalone: true}" [(ngModel)]="query.CustomerName" class="c-input" [ngClass]="{active: query.CustomerName}" type="text" />
+					<ion-icon class="min-btn" (click)="query.CustomerName=''; refresh()" *ngIf="query.CustomerName" name="close-circle-outline"></ion-icon>
 
-          <div class="right">
-            <!-- <b><ion-text color="danger">Tổng {{selectedItems.length}} đơn:</ion-text></b> -->
-          </div>
-        </div>
-        <div class="col-code cell money">
-          <!-- <input [ngModelOptions]="{standalone: true}" [(ngModel)]="query.TotalAfterTax" class="c-input" [ngClass]="{active: query.TotalAfterTax}" type="text">
+					<div class="right">
+						<!-- <b><ion-text color="danger">Tổng {{selectedItems.length}} đơn:</ion-text></b> -->
+					</div>
+				</div>
+				<div class="col-code cell money">
+					<!-- <input [ngModelOptions]="{standalone: true}" [(ngModel)]="query.TotalAfterTax" class="c-input" [ngClass]="{active: query.TotalAfterTax}" type="text">
                     <ion-icon class="min-btn" (click)="query.TotalAfterTax=''; refresh()" *ngIf="query.TotalAfterTax" name="close-circle-outline"></ion-icon> -->
-        </div>
+				</div>
 
-        <div class="col-code cell">
-          <input
-            [ngModelOptions]="{standalone: true}"
-            [(ngModel)]="query.Code"
-            class="c-input"
-            [ngClass]="{active: query.Code}"
-            type="text"
-          />
-          <ion-icon
-            class="min-btn"
-            (click)="query.Code=''; refresh()"
-            *ngIf="query.Code"
-            name="close-circle-outline"
-          ></ion-icon>
-        </div>
+				<div class="col-code cell">
+					<input [ngModelOptions]="{standalone: true}" [(ngModel)]="query.Code" class="c-input" [ngClass]="{active: query.Code}" type="text" />
+					<ion-icon class="min-btn" (click)="query.Code=''; refresh()" *ngIf="query.Code" name="close-circle-outline"></ion-icon>
+				</div>
 
-        <button mat-raised-button type="submit" style="display: none">Search</button>
-      </header>
-    </form>
-  </section>
+				<button mat-raised-button type="submit" style="display: none">Search</button>
+			</header>
+		</form>
+	</section>
 </ion-header>
 <ion-content appScrollbarTheme class="header-table">
-  <app-page-message [itemsLength]="items.length" [showSpinner]="pageConfig.showSpinner"></app-page-message>
+	<app-page-message [itemsLength]="items.length" [showSpinner]="pageConfig.showSpinner"></app-page-message>
 
-  <section class="table">
-    <div class="row" [ngClass]="{selected: i.checked}" *ngFor="let i of items">
-      <div class="col-checkbox cell">
-        <input (click)="changeSelection(i, $event)" class="c-checkbox" [(ngModel)]="i.checked" type="checkbox" />
-      </div>
-      <div class="col-id cell">{{i.Id}}</div>
-      <div class="col-code cell" (click)="query.OrderDate=i.Query; pageConfig.isShowSearch=true; refresh()">
-        {{i.OrderDateText}}
-        <small *ngIf="i.OrderTimeText ">{{i.OrderTimeText}}</small>
-      </div>
-      <div class="col-name cell">
-        <span title="{{'View order's details' | translate}}" [ngOptionHighlight]="query.CustomerName"
-          >{{i._Customer?.Name}}</span
-        >
-        <small title="{{'View customers' information' | translate}}">#{{i.IDContact}}</small>
-        <small class="right">
-          <ion-text color="dark">
-            <span>{{i._Customer?.Address?.AddressLine1}}</span>
-            <span *ngIf="i.AddressLine2"> &nbsp; {{i._Customer?.Address?.AddressLine2}}</span>
-          </ion-text>
-        </small>
-      </div>
-      <div class="col-code cell money">{{i.OriginalTotalAfterTax | number: '1.0-0'}}</div>
-      <div class="col-code cell">{{i.Code}}</div>
-    </div>
-  </section>
+	<section class="table">
+		<div class="row" [ngClass]="{selected: i.checked}" *ngFor="let i of items">
+			<div class="col-checkbox cell">
+				<input (click)="changeSelection(i, $event)" class="c-checkbox" [(ngModel)]="i.checked" type="checkbox" />
+			</div>
+			<div class="col-id cell">{{i.Id}}</div>
+			<div class="col-code cell" (click)="query.OrderDate=i.Query; pageConfig.isShowSearch=true; refresh()">
+				{{i.OrderDateText}}
+				<small *ngIf="i.OrderTimeText ">{{i.OrderTimeText}}</small>
+			</div>
+			<div class="col-name cell">
+				<span title="{{'View order's details' | translate}}" [ngOptionHighlight]="query.CustomerName">{{i._Customer?.Name}}</span>
+				<small title="{{'View customers' information' | translate}}">#{{i.IDContact}}</small>
+				<small class="right">
+					<ion-text color="dark">
+						<span>{{i._Customer?.Address?.AddressLine1}}</span>
+						<span *ngIf="i.AddressLine2"> &nbsp; {{i._Customer?.Address?.AddressLine2}}</span>
+					</ion-text>
+				</small>
+			</div>
+			<div class="col-code cell money">{{i.OriginalTotalAfterTax | number: '1.0-0'}}</div>
+			<div class="col-code cell">{{i.Code}}</div>
+		</div>
+	</section>
 </ion-content>

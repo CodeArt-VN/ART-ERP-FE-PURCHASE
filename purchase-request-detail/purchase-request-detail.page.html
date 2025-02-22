@@ -16,7 +16,7 @@
 <ion-content appScrollbarTheme class="ion-padding">
 	<div id="ng-select-header" style="position: absolute; z-index: 30005"></div>
 	<div id="ng-select-table" style="position: absolute; z-index: 30005"></div>
-	
+
 	<div class="main-view" *ngIf="item && pageConfig.showSpinner==false">
 		<ion-grid fixed>
 			<form [formGroup]="formGroup">
@@ -71,7 +71,7 @@
 			</form>
 		</ion-grid>
 
-		<div class="row-full shadow safe-max-width" style="max-width: 1710px;">
+		<div class="row-full shadow safe-max-width" style="max-width: 1710px">
 			<ion-toolbar color="primary">
 				<ion-segment scrollable="true" (ionChange)="segmentChanged($event)" [value]="segmentView">
 					<ion-segment-button value="s1">
@@ -115,8 +115,6 @@
 								<app-form-control [field]="{id: 'ModifiedDate', type: 'span-datetime', label: 'Last modified date', form: formGroup }"></app-form-control>
 							</ion-col>
 							<ion-col size="12" size-sm size-xl="4">
-								
-
 								<app-form-control
 									[field]="{id: 'DocumentDate', label: 'Document date', type: 'datetime-local', form: formGroup}"
 									(change)="changeDate($event)"

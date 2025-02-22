@@ -8,13 +8,7 @@ import { ShareModule } from 'src/app/share.module';
 import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
 
 @NgModule({
-  imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    ShareModule,
-    RouterModule.forChild([{ path: '', component: PurchaseRequestPage }]),
-  ],
-  declarations: [PurchaseRequestPage],
+	imports: [IonicModule, CommonModule, FormsModule, ShareModule, RouterModule.forChild([{ path: '', component: PurchaseRequestPage }])],
+	declarations: [PurchaseRequestPage],
 })
 export class PurchaseRequestPageModule {}

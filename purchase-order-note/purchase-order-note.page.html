@@ -1,273 +1,243 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start" class="ion-hide-sm-down_">
-      <ion-button color="dark" class="ion-hide-sm-down"> {{'Print purchase order' | translate}} </ion-button>
-    </ion-buttons>
-    <ion-buttons slot="end">
-      <!-- <ion-button (click)="changePrintMode()" title="{{'print-mode' | translate}}">
+	<ion-toolbar>
+		<ion-buttons slot="start" class="ion-hide-sm-down_">
+			<ion-button color="dark" class="ion-hide-sm-down"> {{'Print purchase order' | translate}} </ion-button>
+		</ion-buttons>
+		<ion-buttons slot="end">
+			<!-- <ion-button (click)="changePrintMode()" title="{{'print-mode' | translate}}">
 				<ion-icon slot="icon-only" [name]="printMode == 'A4' ? 'cut-outline':'file-tray-full-outline'"></ion-icon>
 			</ion-button>
 			<span class="split ion-hide-sm-down">|</span> -->
-      <ion-button (click)="print()" title="{{'Form printing' | translate}}">
-        <ion-icon slot="icon-only" name="print"></ion-icon>
-      </ion-button>
-      <ion-button (click)="refresh()" title="{{'Refresh' | translate}}">
-        <ion-icon slot="icon-only" name="reload-outline"></ion-icon>
-      </ion-button>
-      <ion-button
-        title="{{'Expanded function' | translate}}"
-        (click)="pageConfig.isShowFeature = !pageConfig.isShowFeature;"
-      >
-        <ion-icon slot="icon-only" [name]="pageConfig.isShowFeature? 'close-outline':'list-circle-outline'"> </ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+			<ion-button (click)="print()" title="{{'Form printing' | translate}}">
+				<ion-icon slot="icon-only" name="print"></ion-icon>
+			</ion-button>
+			<ion-button (click)="refresh()" title="{{'Refresh' | translate}}">
+				<ion-icon slot="icon-only" name="reload-outline"></ion-icon>
+			</ion-button>
+			<ion-button title="{{'Expanded function' | translate}}" (click)="pageConfig.isShowFeature = !pageConfig.isShowFeature;">
+				<ion-icon slot="icon-only" [name]="pageConfig.isShowFeature? 'close-outline':'list-circle-outline'"> </ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme appPrintFix class="A4 left" [ngClass]="{withFeature: pageConfig.isShowFeature}">
-  <ion-fab
-    *ngIf="pageConfig.isShowFeature"
-    [ngClass]="{withSearch: pageConfig.isShowSearch}"
-    class="feature no-print"
-    vertical="top"
-    horizontal="start"
-    slot="fixed"
-  >
-    <ion-list>
-      <ion-list-header lines="full">
-        <ion-label color="dark">{{'Purchase order' | translate}}</ion-label>
+	<ion-fab *ngIf="pageConfig.isShowFeature" [ngClass]="{withSearch: pageConfig.isShowSearch}" class="feature no-print" vertical="top" horizontal="start" slot="fixed">
+		<ion-list>
+			<ion-list-header lines="full">
+				<ion-label color="dark">{{'Purchase order' | translate}}</ion-label>
 
-        <ion-button size="small" (click)="toggleDateFilter()">
-          <ion-icon slot="icon-only" [name]="query.Status == 'Approved' ? 'calendar-outline' : 'calendar'"></ion-icon>
-        </ion-button>
-      </ion-list-header>
-    </ion-list>
+				<ion-button size="small" (click)="toggleDateFilter()">
+					<ion-icon slot="icon-only" [name]="query.Status == 'Approved' ? 'calendar-outline' : 'calendar'"></ion-icon>
+				</ion-button>
+			</ion-list-header>
+		</ion-list>
 
-    <ion-list>
-      <ion-item lines="full" *ngIf="query.IDStatus!='[301]'">
-        <div class="c-control">
-          <label class="c-label" for="OrderDate">{{'Order created date' | translate}}</label>
-          <input class="c-input" (change)="refresh()" id="OrderDate" type="date" [(ngModel)]="query.OrderDate" />
-        </div>
-      </ion-item>
+		<ion-list>
+			<ion-item lines="full" *ngIf="query.IDStatus!='[301]'">
+				<div class="c-control">
+					<label class="c-label" for="OrderDate">{{'Order created date' | translate}}</label>
+					<input class="c-input" (change)="refresh()" id="OrderDate" type="date" [(ngModel)]="query.OrderDate" />
+				</div>
+			</ion-item>
 
-      <ion-item
-        [color]="i.Id == selectedPurchaseOrderID? 'primary': '' "
-        button
-        detail="true"
-        lines="full"
-        class="clickable"
-        *ngFor="let i of items"
-        (click)="loadPurchaseOrderNote(i)"
-      >
-        <ion-label class="ion-text-wrap">
-          <p>
-            <b>
-              <ion-text [color]="i.Id == selectedPurchaseOrderID? '': 'primary' "
-                >{{'PO' | translate}}:{{i.Id}}</ion-text
-              >
-              <ion-text [color]="i.Id == selectedPurchaseOrderID? '': 'dark' "> - {{i.OrderDateText}}</ion-text>
-            </b>
-          </p>
-          <ion-text>
-            <small>{{i.VendorName}} => {{i.BranchName}}</small>
-          </ion-text>
-        </ion-label>
-      </ion-item>
-    </ion-list>
+			<ion-item
+				[color]="i.Id == selectedPurchaseOrderID? 'primary': '' "
+				button
+				detail="true"
+				lines="full"
+				class="clickable"
+				*ngFor="let i of items"
+				(click)="loadPurchaseOrderNote(i)"
+			>
+				<ion-label class="ion-text-wrap">
+					<p>
+						<b>
+							<ion-text [color]="i.Id == selectedPurchaseOrderID? '': 'primary' ">{{'PO' | translate}}:{{i.Id}}</ion-text>
+							<ion-text [color]="i.Id == selectedPurchaseOrderID? '': 'dark' "> - {{i.OrderDateText}}</ion-text>
+						</b>
+					</p>
+					<ion-text>
+						<small>{{i.VendorName}} => {{i.BranchName}}</small>
+					</ion-text>
+				</ion-label>
+			</ion-item>
+		</ion-list>
 
-    <img style="width: 1px; height: 1px; opacity: 0" src="assets/RPT-Logo-ART.png" />
-  </ion-fab>
+		<img style="width: 1px; height: 1px; opacity: 0" src="assets/RPT-Logo-ART.png" />
+	</ion-fab>
 
-  <div style="overflow: auto">
-    <div class="giao-nhan" *ngFor="let o of sheets">
-      <section class="sheet padding-10mm rpt p1">
-        <table>
-          <thead>
-            <tr>
-              <td>
-                <div class="page-header-space"></div>
-              </td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <div class="top-zone">
-                  <div
-                    class="ribbon"
-                    *ngIf="o.Status == 'Draft' || o.Status == 'Cancelled' || o.Status == 'Unapproved' || o.Status == 'Submitted' "
-                  >
-                    <span class="text"> {{o.StatusText}} </span>
-                  </div>
-                  <table class="rpt-header" cellpadding="0" cellspacing="0">
-                    <tbody>
-                      <tr>
-                        <td rowspan="6" class="logo">
-                          <img [src]="o._Branch.LogoURL" (error)="$event.src='assets/RPT-Logo-ART.png'" />
-                        </td>
-                        <td colspan="2" class="bol title">{{'Purchase order' | translate}}</td>
-                        <td class="bol num" colspan="2">{{o.Code? o.Code : 'PO: '+o.Id}}</td>
-                        <td rowspan="6" class="topQR">
-                          <div *ngIf="o.Code">{{'PO' | translate}}:{{o.Id}}</div>
-                          <a [href]="'#/'+'purchase-order/'+o.Id" (click)="nav('purchase-order/'+o.Id,'forward')">
-                            <img class="qrc" [src]="o.QRC" />
-                          </a>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td class="head-c1 bol" colspan="2">{{o._Storer.CompanyName}}</td>
-                        <td class="bol num" colspan="2">{{o.OrderDateText}}</td>
-                      </tr>
-                      <tr>
-                        <td colspan="4">
-                          <span>{{o._Branch.Address}}</span>
-                        </td>
-                        <td colspan="2"></td>
-                      </tr>
-                      <tr>
-                        <td></td>
-                        <td class="bol"></td>
-                        <td class="bol num" colspan="2"></td>
-                      </tr>
-                      <tr>
-                        <td colspan="4" class="">
-                          <span>
-                            <b> {{'Dear' | translate}}:</b>
-                            {{o._Vendor.CompanyName}},
-                            <br />{{'According to our agreement, we would like to order the following items:' |
-                            translate}}:
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td colspan="4" class="">
-                          <span *ngIf="o.ExpectedReceiptDate">
-                            <b> {{'Expected delivery date' | translate}}:</b>
-                            {{o.ExpectedReceiptDateText}}
-                          </span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+	<div style="overflow: auto">
+		<div class="giao-nhan" *ngFor="let o of sheets">
+			<section class="sheet padding-10mm rpt p1">
+				<table>
+					<thead>
+						<tr>
+							<td>
+								<div class="page-header-space"></div>
+							</td>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<div class="top-zone">
+									<div class="ribbon" *ngIf="o.Status == 'Draft' || o.Status == 'Cancelled' || o.Status == 'Unapproved' || o.Status == 'Submitted' ">
+										<span class="text"> {{o.StatusText}} </span>
+									</div>
+									<table class="rpt-header" cellpadding="0" cellspacing="0">
+										<tbody>
+											<tr>
+												<td rowspan="6" class="logo">
+													<img [src]="o._Branch.LogoURL" (error)="$event.src='assets/RPT-Logo-ART.png'" />
+												</td>
+												<td colspan="2" class="bol title">{{'Purchase order' | translate}}</td>
+												<td class="bol num" colspan="2">{{o.Code? o.Code : 'PO: '+o.Id}}</td>
+												<td rowspan="6" class="topQR">
+													<div *ngIf="o.Code">{{'PO' | translate}}:{{o.Id}}</div>
+													<a [href]="'#/'+'purchase-order/'+o.Id" (click)="nav('purchase-order/'+o.Id,'forward')">
+														<img class="qrc" [src]="o.QRC" />
+													</a>
+												</td>
+											</tr>
+											<tr>
+												<td class="head-c1 bol" colspan="2">{{o._Storer.CompanyName}}</td>
+												<td class="bol num" colspan="2">{{o.OrderDateText}}</td>
+											</tr>
+											<tr>
+												<td colspan="4">
+													<span>{{o._Branch.Address}}</span>
+												</td>
+												<td colspan="2"></td>
+											</tr>
+											<tr>
+												<td></td>
+												<td class="bol"></td>
+												<td class="bol num" colspan="2"></td>
+											</tr>
+											<tr>
+												<td colspan="4" class="">
+													<span>
+														<b> {{'Dear' | translate}}:</b>
+														{{o._Vendor.CompanyName}},
+														<br />{{'According to our agreement, we would like to order the following items:' | translate}}:
+													</span>
+												</td>
+											</tr>
+											<tr>
+												<td colspan="4" class="">
+													<span *ngIf="o.ExpectedReceiptDate">
+														<b> {{'Expected delivery date' | translate}}:</b>
+														{{o.ExpectedReceiptDateText}}
+													</span>
+												</td>
+											</tr>
+										</tbody>
+									</table>
 
-                  <div class="ds-san-pham">
-                    <table cellpadding="0" cellspacing="0">
-                      <tbody>
-                        <tr class="head">
-                          <td class="cen">{{'No.' | translate}}</td>
-                          <td>
-                            <div class="ten-sp ck">{{'Product / Service name' | translate}}</div>
-                          </td>
-                          <td class="cen" *ngIf="pageConfig.PONShowPackingUoM && !pageConfig.PONShowEACaseOnly">
-                           {{' Quy cách' | translate}}
-                          </td>
+									<div class="ds-san-pham">
+										<table cellpadding="0" cellspacing="0">
+											<tbody>
+												<tr class="head">
+													<td class="cen">{{'No.' | translate}}</td>
+													<td>
+														<div class="ten-sp ck">{{'Product / Service name' | translate}}</div>
+													</td>
+													<td class="cen" *ngIf="pageConfig.PONShowPackingUoM && !pageConfig.PONShowEACaseOnly">{{' Quy cách' | translate}}</td>
 
-                          <ng-container *ngIf="!pageConfig.PONShowEACaseOnly">
-                            <td class="cen">{{'Unit' | translate}}</td>
-                            <td class="cen">{{'S.L' | translate}}</td>
-                          </ng-container>
+													<ng-container *ngIf="!pageConfig.PONShowEACaseOnly">
+														<td class="cen">{{'Unit' | translate}}</td>
+														<td class="cen">{{'S.L' | translate}}</td>
+													</ng-container>
 
-                          <ng-container *ngIf="pageConfig.PONShowEACaseOnly">
-                            <td class="cen">{{'Box' | translate}}</td>
-                            <td class="cen">{{'LCL' | translate}}</td>
-                          </ng-container>
+													<ng-container *ngIf="pageConfig.PONShowEACaseOnly">
+														<td class="cen">{{'Box' | translate}}</td>
+														<td class="cen">{{'LCL' | translate}}</td>
+													</ng-container>
 
-                          <td class="num">{{'Unit price' | translate}}</td>
-                          <td class="num">{{'Amount' | translate}}</td>
-                          <!-- <td class="num">VAT</td>
+													<td class="num">{{'Unit price' | translate}}</td>
+													<td class="num">{{'Amount' | translate}}</td>
+													<!-- <td class="num">VAT</td>
 													<td class="num">T.GTGT</td>
 													<td class="num">TT sau thuế</td> -->
-                        </tr>
-                        <ng-container *ngFor="let i of o.OrderLines; let idx = index; ">
-                          <tr *ngFor="let uom of i._SplitUoMs; let gdx = index; ">
-                            <td class="cen" [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">{{idx+1}}</td>
-                            <td [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">
-                              <div class="ten-sp ck">
-                                <b *ngIf="i._Item.Code">{{i._Item.Code}}</b><b *ngIf="!i._Item.Code">{{i.IDItem}}</b>
-                                - {{i._Item.Name}}
-                              </div>
-                              <div class="ten-sp ck" *ngIf="i.Remark">
-                                <em>{{i.Remark}}</em>
-                              </div>
-                            </td>
-                            <td class="num bol" *ngIf="pageConfig.PONShowPackingUoM && !pageConfig.PONShowEACaseOnly">
-                              <span> {{i._PackingUoM}}</span>
-                            </td>
-                            <ng-container *ngIf="!pageConfig.PONShowEACaseOnly">
-                              <td class="num bol">
-                                <span> {{uom.UoMName}} </span>
-                              </td>
-                              <td class="num bol">
-                                <span>{{uom.Quantity}}</span>
-                              </td>
-                            </ng-container>
+												</tr>
+												<ng-container *ngFor="let i of o.OrderLines; let idx = index; ">
+													<tr *ngFor="let uom of i._SplitUoMs; let gdx = index; ">
+														<td class="cen" [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">{{idx+1}}</td>
+														<td [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">
+															<div class="ten-sp ck">
+																<b *ngIf="i._Item.Code">{{i._Item.Code}}</b><b *ngIf="!i._Item.Code">{{i.IDItem}}</b>
+																- {{i._Item.Name}}
+															</div>
+															<div class="ten-sp ck" *ngIf="i.Remark">
+																<em>{{i.Remark}}</em>
+															</div>
+														</td>
+														<td class="num bol" *ngIf="pageConfig.PONShowPackingUoM && !pageConfig.PONShowEACaseOnly">
+															<span> {{i._PackingUoM}}</span>
+														</td>
+														<ng-container *ngIf="!pageConfig.PONShowEACaseOnly">
+															<td class="num bol">
+																<span> {{uom.UoMName}} </span>
+															</td>
+															<td class="num bol">
+																<span>{{uom.Quantity}}</span>
+															</td>
+														</ng-container>
 
-                            <ng-container *ngIf="pageConfig.PONShowEACaseOnly">
-                              <td
-                                class="num bol"
-                                *ngIf="uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity"
-                              >
-                                <span *ngIf="uom.UoMId == i._Item.PurchasingUoM">{{uom.Quantity}}</span>
-                              </td>
-                              <td
-                                class="num bol"
-                                *ngIf="uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity"
-                              >
-                                <span *ngIf="uom.BaseQuantity == uom.Quantity"> {{uom.Quantity}} </span>
-                              </td>
-                              <td
-                                colspan="2"
-                                class="ion-text-center bol"
-                                *ngIf="!(uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity)"
-                              >
-                                {{uom.Quantity}} {{uom.UoMName}}
-                              </td>
-                            </ng-container>
+														<ng-container *ngIf="pageConfig.PONShowEACaseOnly">
+															<td class="num bol" *ngIf="uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity">
+																<span *ngIf="uom.UoMId == i._Item.PurchasingUoM">{{uom.Quantity}}</span>
+															</td>
+															<td class="num bol" *ngIf="uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity">
+																<span *ngIf="uom.BaseQuantity == uom.Quantity"> {{uom.Quantity}} </span>
+															</td>
+															<td
+																colspan="2"
+																class="ion-text-center bol"
+																*ngIf="!(uom.UoMId == i._Item.PurchasingUoM || uom.BaseQuantity == uom.Quantity)"
+															>
+																{{uom.Quantity}} {{uom.UoMName}}
+															</td>
+														</ng-container>
 
-                            <td class="num">{{i.UoMPriceText}}</td>
-                            <td class="num" [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">
-                              {{i.TotalAfterTaxText}}
-                            </td>
+														<td class="num">{{i.UoMPriceText}}</td>
+														<td class="num" [attr.rowspan]="i._SplitUoMs.length" *ngIf="gdx == 0">{{i.TotalAfterTaxText}}</td>
 
-                            <!-- <td class="num" [attr.rowspan]="i._SplitUoMs.length" >{{i.TaxRate}}</td>
+														<!-- <td class="num" [attr.rowspan]="i._SplitUoMs.length" >{{i.TaxRate}}</td>
 														<td class="num" [attr.rowspan]="i._SplitUoMs.length" >{{i.Tax}}</td>
 														<td class="num" [attr.rowspan]="i._SplitUoMs.length" >{{i.TotalAfterTax}}</td> -->
-                          </tr>
-                        </ng-container>
+													</tr>
+												</ng-container>
 
-                        <tr style="border-top: dashed 1px #000">
-                          <td [attr.colspan]="pageConfig.PONShowPackingUoM? 6:5" class="num">
-                            {{'Total amount' | translate}}
-                          </td>
-                          <td class="num">
-                            <b>{{o.TotalBeforeDiscountText}}</b>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td [attr.colspan]="pageConfig.PONShowPackingUoM? 6:5" class="num">{{'VAT' | translate}}</td>
-                          <td class="num">
-                            <b>{{o.TotalTaxText}}</b>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td [attr.colspan]="pageConfig.PONShowPackingUoM? 6:5" class="num">
-                            {{'Total amount' | translate}}
-                          </td>
-                          <td class="num">
-                            <b>{{o.TotalAfterTaxText}}</b>
-                          </td>
-                        </tr>
-                        <!-- <tr style="border-top: dashed 1px #000;" >
+												<tr style="border-top: dashed 1px #000">
+													<td [attr.colspan]="pageConfig.PONShowPackingUoM? 6:5" class="num">{{'Total amount' | translate}}</td>
+													<td class="num">
+														<b>{{o.TotalBeforeDiscountText}}</b>
+													</td>
+												</tr>
+												<tr>
+													<td [attr.colspan]="pageConfig.PONShowPackingUoM? 6:5" class="num">{{'VAT' | translate}}</td>
+													<td class="num">
+														<b>{{o.TotalTaxText}}</b>
+													</td>
+												</tr>
+												<tr>
+													<td [attr.colspan]="pageConfig.PONShowPackingUoM? 6:5" class="num">{{'Total amount' | translate}}</td>
+													<td class="num">
+														<b>{{o.TotalAfterTaxText}}</b>
+													</td>
+												</tr>
+												<!-- <tr style="border-top: dashed 1px #000;" >
 													<td [attr.colspan]="pageConfig.PONShowPackingUoM? 7:6" class="num">
 														{{o.DocTienBangChu}}
 													</td>
 												</tr> -->
-                      </tbody>
-                    </table>
-                  </div>
+											</tbody>
+										</table>
+									</div>
 
-                  <!-- <table class="thanh-tien" cellpadding="0" cellspacing="0">
+									<!-- <table class="thanh-tien" cellpadding="0" cellspacing="0">
 										<tbody>
 											<tr>
 												<td class="c1">Tổng tiền:</td>
@@ -286,54 +256,54 @@
 										</tbody>
 									</table> -->
 
-                  <table class="chu-ky" cellpadding="0" cellspacing="0">
-                    <tbody>
-                      <tr>
-                        <td style="width: 50%">
-                          {{'Seller' | translate}}
-                          <div class="line2">
-                            <i>{{'(Sign and write full name)' | translate}}</i>
-                          </div>
-                        </td>
-                        <td>
-                          {{'Buyer' | translate}}
-                          <div class="line2">
-                            <i>{{'(Sign and write full name)' | translate}}</i>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td></td>
-                        <td></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <table class="noti" cellpadding="0" cellspacing="0">
-                  <tbody>
-                    <tr>
-                      <td class="cen">
-                        {{'Please deliver on time with specified quantity and quality.' | translate}}<br />
-                        {{'We truly appriciate.' | translate}}
-                        <!-- <span *ngIf="o._Branch.Phone">Quý công ty cần liên hệ về sản phẩm dịch vụ vui lòng gọi <b>{{ o._Branch.Phone }}</b></span>
+									<table class="chu-ky" cellpadding="0" cellspacing="0">
+										<tbody>
+											<tr>
+												<td style="width: 50%">
+													{{'Seller' | translate}}
+													<div class="line2">
+														<i>{{'(Sign and write full name)' | translate}}</i>
+													</div>
+												</td>
+												<td>
+													{{'Buyer' | translate}}
+													<div class="line2">
+														<i>{{'(Sign and write full name)' | translate}}</i>
+													</div>
+												</td>
+											</tr>
+											<tr>
+												<td></td>
+												<td></td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<table class="noti" cellpadding="0" cellspacing="0">
+									<tbody>
+										<tr>
+											<td class="cen">
+												{{'Please deliver on time with specified quantity and quality.' | translate}}<br />
+												{{'We truly appriciate.' | translate}}
+												<!-- <span *ngIf="o._Branch.Phone">Quý công ty cần liên hệ về sản phẩm dịch vụ vui lòng gọi <b>{{ o._Branch.Phone }}</b></span>
 												<span *ngIf="o._Branch.Phone2"> hoặc liên hệ vận chuyển, giao hàng theo hotline <b>{{ o._Branch.Phone2 }}</b></span>. -->
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-          </tbody>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</td>
+						</tr>
+					</tbody>
 
-          <tfoot>
-            <tr>
-              <td>
-                <div class="page-footer-space"></div>
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      </section>
-    </div>
-  </div>
+					<tfoot>
+						<tr>
+							<td>
+								<div class="page-footer-space"></div>
+							</td>
+						</tr>
+					</tfoot>
+				</table>
+			</section>
+		</div>
+	</div>
 </ion-content>

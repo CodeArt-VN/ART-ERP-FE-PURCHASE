@@ -9,16 +9,8 @@ import { PipesModule } from 'src/app/pipes/pipes.module';
 import { ShareInputControlsModule } from 'src/app/components/controls/share-input-controls.modules';
 
 @NgModule({
-  imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    ShareModule,
-    PipesModule,
-    ShareModule,
-    ReactiveFormsModule
-  ],
-  declarations: [PurchaseItemsComponent],
-  exports: [PurchaseItemsComponent]
+	imports: [IonicModule, CommonModule, FormsModule, ShareModule, PipesModule, ShareModule, ReactiveFormsModule],
+	declarations: [PurchaseItemsComponent],
+	exports: [PurchaseItemsComponent],
 })
 export class PurchaseItemsComponentPageModule {}

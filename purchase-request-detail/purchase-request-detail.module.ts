@@ -11,15 +11,15 @@ import { PurchaseQuotationModalPage } from './purchase-quotation-modal/purchase-
 import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: PurchaseRequestDetailPage,
-  },
+	{
+		path: '',
+		component: PurchaseRequestDetailPage,
+	},
 ];
 
 @NgModule({
-  imports: [CommonModule, FormsModule,IonicModule,ReactiveFormsModule, PurchaseItemsComponentPageModule,ShareModule, RouterModule.forChild(routes)],
-  declarations: [PurchaseRequestDetailPage,PurchaseOrderModalPage,PurchaseQuotationModalPage,PriceListVersionModalPage],
-  exports : [PurchaseOrderModalPage,PurchaseQuotationModalPage,PriceListVersionModalPage]
+	imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule, PurchaseItemsComponentPageModule, ShareModule, RouterModule.forChild(routes)],
+	declarations: [PurchaseRequestDetailPage, PurchaseOrderModalPage, PurchaseQuotationModalPage, PriceListVersionModalPage],
+	exports: [PurchaseOrderModalPage, PurchaseQuotationModalPage, PriceListVersionModalPage],
 })
 export class PurchaseRequestDetailPageModule {}

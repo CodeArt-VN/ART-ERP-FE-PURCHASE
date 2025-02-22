@@ -56,11 +56,10 @@ export class PurchaseOrderPage extends PageBase {
 			{ Status: 'PartiallyReceived', ShowBtns: ['ShowCopyToReceipt', 'ShowCopyToAPInvoice', 'ShowRequestOutgoingPayment'] }, // Đã nhận một phần
 			{ Status: 'Received', ShowBtns: ['ShowCopyToAPInvoice', 'ShowRequestOutgoingPayment'] }, // Đã nhận đủ
 
-      { Status: 'Closed', ShowBtns: ['ShowArchive'] }, // Đã đóng
-      { Status: 'Splitted', ShowBtns: ['ShowArchive'] }, // Đã chia
+			{ Status: 'Closed', ShowBtns: ['ShowArchive'] }, // Đã đóng
+			{ Status: 'Splitted', ShowBtns: ['ShowArchive'] }, // Đã chia
 			{ Status: 'Merged', ShowBtns: ['ShowArchive'] }, // Đã gộp
 			{ Status: 'Cancelled', ShowBtns: ['ShowDelete', 'ShowArchive'] }, // Đã hủy
-			
 		];
 	}
 

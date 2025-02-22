@@ -9,14 +9,14 @@ import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-
 import { CopyToReceiptModalPage } from '../copy-to-receipt-modal/copy-to-receipt-modal.page';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: PurchaseOrderDetailPage,
-  },
+	{
+		path: '',
+		component: PurchaseOrderDetailPage,
+	},
 ];
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule, ShareModule, RouterModule.forChild(routes)],
-  declarations: [PurchaseOrderDetailPage, SaleOrderPickerModalPage,CopyToReceiptModalPage],
+	imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule, ShareModule, RouterModule.forChild(routes)],
+	declarations: [PurchaseOrderDetailPage, SaleOrderPickerModalPage, CopyToReceiptModalPage],
 })
 export class PurchaseOrderDetailPageModule {}

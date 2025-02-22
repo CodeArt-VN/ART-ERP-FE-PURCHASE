@@ -1,112 +1,107 @@
 <ion-header>
-  <ion-toolbar>
-    <!-- <ion-title> {{'Price list version'| translate}}</ion-title> -->
-    <ion-buttons slot="start" class="ion-hide-sm-down_">
-      <ion-button color="dark" class="ion-hide-sm-down"> {{'Price list version' | translate}} </ion-button>
-    </ion-buttons>
-    <ion-buttons slot="end">
-      <ion-buttons style="justify-content: flex-end">
-        <ng-container *ngIf="priceListForVendor?.length == 1">
-          <div class="c-control" style="margin-bottom: 0px; max-width: 250px; min-width: 250px; margin-right: 0.5rem;">
-            <input class="c-input" type="text" disabled="true" [value]="priceListForVendor[0]?._PriceList?.Name" />
-          </div>
-        </ng-container>
-        <div class="c-control" style="display: flex; align-items: center; margin-bottom: 0px; max-width: 250px; min-width: 120px">
-          <label class="c-label" style="margin-bottom: 0;">{{'Áp dụng giá' | translate}} </label>
-          <input class="c-checkbox" type="checkbox" [(ngModel)]="applyPrice" />
-        </div>
-      </ion-buttons>
-      <ion-button *ngIf="!(priceListForVendor?.length == 0)" fill="solid" size="small" (click)="submitForm()">{{'Submit' | translate}}</ion-button>
-      <ion-button (click)="modal.dismiss()">
-        <ion-icon name="close"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+	<ion-toolbar>
+		<!-- <ion-title> {{'Price list version'| translate}}</ion-title> -->
+		<ion-buttons slot="start" class="ion-hide-sm-down_">
+			<ion-button color="dark" class="ion-hide-sm-down"> {{'Price list version' | translate}} </ion-button>
+		</ion-buttons>
+		<ion-buttons slot="end">
+			<ion-buttons style="justify-content: flex-end">
+				<ng-container *ngIf="priceListForVendor?.length == 1">
+					<div class="c-control" style="margin-bottom: 0px; max-width: 250px; min-width: 250px; margin-right: 0.5rem">
+						<input class="c-input" type="text" disabled="true" [value]="priceListForVendor[0]?._PriceList?.Name" />
+					</div>
+				</ng-container>
+				<div class="c-control" style="display: flex; align-items: center; margin-bottom: 0px; max-width: 250px; min-width: 120px">
+					<label class="c-label" style="margin-bottom: 0">{{'Áp dụng giá' | translate}} </label>
+					<input class="c-checkbox" type="checkbox" [(ngModel)]="applyPrice" />
+				</div>
+			</ion-buttons>
+			<ion-button *ngIf="!(priceListForVendor?.length == 0)" fill="solid" size="small" (click)="submitForm()">{{'Submit' | translate}}</ion-button>
+			<ion-button (click)="modal.dismiss()">
+				<ion-icon name="close"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme class="header-table scrollx" forceOverscroll="false">
-  <app-data-table
-    class="box-shadow responsive"
-    [rows]="items"
-    [trackBy]="'IDItem'"
-    [showSpinner]="pageConfig.showSpinner"
-    [showFilter]="pageConfig.isShowSearch"
-    [(query)]="query"
-    (filter)="onDatatableFilter($event)"
-    (sort)="onSort($event)"
-    [isTreeList]="true"
-  >
-  <datatable-column [checkbox]="true" class="col-checkbox" name="" property="Id">
-    <ng-template datatable-header-template>
-      <input class="c-checkbox" type="checkbox" (change)="checkAllVendor($event)" />
-    </ng-template>
-    <ng-template let-i="row" datatable-cell-template>
-      <ng-container *ngIf="!i?.IDBusinessPartner">
-        <input class="c-checkbox" type="checkbox" [(ngModel)]="i.checked" (change)="selectItem(i)"/>
-      </ng-container> 
-    </ng-template>
-  </datatable-column>
+	<app-data-table
+		class="box-shadow responsive"
+		[rows]="items"
+		[trackBy]="'IDItem'"
+		[showSpinner]="pageConfig.showSpinner"
+		[showFilter]="pageConfig.isShowSearch"
+		[(query)]="query"
+		(filter)="onDatatableFilter($event)"
+		(sort)="onSort($event)"
+		[isTreeList]="true"
+	>
+		<datatable-column [checkbox]="true" class="col-checkbox" name="" property="Id">
+			<ng-template datatable-header-template>
+				<input class="c-checkbox" type="checkbox" (change)="checkAllVendor($event)" />
+			</ng-template>
+			<ng-template let-i="row" datatable-cell-template>
+				<ng-container *ngIf="!i?.IDBusinessPartner">
+					<input class="c-checkbox" type="checkbox" [(ngModel)]="i.checked" (change)="selectItem(i)" />
+				</ng-container>
+			</ng-template>
+		</datatable-column>
 
-    <datatable-column class="col-name" name="Item" property="Id">
-      <ng-template datatable-header-template>
-        <span (click)="toggleRowAll()">{{'Items' | translate}}</span>
-      </ng-template>
-      <ng-template let-i="row" datatable-cell-template>
-        <ng-container *ngFor="let w of i?.levels; let k = index;"
-          ><span class="spacing" *ngIf="k>0"></span
-        ></ng-container>
-        <ion-icon
-          (click)="toggleRow(items, i, true);"
-          class="min-btn clickable"
-          [name]="!i?.showdetail? 'chevron-forward-outline':'chevron-down-outline'"
-          *ngIf="i?.HasChild"
-        ></ion-icon>
-        <ion-icon class="min-btn clickable" [name]="''" *ngIf="!i?.HasChild"></ion-icon>
+		<datatable-column class="col-name" name="Item" property="Id">
+			<ng-template datatable-header-template>
+				<span (click)="toggleRowAll()">{{'Items' | translate}}</span>
+			</ng-template>
+			<ng-template let-i="row" datatable-cell-template>
+				<ng-container *ngFor="let w of i?.levels; let k = index;"><span class="spacing" *ngIf="k>0"></span></ng-container>
+				<ion-icon
+					(click)="toggleRow(items, i, true);"
+					class="min-btn clickable"
+					[name]="!i?.showdetail? 'chevron-forward-outline':'chevron-down-outline'"
+					*ngIf="i?.HasChild"
+				></ion-icon>
+				<ion-icon class="min-btn clickable" [name]="''" *ngIf="!i?.HasChild"></ion-icon>
 
-        <ng-container *ngIf="!i?.IDBusinessPartner">
-          <ng-container *ngIf="i?._Item.Code && i?._Item.Id">
-            <span [title]="i?._Item.Id">
-              <a [routerLink]="'/item/' + i?._Item.Id" class="clickable">
-                <ion-icon color="warning" *ngIf="i?.IsDisabled" name="archive"></ion-icon>
-                <span *ngIf="!i?.IsDisabled">#</span>{{ i.IDItem }}&nbsp;</a
-              >
-              <ion-text class="clickable" [ngClass]="i?.HasChild? ('bold ') : ('')"
-                ><b>{{ i?._Item.Code }}</b> {{ i?._Item.Name }}</ion-text
-              >
-            </span>
-          </ng-container>
-          <ng-container *ngIf="!(i?._Item.Code && i?._Item.Id)">
-            <ion-text class="clickable" [ngClass]="i?.HasChild? ('bold ') : ('')">{{i?._Item.Name}}</ion-text>
-          </ng-container>
-        </ng-container>
-        <ng-container *ngIf="i?.IDBusinessPartner">
-          <ion-text class="clickable" [ngClass]="i?.HasChild? ('bold ') : ('')">{{i?.Name}}</ion-text>
-        </ng-container>
-      </ng-template>
-    </datatable-column>
+				<ng-container *ngIf="!i?.IDBusinessPartner">
+					<ng-container *ngIf="i?._Item.Code && i?._Item.Id">
+						<span [title]="i?._Item.Id">
+							<a [routerLink]="'/item/' + i?._Item.Id" class="clickable">
+								<ion-icon color="warning" *ngIf="i?.IsDisabled" name="archive"></ion-icon>
+								<span *ngIf="!i?.IsDisabled">#</span>{{ i.IDItem }}&nbsp;</a
+							>
+							<ion-text class="clickable" [ngClass]="i?.HasChild? ('bold ') : ('')"><b>{{ i?._Item.Code }}</b> {{ i?._Item.Name }}</ion-text>
+						</span>
+					</ng-container>
+					<ng-container *ngIf="!(i?._Item.Code && i?._Item.Id)">
+						<ion-text class="clickable" [ngClass]="i?.HasChild? ('bold ') : ('')">{{i?._Item.Name}}</ion-text>
+					</ng-container>
+				</ng-container>
+				<ng-container *ngIf="i?.IDBusinessPartner">
+					<ion-text class="clickable" [ngClass]="i?.HasChild? ('bold ') : ('')">{{i?.Name}}</ion-text>
+				</ng-container>
+			</ng-template>
+		</datatable-column>
 
-    <datatable-column class="col-code" name="UoM" property="Id">
-      <ng-template let-i="row" datatable-cell-template>
-        <b *ngIf="!i?.IDBusinessPartner">{{i._UoM.Name}}</b>
-      </ng-template>
-    </datatable-column>
+		<datatable-column class="col-code" name="UoM" property="Id">
+			<ng-template let-i="row" datatable-cell-template>
+				<b *ngIf="!i?.IDBusinessPartner">{{i._UoM.Name}}</b>
+			</ng-template>
+		</datatable-column>
 
-    <datatable-column class="col-remark" name="Price" property="Id">
-      <ng-template let-i="row" datatable-cell-template>
-        <b *ngIf="!i?.IDBusinessPartner">{{i.Price | number}}</b>
-      </ng-template>
-    </datatable-column>
-  </app-data-table>
+		<datatable-column class="col-remark" name="Price" property="Id">
+			<ng-template let-i="row" datatable-cell-template>
+				<b *ngIf="!i?.IDBusinessPartner">{{i.Price | number}}</b>
+			</ng-template>
+		</datatable-column>
+	</app-data-table>
 </ion-content>
 
 <ion-footer *ngIf="priceListForVendor?.length == 0">
-  <ion-toolbar>
-    <ion-title >
-      <ion-chip>
-        <ion-icon name="alert-circle-outline" color="warning"> </ion-icon>
-        <ion-label>{{'Không tìm thấy bảng giá của NCC' | translate}} 
-        </ion-label>
-      </ion-chip>
-    </ion-title>
-  </ion-toolbar>
+	<ion-toolbar>
+		<ion-title>
+			<ion-chip>
+				<ion-icon name="alert-circle-outline" color="warning"> </ion-icon>
+				<ion-label>{{'Không tìm thấy bảng giá của NCC' | translate}} </ion-label>
+			</ion-chip>
+		</ion-title>
+	</ion-toolbar>
 </ion-footer>

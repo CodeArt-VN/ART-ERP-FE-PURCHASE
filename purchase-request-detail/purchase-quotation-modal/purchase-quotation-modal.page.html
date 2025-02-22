@@ -1,76 +1,64 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title> {{'Item in vendor'| translate}}</ion-title>
+	<ion-toolbar>
+		<ion-title> {{'Item in vendor'| translate}}</ion-title>
 
-    <ion-buttons slot="end">
-      <ion-buttons *ngIf="defaultVendor.Id && vendorList.length > 0" style="justify-content: flex-end">
-        <span>{{'Vendor'|translate}}</span> &nbsp;
-        <div class="c-control" style="margin-bottom: 0px; max-width: 250px; min-width: 250px">
-          <app-input-control
-            [field]="{ id:'IDVendor',label:'Vendor',type:'ng-select',
+		<ion-buttons slot="end">
+			<ion-buttons *ngIf="defaultVendor.Id && vendorList.length > 0" style="justify-content: flex-end">
+				<span>{{'Vendor'|translate}}</span> &nbsp;
+				<div class="c-control" style="margin-bottom: 0px; max-width: 250px; min-width: 250px">
+					<app-input-control
+						[field]="{ id:'IDVendor',label:'Vendor',type:'ng-select',
         dataSource:vendorList,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
         form:formGroup}"
-          >
-          </app-input-control>
-        </div>
-      </ion-buttons>
-      <ion-button fill="solid" size="small" (click)="submitForm()">{{'Submit' | translate}}</ion-button>
-      <ion-button (click)="modal.dismiss()">
-        <ion-icon name="close"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+					>
+					</app-input-control>
+				</div>
+			</ion-buttons>
+			<ion-button fill="solid" size="small" (click)="submitForm()">{{'Submit' | translate}}</ion-button>
+			<ion-button (click)="modal.dismiss()">
+				<ion-icon name="close"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme class="header-table scrollx" forceOverscroll="false">
-  <app-data-table
-    class="box-shadow responsive"
-    [rows]="items"
-    [trackBy]="'Id'"
-    [showSpinner]="pageConfig.showSpinner"
-    [showFilter]="pageConfig.isShowSearch"
-    [(query)]="query"
-  >
+	<app-data-table class="box-shadow responsive" [rows]="items" [trackBy]="'Id'" [showSpinner]="pageConfig.showSpinner" [showFilter]="pageConfig.isShowSearch" [(query)]="query">
+		<datatable-column [checkbox]="true" class="col-checkbox" name="" property="Id">
+			<ng-template datatable-header-template>
+				<input class="c-checkbox" type="checkbox" (change)="checkAllVendor($event)" />
+			</ng-template>
+			<ng-template let-i="row" datatable-cell-template>
+				<ng-container *ngIf="!i.IDItem">
+					<input class="c-checkbox" type="checkbox" [(ngModel)]="i.checked" (change)="changeVendor(i,z)" />
+				</ng-container>
+			</ng-template>
+		</datatable-column>
 
-    <datatable-column [checkbox]="true" class="col-checkbox" name="" property="Id">
-      <ng-template datatable-header-template>
-        <input class="c-checkbox" type="checkbox" (change)="checkAllVendor($event)" />
-      </ng-template>
-      <ng-template let-i="row" datatable-cell-template>
-        <ng-container *ngIf="!i.IDItem">
-          <input class="c-checkbox" type="checkbox" [(ngModel)]="i.checked" (change)="changeVendor(i,z)" />
-        </ng-container> 
-      </ng-template>
-    </datatable-column>
+		<datatable-column class="col-name" name="Item" property="Id">
+			<ng-template let-i="row" datatable-cell-template>
+				<ng-container *ngIf="i.IDItem">
+					<span *ngIf="i.IDItem"><b>{{i._Item?.Code}} - {{i._Item?.Name}} </b> </span>
+				</ng-container>
+				<ng-container *ngIf="!i.IDItem">
+					<span class="spacing"></span>
+					<span>
+						<a [href]="'#/'+'business-partner/'+i.Id" (click)="nav('business-partner/'+i.Id,'forward')" title="{{'Vendor' | translate}}">
+							{{i.Id}}
+							<ion-icon name="open-outline"></ion-icon>
+						</a>
+						{{i.Name}}
+					</span>
+				</ng-container>
+			</ng-template>
+		</datatable-column>
 
-    <datatable-column class="col-name" name="Item" property="Id">
-      <ng-template let-i="row" datatable-cell-template>
-        <ng-container *ngIf="i.IDItem">
-          <span *ngIf="i.IDItem"><b>{{i._Item?.Code}} - {{i._Item?.Name}} </b> </span>
-        </ng-container>
-        <ng-container *ngIf="!i.IDItem">
-          <span class="spacing"></span>
-          <span>
-            <a
-              [href]="'#/'+'business-partner/'+i.Id"
-              (click)="nav('business-partner/'+i.Id,'forward')"
-              title="{{'Vendor' | translate}}"
-            >
-              {{i.Id}}
-              <ion-icon name="open-outline"></ion-icon>
-            </a>
-            {{i.Name}}
-          </span>
-        </ng-container>
-      </ng-template>
-    </datatable-column>
-
-    <datatable-column class="col-remark" name="Quantity" property="Id">
-      <ng-template let-i="row" datatable-cell-template>
-        <b *ngIf="i.IDItem">{{i.Quantity}} <small>{{i.UoMName}}</small></b>
-      </ng-template>
-    </datatable-column>
-  </app-data-table>
+		<datatable-column class="col-remark" name="Quantity" property="Id">
+			<ng-template let-i="row" datatable-cell-template>
+				<b *ngIf="i.IDItem">{{i.Quantity}} <small>{{i.UoMName}}</small></b>
+			</ng-template>
+		</datatable-column>
+	</app-data-table>
 </ion-content>
 
 <!-- <ion-footer>

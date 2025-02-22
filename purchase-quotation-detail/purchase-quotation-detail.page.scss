@@ -1,120 +1,120 @@
 .full-screen {
-  min-height: calc(100vh - 385px);
+	min-height: calc(100vh - 385px);
 }
 
 .table-contain {
-  max-width: 1440px;
-  margin: auto;
+	max-width: 1440px;
+	margin: auto;
 
-  section.table header {
-    height: 45px;
-  }
-  .row {
-    width: unset;
-  }
-  .col-id {
-    max-width: 50px;
-    min-width: 50px;
-    font-weight: bold;
-  }
-  .col-name {
-    min-width: 150px;
-    b {
-      margin-left: 10px;
-      font: bold;
-      // color: var(--ion-color-primary);
-    }
-  }
-  .col-uom {
-    max-width: 90px;
-    min-width: 90px;
-    justify-content: center;
-    .c-input {
-      text-align: center;
-    }
-  }
-  .col-price {
-    min-width: 90px;
-    max-width: 90px;
-    text-align: right;
-    justify-content: flex-end;
-  }
-  .col-qty {
-    min-width: 75px;
-    max-width: 75px;
-    justify-content: flex-end;
-    .c-input {
-      text-align: right;
-      font-weight: bold;
-      color: var(--ion-color-primary);
-    }
-  }
-  .col-discount {
-    max-width: 90px;
-    min-width: 90px;
-    text-align: right;
-    justify-content: flex-end;
-  }
+	section.table header {
+		height: 45px;
+	}
+	.row {
+		width: unset;
+	}
+	.col-id {
+		max-width: 50px;
+		min-width: 50px;
+		font-weight: bold;
+	}
+	.col-name {
+		min-width: 150px;
+		b {
+			margin-left: 10px;
+			font: bold;
+			// color: var(--ion-color-primary);
+		}
+	}
+	.col-uom {
+		max-width: 90px;
+		min-width: 90px;
+		justify-content: center;
+		.c-input {
+			text-align: center;
+		}
+	}
+	.col-price {
+		min-width: 90px;
+		max-width: 90px;
+		text-align: right;
+		justify-content: flex-end;
+	}
+	.col-qty {
+		min-width: 75px;
+		max-width: 75px;
+		justify-content: flex-end;
+		.c-input {
+			text-align: right;
+			font-weight: bold;
+			color: var(--ion-color-primary);
+		}
+	}
+	.col-discount {
+		max-width: 90px;
+		min-width: 90px;
+		text-align: right;
+		justify-content: flex-end;
+	}
 
-  .col-promotion {
-    max-width: 50px;
-    min-width: 50px;
-    justify-content: center;
-    text-align: center;
-  }
+	.col-promotion {
+		max-width: 50px;
+		min-width: 50px;
+		justify-content: center;
+		text-align: center;
+	}
 
-  .col-total {
-    min-width: 110px;
-    max-width: 110px;
-    text-align: right;
-    justify-content: flex-end;
-    .c-input {
-      text-align: right;
-      font-weight: bold;
-      color: var(--ion-color-primary);
-    }
-  }
-  .col-del {
-    max-width: 40px;
-    min-width: 40px;
-    justify-content: center;
-    cursor: pointer;
-  }
-  .c-input {
-    text-align: right;
-  }
+	.col-total {
+		min-width: 110px;
+		max-width: 110px;
+		text-align: right;
+		justify-content: flex-end;
+		.c-input {
+			text-align: right;
+			font-weight: bold;
+			color: var(--ion-color-primary);
+		}
+	}
+	.col-del {
+		max-width: 40px;
+		min-width: 40px;
+		justify-content: center;
+		cursor: pointer;
+	}
+	.c-input {
+		text-align: right;
+	}
 
-  .cell {
-    padding: 2px 2px;
+	.cell {
+		padding: 2px 2px;
 
-    .info-color {
-      margin-left: 4px;
-    }
-  }
-  .cell:has(> app-input-control) {
-    app-input-control {
-      &:has(.c-checkbox) {
-        text-align: center;
-      }
-      ::ng-deep {
-        .c-input:not(#Remark) {
-          text-align: right;
-        }
-        .c-input#UoMQuantityExpected,
-        .c-input#QuantityAdjusted {
-          color: var(--ion-color-primary);
-        }
+		.info-color {
+			margin-left: 4px;
+		}
+	}
+	.cell:has(> app-input-control) {
+		app-input-control {
+			&:has(.c-checkbox) {
+				text-align: center;
+			}
+			::ng-deep {
+				.c-input:not(#Remark) {
+					text-align: right;
+				}
+				.c-input#UoMQuantityExpected,
+				.c-input#QuantityAdjusted {
+					color: var(--ion-color-primary);
+				}
 
-        .c-input#IDUoM {
-          text-align: center !important;
-        }
-        .c-input#OriginalTotalAfterDiscount,
-        #OriginalTotalAfterDiscountFromSalesman {
-          font-weight: bold;
-          color: var(--ion-color-primary);
-        }
-        width: 100%;
-      }
-    }
-  }
+				.c-input#IDUoM {
+					text-align: center !important;
+				}
+				.c-input#OriginalTotalAfterDiscount,
+				#OriginalTotalAfterDiscountFromSalesman {
+					font-weight: bold;
+					color: var(--ion-color-primary);
+				}
+				width: 100%;
+			}
+		}
+	}
 }
