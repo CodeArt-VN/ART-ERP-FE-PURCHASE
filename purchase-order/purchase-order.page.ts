@@ -140,11 +140,11 @@ export class PurchaseOrderPage extends PageBase {
 			this.env
 				.showPrompt(
 					{
-						code: 'Bạn có chắc muốn gửi duyệt {{value}} đơn hàng đang chọn?',
+						code: 'SUBMIT_FOR_APPROVE_MESSAGE',
 						value: { value: this.selectedItems.length },
 					},
 					null,
-					{ code: 'Gửi duyệt {{value}} mua hàng', value: { value: this.selectedItems.length } }
+					{ code: 'SUBMIT_FOR_APPROVE', value: { value: this.selectedItems.length } }
 				)
 				.then((_) => {
 					this.submitAttempt = true;

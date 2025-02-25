@@ -17,6 +17,7 @@ import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { PurchaseOrderModalPage } from './purchase-order-modal/purchase-order-modal.page';
 import { PurchaseQuotationModalPage } from './purchase-quotation-modal/purchase-quotation-modal.page';
+import { PURCHASE_RequestService } from '../purchase-request.service';
 
 @Component({
 	selector: 'app-purchase-request-detail',
@@ -41,7 +42,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 	});
 
 	constructor(
-		public pageProvider: PURCHASE_RequestProvider,
+		public pageProvider: PURCHASE_RequestService,
 		public purchaseRequestDetailProvider: PURCHASE_RequestDetailProvider,
 		public contactProvider: CRM_ContactProvider,
 		public branchProvider: BRA_BranchProvider,

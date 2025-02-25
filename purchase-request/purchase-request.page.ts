@@ -5,6 +5,7 @@ import { PageBase } from 'src/app/page-base';
 import { EnvService } from 'src/app/services/core/env.service';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { PURCHASE_RequestProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
+import { PURCHASE_RequestService } from '../purchase-request.service';
 
 @Component({
 	selector: 'app-purchase-request',
@@ -16,7 +17,7 @@ export class PurchaseRequestPage extends PageBase {
 	statusList = [];
 
 	constructor(
-		public pageProvider: PURCHASE_RequestProvider,
+		public pageProvider: PURCHASE_RequestService,
 		public sysConfigProvider: SYS_ConfigProvider,
 		public modalController: ModalController,
 		public popoverCtrl: PopoverController,
@@ -27,29 +28,7 @@ export class PurchaseRequestPage extends PageBase {
 		public location: Location
 	) {
 		super();
-
-		// this.pageConfig.ShowCommandRules = [
-		//   { Status: 'Draft',      ShowBtns: ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit',  'ShowApprove',                  'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Mới
-		//   { Status: 'Unapproved', ShowBtns: ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit',  'ShowApprove',                    'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Không duyệt
-		//   { Status: 'Submitted',  ShowBtns: ['ShowApprove', 'ShowDisapprove',  'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Chờ duyệt
-		//   { Status: 'Approved',   ShowBtns: [                                                                            'ShowDisapprove',  'ShowCancel',               'ShowArchive','ShowCopyToPurchaseQuotation'] }, // Đã duyệt
-		//   { Status: 'QuotationSent',  ShowBtns: [] }, // Đã giao hàng
-		//   { Status: 'Closed',       ShowBtns: [] }, // Đã xong
-		//   { Status: 'Cancelled',  ShowBtns: [] }  // Đã hủy
-		// ];
-
-		this.pageConfig.ShowCommandRules = [
-			{ Status: 'Draft', ShowBtns: ['ShowChangeBranch', 'ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Mới
-			{ Status: 'Unapproved', ShowBtns: ['ShowChangeBranch', 'ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Không duyệt
-			{ Status: 'Submitted', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Chờ duyệt
-			{ Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel', 'ShowArchive', 'ShowCopyToPurchaseQuotation'] }, // Đã duyệt
-
-			{ Status: 'Open', ShowBtns: ['ShowArchive'] }, // Đang xử lý
-			{ Status: 'Closed', ShowBtns: ['ShowArchive'] }, // Đã xong
-
-			{ Status: 'Splitted', ShowBtns: ['ShowArchive'] }, // Đơn đã chia
-			{ Status: 'Merged', ShowBtns: ['ShowArchive'] }, // Đơn đã gộp
-		];
+		this.pageConfig.ShowCommandRules = pageProvider.showCommandRules;
 	}
 
 	preLoadData(event) {
@@ -100,8 +79,8 @@ export class PurchaseRequestPage extends PageBase {
 			this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'Unapproved');
 
 			this.env
-				.showPrompt({ code: 'Bạn có chắc muốn gửi duyệt {{value}} đơn hàng đang chọn?', value: this.selectedItems.length }, null, {
-					code: 'Gửi duyệt {{value}} mua hàng',
+				.showPrompt({ code: 'SUBMIT_FOR_APPROVE_MESSAGE', value: this.selectedItems.length }, null, {
+					code: 'SUBMIT_FOR_APPROVE',
 					value: this.selectedItems.length,
 				})
 				.then((_) => {
@@ -217,43 +196,5 @@ export class PurchaseRequestPage extends PageBase {
 				});
 		}
 	}
-	cancel() {
-		if (!this.pageConfig.canCancel) return;
-		if (this.submitAttempt) return;
-
-		let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Draft' || i.Status == 'Unapproved'));
-		if (itemsCanNotProcess.length == this.selectedItems.length) {
-			this.env.showMessage('Your selected invoices cannot be canceled. Please select draft or pending for approval invoice', 'warning');
-		} else {
-			itemsCanNotProcess.forEach((i) => {
-				i.checked = false;
-			});
-			this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'Unapproved');
-			this.env
-				.showPrompt({ code: 'Bạn có chắc muốn HỦY {{value}} đơn hàng đang chọn?', value: this.selectedItems.length }, null, {
-					code: 'Duyệt {{value}} đơn hàng',
-					value: this.selectedItems.length,
-				})
-				.then((_) => {
-					this.submitAttempt = true;
-					let postDTO = { Ids: [] };
-					postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-					this.pageProvider.commonService
-						.connect('POST', ApiSetting.apiDomain('PURCHASE/Request/Cancel/'), postDTO)
-						.toPromise()
-						.then((savedItem: any) => {
-							this.env.publishEvent({
-								Code: this.pageConfig.pageName,
-							});
-							this.env.showMessage('Saving completed!', 'success');
-							this.submitAttempt = false;
-						})
-						.catch((err) => {
-							this.submitAttempt = false;
-							console.log(err);
-						});
-				});
-		}
-	}
+	
 }
