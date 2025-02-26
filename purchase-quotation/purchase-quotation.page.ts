@@ -27,13 +27,13 @@ export class PurchaseQuotationPage extends PageBase {
 		public location: Location
 	) {
 		super();
-		this.pageConfig.ShowCommandRules = [
+		this.pageProvider.showCommandRules = [
 			{ Status: 'Open', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
 			{ Status: 'Unapproved', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
 			{ Status: 'Submitted', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel'] },
 			{ Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel', 'ShowConfirm', 'ShowAddPriceListVersion'] },
 			{ Status: 'Confirmed', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete'] },
-			{ Status: 'Cancelled', ShowBtns: ['ShowDelete', 'ShowArchive'] },
+			{ Status: 'Canceled', ShowBtns: ['ShowDelete', 'ShowArchive'] },
 			{ Status: 'Closed', ShowBtns: ['ShowAddPriceListVersion'] },
 		];
 	}
@@ -68,7 +68,7 @@ export class PurchaseQuotationPage extends PageBase {
 		console.log(this.items);
 	}
 
-	submit() {
+	submitForApproval() {
 		if (this.submitAttempt) return;
 		this.env
 			.showPrompt(

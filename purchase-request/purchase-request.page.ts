@@ -28,7 +28,6 @@ export class PurchaseRequestPage extends PageBase {
 		public location: Location
 	) {
 		super();
-		this.pageConfig.ShowCommandRules = pageProvider.showCommandRules;
 	}
 
 	preLoadData(event) {
@@ -64,7 +63,7 @@ export class PurchaseRequestPage extends PageBase {
 	mergeSaleOrders() {}
 	splitSaleOrder() {}
 
-	submit() {
+	submitForApproval() {
 		// submit PO
 		if (!this.pageConfig.canSubmit) return;
 		if (this.submitAttempt) return;
@@ -196,5 +195,4 @@ export class PurchaseRequestPage extends PageBase {
 				});
 		}
 	}
-	
 }

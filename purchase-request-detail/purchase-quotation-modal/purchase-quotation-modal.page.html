@@ -23,7 +23,7 @@
 </ion-header>
 
 <ion-content appScrollbarTheme class="header-table scrollx" forceOverscroll="false">
-	<app-data-table class="box-shadow responsive" [rows]="items" [trackBy]="'Id'" [showSpinner]="pageConfig.showSpinner" [showFilter]="pageConfig.isShowSearch" [(query)]="query">
+	<app-data-table class="box-shadow" [rows]="items" [trackBy]="'Id'" [showSpinner]="pageConfig.showSpinner" [showFilter]="pageConfig.isShowSearch" [(query)]="query">
 		<datatable-column [checkbox]="true" class="col-checkbox" name="" property="Id">
 			<ng-template datatable-header-template>
 				<input class="c-checkbox" type="checkbox" (change)="checkAllVendor($event)" />
@@ -53,7 +53,7 @@
 			</ng-template>
 		</datatable-column>
 
-		<datatable-column class="col-remark" name="Quantity" property="Id">
+		<datatable-column class="col-number" name="Quantity" property="Id">
 			<ng-template let-i="row" datatable-cell-template>
 				<b *ngIf="i.IDItem">{{i.Quantity}} <small>{{i.UoMName}}</small></b>
 			</ng-template>

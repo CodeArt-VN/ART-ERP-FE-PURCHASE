@@ -44,7 +44,7 @@
 
 			<datatable-column class="col-status" name="Status" property="Status" filterControlType="ng-select" [filterDataSource]="statusList">
 				<ng-template let-i="row" datatable-cell-template>
-					<ion-badge [color]="i._Status.Color" [title]="i._Status.Name"> {{i._Status.Name | translate}} </ion-badge>
+					<ion-badge [color]="i._Status?.Color" [title]="i._Status?.Name"> {{i._Status?.Name | translate}} </ion-badge>
 				</ng-template>
 			</datatable-column>
 		</app-data-table>

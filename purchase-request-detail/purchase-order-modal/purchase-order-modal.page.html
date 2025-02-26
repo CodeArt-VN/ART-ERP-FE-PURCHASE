@@ -17,7 +17,7 @@
 
 			<span class="split ion-hide-sm-down">|</span>
 
-			<ion-button [disabled]="selectedItems.length==0" fill="solid" size="small" color="primary" (click)="submit()">
+			<ion-button [disabled]="selectedItems.length==0" fill="solid" size="small" color="primary" (click)="copyToPO()">
 				&nbsp;{{'Copy {{value}} item(s) to PO' | translate}} {{selectedItems.length}} &nbsp;
 			</ion-button>
 

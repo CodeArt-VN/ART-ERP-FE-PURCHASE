@@ -170,7 +170,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 		this.setOrderLines();
 		this.pageConfig.ShowRequestOutgoingPayment = this.pageConfig.canRequestOutgoingPayment;
 		let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved', 'Paid'];
-		let notShowRequestOutgoingPayment = ['Draft', 'Submitted', 'Approved', 'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Cancelled'];
+		let notShowRequestOutgoingPayment = ['Draft', 'Submitted', 'Approved', 'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Canceled'];
 		if (
 			notShowRequestOutgoingPayment.includes(this.formGroup.get('Status').value) ||
 			notShowRequestOutgoingPaymentPaymentStatus.includes(this.formGroup.get('PaymentStatus').value)

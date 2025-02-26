@@ -43,7 +43,7 @@ export class PurchaseOrderPage extends PageBase {
 
 		//												              {[ 'ShowChangeBranch',  'ShowMerge',   'ShowSplit',  'ShowSubmit',  'ShowApprove',   'ShowDisapprove',   'ShowCancel',   'ShowDelete',   'ShowArchive',  'ShowSubmitOrders',  'ShowCopyToReceipt',  'ShowCopyToAPInvoice',   'ShowRequestOutgoingPayment']},
 
-		this.pageConfig.ShowCommandRules = [
+		this.pageProvider.showCommandRules = [
 			{ Status: 'Draft', ShowBtns: ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
 			{ Status: 'Unapproved', ShowBtns: ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
 			{ Status: 'Submitted', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Chờ duyệt
@@ -59,7 +59,7 @@ export class PurchaseOrderPage extends PageBase {
 			{ Status: 'Closed', ShowBtns: ['ShowArchive'] }, // Đã đóng
 			{ Status: 'Splitted', ShowBtns: ['ShowArchive'] }, // Đã chia
 			{ Status: 'Merged', ShowBtns: ['ShowArchive'] }, // Đã gộp
-			{ Status: 'Cancelled', ShowBtns: ['ShowDelete', 'ShowArchive'] }, // Đã hủy
+			{ Status: 'Canceled', ShowBtns: ['ShowDelete', 'ShowArchive'] }, // Đã hủy
 		];
 	}
 
@@ -123,7 +123,7 @@ export class PurchaseOrderPage extends PageBase {
 	merge() {}
 	split() {}
 
-	submit() {
+	submitForApproval() {
 		// submit PO
 		if (!this.pageConfig.canSubmitOrdersForApproval) return;
 		if (this.submitAttempt) return;

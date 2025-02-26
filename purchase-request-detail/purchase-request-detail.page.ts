@@ -100,8 +100,6 @@ export class PurchaseRequestDetailPage extends PageBase {
 		];
 		this.branchList = [...this.env.branchList];
 
-		console.log(this.branchList);
-
 		Promise.all([this.env.getStatus('PurchaseRequest'), this.contactProvider.read({ IsVendor: true, Take: 20 })]).then((values: any) => {
 			if (values[0]) this.statusList = values[0];
 			if (values[1] && values[1].data) {
@@ -112,7 +110,6 @@ export class PurchaseRequestDetailPage extends PageBase {
 	}
 
 	loadedData(event) {
-
 		if (!this.item.Id) {
 			this.item.IDRequester = this.env.user.StaffID;
 			this.item._Requester = {
@@ -145,9 +142,8 @@ export class PurchaseRequestDetailPage extends PageBase {
 			this.formGroup.disable();
 			this.pageConfig.canEdit = false;
 		}
-		
+
 		this.getNearestCompany(this.env.selectedBranch);
-		
 	}
 
 	removeItem(Ids) {
