@@ -40,27 +40,6 @@ export class PurchaseOrderPage extends PageBase {
 			PaymentSubType: [''],
 			PaymentReason: [''],
 		});
-
-		//												              {[ 'ShowChangeBranch',  'ShowMerge',   'ShowSplit',  'ShowSubmit',  'ShowApprove',   'ShowDisapprove',   'ShowCancel',   'ShowDelete',   'ShowArchive',  'ShowSubmitOrders',  'ShowCopyToReceipt',  'ShowCopyToAPInvoice',   'ShowRequestOutgoingPayment']},
-
-		this.pageProvider.showCommandRules = [
-			{ Status: 'Draft', ShowBtns: ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
-			{ Status: 'Unapproved', ShowBtns: ['ShowChangeBranch', 'ShowMerge', 'ShowSplit', 'ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
-			{ Status: 'Submitted', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Chờ duyệt
-			{ Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel', 'ShowArchive', 'ShowSubmitOrders'] }, // Đã duyệt
-
-			{ Status: 'Ordered', ShowBtns: ['ShowArchive', 'ShowCopyToReceipt', 'ShowCopyToAPInvoice', 'ShowRequestOutgoingPayment'] }, // Đã đặt mua
-			{ Status: 'Confirmed', ShowBtns: ['ShowCopyToReceipt', 'ShowCopyToAPInvoice', 'ShowRequestOutgoingPayment'] }, // Đã xác nhận
-			{ Status: 'Shipping', ShowBtns: ['ShowCopyToReceipt', 'ShowCopyToAPInvoice', 'ShowRequestOutgoingPayment'] }, // Đang giao hàng
-
-			{ Status: 'PartiallyReceived', ShowBtns: ['ShowCopyToReceipt', 'ShowCopyToAPInvoice', 'ShowRequestOutgoingPayment'] }, // Đã nhận một phần
-			{ Status: 'Received', ShowBtns: ['ShowCopyToAPInvoice', 'ShowRequestOutgoingPayment'] }, // Đã nhận đủ
-
-			{ Status: 'Closed', ShowBtns: ['ShowArchive'] }, // Đã đóng
-			{ Status: 'Splitted', ShowBtns: ['ShowArchive'] }, // Đã chia
-			{ Status: 'Merged', ShowBtns: ['ShowArchive'] }, // Đã gộp
-			{ Status: 'Canceled', ShowBtns: ['ShowDelete', 'ShowArchive'] }, // Đã hủy
-		];
 	}
 
 	preLoadData(event) {

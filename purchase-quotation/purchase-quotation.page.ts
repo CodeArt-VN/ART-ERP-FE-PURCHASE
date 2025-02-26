@@ -27,15 +27,6 @@ export class PurchaseQuotationPage extends PageBase {
 		public location: Location
 	) {
 		super();
-		this.pageProvider.showCommandRules = [
-			{ Status: 'Open', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
-			{ Status: 'Unapproved', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] },
-			{ Status: 'Submitted', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel'] },
-			{ Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel', 'ShowConfirm', 'ShowAddPriceListVersion'] },
-			{ Status: 'Confirmed', ShowBtns: ['ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete'] },
-			{ Status: 'Canceled', ShowBtns: ['ShowDelete', 'ShowArchive'] },
-			{ Status: 'Closed', ShowBtns: ['ShowAddPriceListVersion'] },
-		];
 	}
 
 	preLoadData(event) {
