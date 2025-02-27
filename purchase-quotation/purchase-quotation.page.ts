@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
@@ -16,6 +16,7 @@ import { PURCHASE_QuotationService } from '../purchase-quotation.service';
 })
 export class PurchaseQuotationPage extends PageBase {
 	statusList: any = [];
+	isOpenCopyPopover: boolean = false;
 	constructor(
 		public pageProvider: PURCHASE_QuotationService,
 		public sysConfigProvider: SYS_ConfigProvider,
@@ -52,9 +53,7 @@ export class PurchaseQuotationPage extends PageBase {
 
 	loadedData(event) {
 		this.items.forEach((i) => {
-			i.RequestBranchName = this.env.branchList.find((d) => d.Id == i.IDRequestBranch)?.Name;
-			i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
-			i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
+			i._Status = this.statusList.find((d) => d.Code == i.Status);
 		});
 		super.loadedData(event);
 		console.log(this.items);
@@ -64,5 +63,13 @@ export class PurchaseQuotationPage extends PageBase {
 		this.pageProvider.updatePriceList(this.selectedItems.map((d) => d.Id) ,PriceListVersionModalPage,this.modalController,this.env)
 	
 	}
+	copyCopyToPurchaseOrder(){
 
+	}
+	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
+	presentCopyPopover(e){
+		this.copyPopover.event = e;
+		this.isOpenCopyPopover = !this.isOpenCopyPopover;
+	}
 }
+
