@@ -219,15 +219,20 @@
 										<app-input-control (change)="saveChange()" [field]="{ id: 'Quantity', type: 'number', form: g }"></app-input-control>
 									</ng-template>
 								</datatable-column>
+							
+								<datatable-column class="col-money" name="Info price" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control [field]="{ id: 'InfoPrice', type: 'span-number', form: g }"> </app-input-control>
+									</ng-template>
+								</datatable-column>
+								<datatable-column class="col-money" name="Unit price" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control (change)="saveChange()" [field]="{ id: 'Price', type: 'number', form: g }"> </app-input-control>
+									</ng-template>
+								</datatable-column>
 								<datatable-column class="col-number" name="Discount" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control (change)="saveChange()" [field]="{ id: 'TotalDiscount', type: 'number', form: g }"> </app-input-control>
-									</ng-template>
-								</datatable-column>
-
-								<datatable-column class="col-money" name="Unit price" property="value">
-									<ng-template let-g="row" datatable-cell-template>
-										<app-input-control [field]="{ id: 'InfoPrice', type: 'span-number', form: g }"> </app-input-control>
 									</ng-template>
 								</datatable-column>
 

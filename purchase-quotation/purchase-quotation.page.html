@@ -8,10 +8,19 @@
 		>
 			<ion-icon name="pricetags-outline"></ion-icon>
 		</ion-button>
+		
 	</app-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme class="header-table">
+	<app-page-title
+		class="ion-padding safe-max-width"
+		[icon]="pageConfig.pageIcon"
+		[color]="pageConfig.pageColor"
+		[title]="pageConfig.pageTitle"
+		[remark]="pageConfig.pageRemark"
+	></app-page-title>
+
 	<app-data-table
 		style="width: fit-content; min-width: calc(100% - 32px)"
 		class="box-shadow responsive"

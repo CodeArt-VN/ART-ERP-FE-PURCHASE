@@ -128,9 +128,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		if (this.item.Status == 'Confirmed' && this.vendorView) this.pageConfig.canEdit = false;
 		super.loadedData(event);
 		this.setQuotationLines();
-		if (['Closed', 'Approved'].includes(this.item.Status)) this.pageConfig.ShowAddPriceListVersion = true;
-		else this.pageConfig.ShowAddPriceListVersion = false;
-
+	
 		if (this.item.SourceType == 'FromPurchaseRequest') {
 			this.formGroup.controls.ContentType.disable();
 			this.formGroup.controls.IDBusinessPartner.disable();
@@ -313,15 +311,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		});
 	}
 
-	async updatePriceList() {
-		const modal = await this.modalController.create({
-			component: PriceListVersionModalPage,
-			componentProps: { ids: [this.item.Id] },
-			cssClass: 'modal90',
-		});
-		await modal.present();
-		const { data } = await modal.onWillDismiss();
-		if (data) this.env.showMessage('Updated price success', 'success');
+	 updatePriceList() {
+		this.pageProvider.updatePriceList([this.item.Id],PriceListVersionModalPage,this.modalController,this.env)
 	}
 
 	IDUoMChange(g){
