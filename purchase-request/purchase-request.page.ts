@@ -1,11 +1,13 @@
 import { Location } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { AlertController, LoadingController, ModalController, NavController, PopoverController } from '@ionic/angular';
 import { PageBase } from 'src/app/page-base';
 import { EnvService } from 'src/app/services/core/env.service';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { PURCHASE_RequestProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
 import { PURCHASE_RequestService } from '../purchase-request.service';
+import { PurchaseQuotationModalPage } from '../purchase-request-detail/purchase-quotation-modal/purchase-quotation-modal.page';
+import { PurchaseOrderModalPage } from '../purchase-request-detail/purchase-order-modal/purchase-order-modal.page';
 
 @Component({
 	selector: 'app-purchase-request',
@@ -60,139 +62,75 @@ export class PurchaseRequestPage extends PageBase {
 		}
 	}
 
-	mergeSaleOrders() {}
-	splitSaleOrder() {}
-
-	submitForApproval() {
-		// submit PO
-		if (!this.pageConfig.canSubmit) return;
-		if (this.submitAttempt) return;
-
-		let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Draft' || i.Status == 'Unapproved'));
-		if (itemsCanNotProcess.length == this.selectedItems.length) {
-			this.env.showMessage('Your selected invoices cannot be approved. Please select new or draft or disapproved ones', 'warning');
-		} else {
-			itemsCanNotProcess.forEach((i) => {
-				i.checked = false;
-			});
-			this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'Unapproved');
-
-			this.env
-				.showPrompt({ code: 'SUBMIT_FOR_APPROVE_MESSAGE', value: this.selectedItems.length }, null, {
-					code: 'SUBMIT_FOR_APPROVE',
-					value: this.selectedItems.length,
-				})
-				.then((_) => {
-					this.submitAttempt = true;
-					let postDTO = { Ids: [] };
-					postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-					this.pageProvider.commonService
-						.connect('POST', ApiSetting.apiDomain('PURCHASE/Request/Submit/'), postDTO)
-						.toPromise()
-						.then((savedItem: any) => {
-							this.env.publishEvent({
-								Code: this.pageConfig.pageName,
-							});
-							this.submitAttempt = false;
-
-							if (savedItem > 0) {
-								this.env.showMessage('{{value}} orders sent for approval', 'success', savedItem);
-							} else {
-								this.env.showMessage('Please check again, orders must have at least 1 item to be approved', 'warning');
+	sendRequestQuotationToVendor() {
+		this.pageProvider
+			.getAnItem(this.selectedItems[0].Id)
+			.then((rs: any) => {
+				if (rs) {
+					let orderLines = rs.OrderLines.filter((d) => d.Id);
+					orderLines.forEach((d) => (d._Vendors = d._Item._Vendors));
+					this.pageProvider
+						.sendRequestQuotationToVendor(rs.Id, orderLines, rs.IDVendor, PurchaseQuotationModalPage, this.modalController, this.env)
+						.then((rs) => {
+							if (rs) {
+								this.env.showMessage('Purchase quotations created!', 'success');
+								this.refresh();
+								this.env.publishEvent({
+									Code: this.pageConfig.pageName,
+								});
 							}
 						})
 						.catch((err) => {
-							this.submitAttempt = false;
 							console.log(err);
+							this.env.showMessage('Cannot create PQ, please try again later', 'danger');
 						});
-				});
-		}
-	}
-	approve() {
-		if (!this.pageConfig.canApprove) return;
-		if (this.submitAttempt) return;
-
-		// let itemsCanNotProcess = this.selectedItems.filter((i) => (i.Status != 'Submitted') || !this.pageConfig.canApprove);
-		// if (itemsCanNotProcess.length == this.selectedItems.length) {
-		//   this.env.showMessage(
-		//     'Your selected order cannot be approved. Please only select pending for approval order',
-		//     'warning',
-		//   );
-		// } else {
-		//   itemsCanNotProcess.forEach((i) => {
-		//     i.checked = false;
-		//   });
-		this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted' || (i.Status == 'Draft' && this.pageConfig.canApprove));
-		this.env
-			.showPrompt({ code: 'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?', value: this.selectedItems.length }, null, {
-				code: 'Duyệt {{value}} đơn hàng',
-				value: this.selectedItems.length,
+				}
 			})
-			.then((_) => {
-				this.submitAttempt = true;
-				let postDTO = { Ids: [] };
-				postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-				this.pageProvider.commonService
-					.connect('POST', ApiSetting.apiDomain('PURCHASE/Request/Approve/'), postDTO)
-					.toPromise()
-					.then((savedItem: any) => {
-						this.env.publishEvent({
-							Code: this.pageConfig.pageName,
-						});
-						this.submitAttempt = false;
-
-						if (savedItem > 0) {
-							this.env.showMessage('{{value}} orders approved', 'success', savedItem);
-						} else {
-							this.env.showMessage('Please check again, orders must have at least 1 item to be approved', 'warning');
-						}
-					})
-					.catch((err) => {
-						this.submitAttempt = false;
-						console.log(err);
-					});
+			.catch((err) => {
+				console.log(err);
+				this.env.showMessage(err, 'danger');
 			});
-		// }
 	}
-	disapprove() {
-		if (!this.pageConfig.canApprove) return;
-		if (this.submitAttempt) return;
 
-		let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Submitted' || i.Status == 'Approved'));
-		if (itemsCanNotProcess.length == this.selectedItems.length) {
-			this.env.showMessage('Your selected invoices cannot be disaaproved. Please select approved or pending for approval invoice', 'warning');
-		} else {
-			itemsCanNotProcess.forEach((i) => {
-				i.checked = false;
-			});
-			this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted' || i.Status == 'Approved');
-			this.env
-				.showPrompt({ code: 'Bạn có chắc muốn TRẢ LẠI {{value}} đơn hàng đang chọn?', value: this.selectedItems.length }, null, {
-					code: 'Duyệt {{value}} đơn hàng',
-					value: this.selectedItems.length,
-				})
-				.then((_) => {
-					this.submitAttempt = true;
-					let postDTO = { Ids: [] };
-					postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-					this.pageProvider.commonService
-						.connect('POST', ApiSetting.apiDomain('PURCHASE/Request/Disapprove/'), postDTO)
-						.toPromise()
-						.then((savedItem: any) => {
-							this.env.publishEvent({
-								Code: this.pageConfig.pageName,
+	copyToPO() {
+		this.pageProvider
+			.getAnItem(this.selectedItems[0].Id)
+			.then((rs: any) => {
+				if (rs) {
+					let orderLines = rs.OrderLines.filter((d) => d.Id);
+					let vendorList = [];
+					orderLines.forEach((o) => {
+						o._Vendors = o._Item._Vendors;	
+						if (o.IDVendor) {
+							vendorList = [...vendorList, ...o._Vendors.filter((v) => v.Id == o.IDVendor && !vendorList.some((vd) => v.Id == vd.Id))];
+						} else {
+							vendorList = [...vendorList, ...o._Vendors.filter((v) => !vendorList.some((vd) => v.Id == vd.Id))];
+						}
+					});
+					this.pageProvider.copyToPO(rs.Id, orderLines, rs._Vendor, vendorList, PurchaseOrderModalPage, this.modalController, this.env).then((rs:any) => {
+						if (rs) {
+							this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
+								this.nav('/purchase-order/' + rs.Id, 'forward');
 							});
-							this.env.showMessage('Saving completed!', 'success');
-							this.submitAttempt = false;
-						})
-						.catch((err) => {
-							this.submitAttempt = false;
-							console.log(err);
-						});
-				});
-		}
+							this.refresh();
+							this.env.publishEvent({ Code: this.pageConfig.pageName });
+				
+						}
+					}).catch(err=>{
+						this.env.showMessage('Cannot create PO, please try again later', 'danger');
+					});
+				} else {
+					this.env.showMessage('Cannot get item!', 'danger');
+				}
+			})
+			.catch((err) => {
+				this.env.showMessage(err, 'danger');
+			});
+	}
+	isOpenCopyPopover = false;
+	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
+	presentCopyPopover(e) {
+		this.copyPopover.event = e;
+		this.isOpenCopyPopover = !this.isOpenCopyPopover;
 	}
 }

@@ -32,9 +32,7 @@ export class PurchaseQuotationModalPage extends PageBase {
 		public formBuilder: FormBuilder
 	) {
 		super();
-		this.formGroup = this.formBuilder.group({
-			IDVendor: new FormControl({ value: '', disabled: true }),
-		});
+		this.formGroup = this.formBuilder.group({ IDVendor: new FormControl({ value: '', disabled: true }) });
 	}
 
 	preLoadData(event?: any): void {
@@ -66,24 +64,10 @@ export class PurchaseQuotationModalPage extends PageBase {
 			);
 		});
 		this.itemInVendors = this.itemInVendors?.map((d) => {
-			if (d.IDVendor == null) {
-				// d._Vendors.forEach((v) => {
-				//   v.checked = true;
-				//   this.vendorList.push(v);
-				// }); //= (v.Id == d.IDVendor)
-				return { ...d, Quantity: d.Quantity, UoMName: d.UoMName, IDDetail: d.IDDetail, UoMPrice: d.UoMPrice };
-			} else {
-				// d._Vendors = d._Vendors.filter((v) => v.Id == d.IDVendor);
-				// d._Vendors.forEach((v) => {
-				//   v.checked = true;
-				//   this.vendorList.push(v);
-				// }); //= (v.Id == d.IDVendor)
-				return { ...d, Quantity: d.Quantity, UoMName: d.UoMName, IDDetail: d.IDDetail, UoMPrice: d.UoMPrice };
-			}
-			return d;
+			return { ...d, Quantity: d.Quantity, UoMName: d.UoMName, IDDetail: d.IDDetail, UoMPrice: d.UoMPrice };
 		});
 		this.vendorList = [...new Set(this.vendorList)];
-		this.formGroup.controls.IDVendor.setValue(this.defaultVendor.Id);
+		this.formGroup.controls.IDVendor.setValue(this.defaultVendor?.Id);
 		this.items = this.itemInVendors;
 
 		console.log(this.items);
@@ -96,22 +80,24 @@ export class PurchaseQuotationModalPage extends PageBase {
 				i._Vendors[index].checked = true;
 			}
 		}
+		super.changeSelection(i);
 	}
 
 	checkAllVendor(event: any) {
 		const isChecked = event.target.checked;
-		this.items.filter((d) => !d.IDItem).forEach((d) => (d.checked = isChecked));
+		this.items
+			.filter((d) => !d.IDItem)
+			.forEach((d) => {
+				d.checked = isChecked;
+				super.changeSelection(d);
+			});
 	}
 
 	submitForm() {
 		let data = this.items
 			.filter((d) => d.IDItem)
 			.map((d) => {
-				return {
-					IDItem: d.IDItem,
-					IDUoM: d.IDItemUoM,
-					Vendors: this.items.filter((x) => x._IDItem == d.IDItem && x.checked).map((v) => v.Id),
-				};
+				return { IDItem: d.IDItem, IDUoM: d.IDItemUoM, Vendors: this.items.filter((x) => x._IDItem == d.IDItem && x.checked).map((v) => v.Id) };
 			});
 		// let obj = this.itemInVendors.map((d) => {
 		//   return {

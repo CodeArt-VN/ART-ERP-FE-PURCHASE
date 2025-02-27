@@ -1,16 +1,43 @@
 <ion-header>
 	<app-toolbar [page]="this">
 		<ion-button
-			*ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder"
-			(click)="copyCopyToPurchaseOrder()"
-			title="{{'Copy to purchase order' | translate}}"
-		>
-			<ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
-			<!-- *ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder" -->
-		</ion-button>
-		<ion-button *ngIf="pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion" (click)="updatePriceList()" title="{{'Update price list' | translate}}">
-			<ion-icon name="pricetags-outline"></ion-icon>
-		</ion-button>
+		title="{{'Copy' | translate}}"
+		(click)="presentCopyPopover($event)"
+		*ngIf="
+		(pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion) 
+		||(pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder)"
+	>
+		<ion-icon slot="icon-only" name="documents-outline"></ion-icon>
+	</ion-button>
+	<ion-popover #copyPopover [isOpen]="isOpenCopyPopover" (didDismiss)="isOpenCopyPopover = false">
+		<ng-template>
+			<ion-content scroll-y="false">
+				<ion-list lines="none">
+					<ion-item
+						title="{{'Copy to price list' | translate}}"
+						*ngIf="pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion"
+						[button]="true"
+						[detail]="false"
+						(click)="updatePriceList()"
+					>
+						<ion-icon slot="start" name="pricetags-outline"></ion-icon>
+						<ion-label> {{'Copy to price list' | translate}}</ion-label>
+					</ion-item>
+
+					<ion-item
+						title="{{'Copy to purchase order' | translate}}"
+						*ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder"
+						[button]="true"
+						[detail]="false"
+						(click)="copyCopyToPurchaseOrder()"
+					>
+						<ion-icon slot="start" name="clipboard-list"></ion-icon>
+						<ion-label>{{'Copy to purchase order' | translate}}</ion-label>
+					</ion-item>
+				</ion-list>
+			</ion-content>
+		</ng-template>
+	</ion-popover>
 	</app-toolbar>
 </ion-header>
 
@@ -127,150 +154,143 @@
 				<form [formGroup]="formGroup">
 					<ng-container formArrayName="QuotationLines">
 						<div class="table-contain">
-							<section class="table">
-								<div id="ng-select-table" style="position: absolute; z-index: 30005"></div>
-								<header class="bold">
-									<div class="col-id cell">#</div>
-									<div class="col-name cell">{{ 'Product' | translate }}</div>
-									<div class="col-date cell">{{ 'Required date' | translate }}</div>
-									<div class="col-uom cell">{{ 'Unit' | translate }}</div>
-									<div class="col-price cell">{{ 'Required quantity' | translate }}</div>
-									<div class="col-price cell">{{ 'Qty remaining open' | translate }}</div>
-									<div class="col-price cell">{{ 'Quantity' | translate }}</div>
-									<div class="col-price cell">{{ 'Discount' | translate }}</div>
-									<div class="col-price cell">{{ 'Info price' | translate }}</div>
-									<div class="col-price cell">{{ 'Price' | translate }}</div>
-									<div class="col-price cell">{{ '%VAT' | translate }}</div>
-									<div class="col-price cell">{{ 'Amount' | translate }}</div>
-									<div class="col-status cell">{{ 'Status' | translate }}</div>
-									<div class="col-remark cell">{{ 'Ghi chú' | translate }}</div>
-									<div class="col-del cell" *ngIf="pageConfig.canEdit"></div>
-								</header>
+							<app-data-table [rows]="formGroup.get('QuotationLines')['controls']" [showSpinner]="pageConfig.showSpinner">
+								<datatable-empty-message subMessage="Please click add new to start...">
+									<ng-template datatable-empty-message-template>
+										<div>
+											<ion-button size="small" (click)="addLine({}, true)">
+												<ion-icon slot="start" name="add-circle-outline"></ion-icon>
+												{{ 'Add product' | translate }}
+											</ion-button>
+										</div>
+									</ng-template>
+								</datatable-empty-message>
 
-								<div class="row" *ngFor="let g of formGroup.get('QuotationLines')['controls']; let idx = index">
-									<ng-container [formGroup]="g">
-										<div class="col-id cell">{{ idx + 1 }}</div>
+								<datatable-column class="col-id" name="No." property="#"></datatable-column>
 
-										<div class="col-name cell">
-											<app-input-control
-												[field]="{
-                          id: 'IDItem',
-                          label: 'Item',
-                          type: 'ng-select-item',
-                          form: g,
-                          dataSource: g.get('_IDItemDataSource').value,
-                          bindValue: 'Id',
-                          bindLabel: 'Name',
-                          clearable: true,
-                          placeholder: 'Type to search...',
-                          appendTo: '#ng-select-table'
-                        }"
-												(change)="IDItemChange($event, g)"
-											></app-input-control>
-										</div>
-										<div class="col-date cell">
-											<app-input-control [field]="{ id: 'RequiredDate', type: 'datetime-local', form: g }" (change)="saveOrder()"> </app-input-control>
-										</div>
-										<div class="col-uom cell">
-											<app-input-control
-												[field]="{
-                          id: 'IDItemUoM',
-                          type: 'ng-select',
-                          form: g,
-                          dataSource: g.controls._IDUoMDataSource.value,
-                          bindLabel: 'Name',
-                          bindValue: 'Id',
-                          appendTo: '#ng-select-table'
-                        }"
-												(change)="IDUoMChange(g)"
-											></app-input-control>
-										</div>
+								<datatable-column class="col-name" name="Items" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control
+											[field]="{
+												id: 'IDItem',
+												label: 'Item',
+												type: 'ng-select-item',
+												form: g,
+												dataSource: g.get('_IDItemDataSource').value,
+												bindValue: 'Id',
+												bindLabel: 'Name',
+												clearable: true,
+												placeholder: 'Type to search...',
+												appendTo: '#ng-select-table',
+											}"
+											(change)="IDItemChange($event, g)"
+										></app-input-control>
+									</ng-template>
+								</datatable-column>
 
-										<div class="col-price cell">
-											<app-input-control (change)="changeQuantity(g)" [field]="{ id: 'QuantityRequired', type: 'number', form: g }"></app-input-control>
-										</div>
-										<div class="col-price cell">
-											<app-input-control (change)="saveOrder()" [field]="{ id: 'QuantityRemainingOpen', type: 'number', form: g }"></app-input-control>
-										</div>
-										<div class="col-price cell">
-											<app-input-control (change)="saveOrder()" [field]="{ id: 'Quantity', type: 'number', form: g }"></app-input-control>
-										</div>
+								<datatable-column class="col-remark" name="Vendor" property="value" *ngIf="!_IDVendor && _contentType == 'Item'">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control
+											(change)="saveChange(g)"
+											[field]="{
+												id: 'IDVendor',
+												label: 'Vendor',
+												type: 'ng-select',
+												form: g,
+												dataSource: g.controls._Vendors.value,
+												bindLabel: 'Name',
+												bindValue: 'Id',
+												clearable: true,
+												appendTo: '#ng-select-table',
+											}"
+										></app-input-control>
+									</ng-template>
+								</datatable-column>
 
-										<div class="col-price cell">
-											<app-input-control (change)="saveOrder()" [field]="{ id: 'TotalDiscount', type: 'number', form: g }"> </app-input-control>
-										</div>
+								<datatable-column class="col-date" name="Required date" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control [field]="{ id: 'RequiredDate', type: 'datetime-local', form: g }" (change)="saveChange(g)"> </app-input-control>
+									</ng-template>
+								</datatable-column>
 
-										<div class="col-price cell">
-											<!-- [readonly]="!(_canEdit && _canEditPrice)" -->
-											<app-input-control (change)="saveOrder()" [field]="{ id: 'InfoPrice', type: 'number', form: g }"> </app-input-control>
-										</div>
-										<div class="col-price cell">
-											<app-input-control (change)="saveOrder()" [field]="{ id: 'Price', type: 'number', form: g }"> </app-input-control>
-										</div>
-										<div class="col-price cell">
-											<app-input-control [field]="{ id: 'TaxRate', type: 'number', form: g }"></app-input-control>
-										</div>
-										<div
-											class="col-price cell"
-											title="{{
-                    g.controls.Quantity.value *
-                    (g.controls.Price.value - (g.controls.TotalDiscount.value || 0)) *
-                    (1 + g.controls.TaxRate.value / 100) | number: '1.0-0'}}"
+								<datatable-column class="col-code" name="Unit" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control
+											[field]="{
+												id: 'IDItemUoM',
+												type: 'ng-select',
+												form: g,
+												dataSource: g.controls._IDUoMDataSource.value,
+												bindLabel: 'Name',
+												bindValue: 'Id',
+												appendTo: '#ng-select-table',
+											}"
+											(change)="IDUoMChange(g)"
+										></app-input-control>
+									</ng-template>
+								</datatable-column>
+
+								<datatable-column class="col-number" name="Quantity" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control (change)="saveChange()" [field]="{ id: 'QuantityRequired', type: 'number', form: g }"></app-input-control>
+									</ng-template>
+								</datatable-column>
+
+								<datatable-column class="col-number" name="Remaining open" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control [field]="{ id: 'QuantityRemainingOpen', type: 'span-number', form: g }"></app-input-control>
+									</ng-template>
+								</datatable-column>
+								<datatable-column class="col-number" name="Quantity" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control (change)="saveChange()" [field]="{ id: 'Quantity', type: 'number', form: g }"></app-input-control>
+									</ng-template>
+								</datatable-column>
+							
+								<datatable-column class="col-money" name="Info price" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control [field]="{ id: 'InfoPrice', type: 'span-number', form: g }"> </app-input-control>
+									</ng-template>
+								</datatable-column>
+								<datatable-column class="col-money" name="Unit price" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control (change)="saveChange()" [field]="{ id: 'Price', type: 'number', form: g }"> </app-input-control>
+									</ng-template>
+								</datatable-column>
+								<datatable-column class="col-number" name="Discount" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control (change)="saveChange()" [field]="{ id: 'TotalDiscount', type: 'number', form: g }"> </app-input-control>
+									</ng-template>
+								</datatable-column>
+
+								<datatable-column class="col-number" name="VAT" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control [field]="{ id: 'TaxRate', type: 'span-number', form: g }"></app-input-control>
+									</ng-template>
+								</datatable-column>
+
+								<datatable-column class="col-number" name="Total after tax" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<span class="c-input disable"
+											>{{ g.controls.Quantity.value * (g.controls.Price.value - (g.controls.TotalDiscount.value || 0)) * (1 + g.controls.TaxRate.value / 100)
+											| number: '1.0-0' }}</span
 										>
-											<span class="c-input disable ellipsis"
-												>{{ g.controls.Quantity.value * (g.controls.Price.value - (g.controls.TotalDiscount.value || 0)) * (1 + g.controls.TaxRate.value /
-												100) | number: '1.0-0' }}</span
-											>
-										</div>
-										<div class="col-status cell">
-											<span class="bar-holder">
-												<ion-text class="bar-title" [color]="g.controls.StatusColor.value">{{g.controls.StatusText.value | translate}}</ion-text>
-												<span
-													class="bar"
-													[ngClass]="{active: s.Code==g.controls.Status.value}"
-													[ngStyle]="{'background-color': 'var(--ion-color-'+s.Color+')'}"
-													*ngFor="let s of statusLinesList"
-													[title]="s.Name | translate"
-												></span>
-											</span>
-										</div>
-										<div class="col-remark cell">
-											<app-input-control (change)="saveOrder()" [field]="{ id: 'Remark', label: 'Remark', type: 'text', form: g }"> </app-input-control>
-										</div>
-										<div class="col-del cell" *ngIf="pageConfig.canEdit" (click)="removeLine(idx)">
-											<ion-icon color="danger" class="min-btn" name="trash-outline"></ion-icon>
-										</div>
-									</ng-container>
-								</div>
+									</ng-template>
+								</datatable-column>
+								<datatable-column class="col-code" name="Status" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<ion-badge [color]="g.controls._Status.value?.Color" [title]="g.controls._Status.value?.Name">
+											{{g.controls._Status.value?.Name | translate}}
+										</ion-badge>
+									</ng-template>
+								</datatable-column>
 
-								<div class="row">
-									<div class="col-id cell"></div>
-									<!-- <div *ngIf="!_IDVendor && _contentType=='Item'" class="col-name cell"></div> -->
-									<div class="col-name cell"></div>
-									<div class="col-date cell"></div>
-									<div class="col-uom cell"></div>
-
-									<div class="col-price cell">
-										<b>{{ 'Total' | translate }}:</b>
-									</div>
-									<div class="col-price cell"></div>
-									<div class="col-price cell"></div>
-									<div class="col-price cell">
-										<span class="c-input disable"><b>{{ calcTotalDiscount() | number: '1.0-0' }}</b></span>
-									</div>
-									<div class="col-price cell"></div>
-									<div class="col-price cell"></div>
-									<div class="col-price cell"></div>
-									<div class="col-price cell" title="{{ calcTotalAfterTax() | number: '1.0-0' }}">
-										<span class="c-input ellipsis disable">
-											<b>{{ calcTotalAfterTax() | number: '1.0-0' }}</b>
-										</span>
-									</div>
-									<div class="col-status cell"></div>
-									<div class="col-remark cell"></div>
-									<div class="col-del cell" *ngIf="pageConfig.canEdit"></div>
-								</div>
-							</section>
+								<datatable-column class="col-icon" name="" property="value" *ngIf="pageConfig.canEdit">
+									<ng-template let-idx="idx" datatable-cell-template>
+										<ion-icon color="danger" class="min-btn clickable" name="trash-outline" (click)="removeLine(idx)"></ion-icon>
+									</ng-template>
+								</datatable-column>
+							</app-data-table>
 						</div>
 					</ng-container>
 				</form>
@@ -278,7 +298,7 @@
 					<div class="row">
 						<div class="cell">
 							<ion-toolbar>
-								<ion-buttons slot="start">
+								<ion-buttons slot="start" *ngIf="item.SourceType !='FromPurchaseRequest'">
 									<ion-button fill="clear" size="small" (click)="addLine({}, true)">
 										<ion-icon slot="start" name="add-circle-outline"></ion-icon>
 										{{ 'Add product' | translate }}

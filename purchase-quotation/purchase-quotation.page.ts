@@ -1,12 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
-import { PURCHASE_QuotationProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
+import { SYS_ConfigProvider } from 'src/app/services/static/services.service';
 import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
+import { PURCHASE_QuotationService } from '../purchase-quotation.service';
+import { CopyToPurchaseOrderModalPage } from '../copy-to-purchase-order-modal/copy-to-purchase-order-modal.page';
 @Component({
 	selector: 'app-purchase-quotation',
 	templateUrl: 'purchase-quotation.page.html',
@@ -15,8 +17,9 @@ import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-
 })
 export class PurchaseQuotationPage extends PageBase {
 	statusList: any = [];
+	isOpenCopyPopover: boolean = false;
 	constructor(
-		public pageProvider: PURCHASE_QuotationProvider,
+		public pageProvider: PURCHASE_QuotationService,
 		public sysConfigProvider: SYS_ConfigProvider,
 		public modalController: ModalController,
 		public popoverCtrl: PopoverController,
@@ -30,175 +33,68 @@ export class PurchaseQuotationPage extends PageBase {
 	}
 
 	preLoadData(event) {
-		super.preLoadData(event);
-		this.query.Type = 'PurchaseRequest';
-		if (!this.sort.Id) {
-			this.sort.Id = 'Id';
-			this.sortToggle('Id', true);
-		}
-		let sysConfigQuery = ['PRUsedApprovalModule'];
-		Promise.all([this.env.getStatus('PurchaseQuotation'), this.sysConfigProvider.read({ Code_in: sysConfigQuery })]).then((values) => {
+		Promise.all([this.env.getStatus('PurchaseQuotation')]).then((values) => {
 			this.statusList = values[0];
-			values[1]['data'].forEach((e) => {
-				if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
-					e.Value = e._InheritedConfig.Value;
-				}
-				this.pageConfig[e.Code] = JSON.parse(e.Value);
-			});
 			super.preLoadData(event);
 		});
 	}
 
 	loadedData(event) {
 		this.items.forEach((i) => {
-			i.RequestBranchName = this.env.branchList.find((d) => d.Id == i.IDRequestBranch)?.Name;
-			i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
-			i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
+			i._Status = this.statusList.find((d) => d.Code == i.Status);
 		});
 		super.loadedData(event);
 		console.log(this.items);
 	}
 
-	submitForApproval() {
+	updatePriceList() {
 		if (this.submitAttempt) return;
-		this.env
-			.showPrompt(
-				{
-					code: 'Bạn có chắc muốn gửi duyệt {{value}} báo giá đang chọn?',
-					value: this.selectedItems.length,
-				},
-				null,
-				{ code: 'Gửi duyệt {{value}} báo giá', value: this.selectedItems.length }
-			)
-			.then((_) => {
-				this.submitAttempt = true;
-				let postDTO = { Ids: [] };
-				postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-				this.pageProvider.commonService
-					.connect('POST', ApiSetting.apiDomain('PURCHASE/Quotation/Submit/'), postDTO)
-					.toPromise()
-					.then((savedItem: any) => {
-						this.env.publishEvent({
-							Code: this.pageConfig.pageName,
-						});
-						this.submitAttempt = false;
-
-						if (savedItem > 0) {
-							this.env.showMessage('{{value}} orders sent for approval', 'success', savedItem);
-						} else {
-							this.env.showMessage('Please check again, orders must have at least 1 item to be approved', 'warning');
-						}
-					})
-					.catch((err) => {
-						this.submitAttempt = false;
-						console.log(err);
-					});
-			});
+		this.submitAttempt = true;
+		this.pageProvider.updatePriceList(
+			this.selectedItems.map((d) => d.Id),
+			PriceListVersionModalPage,
+			this.modalController,
+			this.env
+		).then(()=>{	this.submitAttempt = false})
+		.catch((err) => {this.submitAttempt = false});
 	}
 
-	approve() {
+	copyCopyToPurchaseOrder() {
 		if (this.submitAttempt) return;
-
-		this.env
-			.showPrompt({ code: 'Bạn có chắc muốn DUYỆT {{value}} báo giá đang chọn?', value: this.selectedItems.length }, null, {
-				code: 'Duyệt {{value}} báo giá',
-				value: this.selectedItems.length,
+		this.submitAttempt = true;
+		this.pageProvider
+			.getAnItem(this.selectedItems[0].Id)
+			.then((data) => {
+				if (data) {
+					this.pageProvider
+						.copyCopyToPurchaseOrder(data, CopyToPurchaseOrderModalPage, this.modalController)
+						.then((data: any) => {
+							if (data) {
+								this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
+									this.nav('/purchase-order/' + data.Id);
+								});
+								this.env.publishEvent({ Code: this.pageConfig.pageName });
+								this.refresh();
+							}
+						})
+						.catch((err) => {
+							this.env.showMessage(err, 'danger');
+						}).finally(() => {
+							this.submitAttempt = false;
+						});;
+				}
 			})
-			.then((_) => {
-				this.submitAttempt = true;
-				let postDTO = { Ids: [] };
-				postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-				this.pageProvider.commonService
-					.connect('POST', ApiSetting.apiDomain('PURCHASE/Quotation/Approve/'), postDTO)
-					.toPromise()
-					.then((savedItem: any) => {
-						this.env.publishEvent({
-							Code: this.pageConfig.pageName,
-						});
-						this.submitAttempt = false;
-
-						if (savedItem > 0) {
-							this.env.showMessage('{{value}} orders approved', 'success', savedItem);
-						} else {
-							this.env.showMessage('Please check again, orders must have at least 1 item to be approved', 'warning');
-						}
-					})
-					.catch((err) => {
-						this.submitAttempt = false;
-						console.log(err);
-					});
-			});
-	}
-
-	disapprove() {
-		if (this.submitAttempt) return;
-		this.env
-			.showPrompt({ code: 'Bạn có chắc muốn không duyệt {{value}} báo giá đang chọn?', value: this.selectedItems.length }, null, {
-				code: 'Không phê duyệt {{value}} báo giá',
-				value: this.selectedItems.length,
+			.catch((err) => {
+				this.env.showMessage(err, 'danger');
 			})
-			.then((_) => {
-				this.submitAttempt = true;
-				let postDTO = { Ids: [] };
-				postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-				this.pageProvider.commonService
-					.connect('POST', ApiSetting.apiDomain('PURCHASE/Quotation/Disapprove/'), postDTO)
-					.toPromise()
-					.then((savedItem: any) => {
-						this.env.publishEvent({
-							Code: this.pageConfig.pageName,
-						});
-						this.env.showMessage('Saving completed!', 'success');
-						this.submitAttempt = false;
-					})
-					.catch((err) => {
-						this.submitAttempt = false;
-						console.log(err);
-					});
+			.finally(() => {
+				this.submitAttempt = false;
 			});
 	}
 
-	cancel() {
-		if (this.submitAttempt) return;
-
-		this.env
-			.showPrompt({ code: 'Bạn có chắc muốn HỦY {{value}} báo giá đang chọn?', value: this.selectedItems.length }, null, {
-				code: 'Huỷ {{value}} báo giá',
-				value: this.selectedItems.length,
-			})
-			.then((_) => {
-				this.submitAttempt = true;
-				let postDTO = { Ids: [] };
-				postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-				this.pageProvider.commonService
-					.connect('POST', ApiSetting.apiDomain('PURCHASE/Quotation/Cancel/'), postDTO)
-					.toPromise()
-					.then((savedItem: any) => {
-						this.env.publishEvent({
-							Code: this.pageConfig.pageName,
-						});
-						this.env.showMessage('Saving completed!', 'success');
-						this.submitAttempt = false;
-					})
-					.catch((err) => {
-						this.submitAttempt = false;
-						console.log(err);
-					});
-			});
-	}
-
-	async updatePriceList() {
-		const modal = await this.modalController.create({
-			component: PriceListVersionModalPage,
-			componentProps: { ids: this.selectedItems.map((d) => d.Id) },
-			cssClass: 'modal90',
-		});
-		await modal.present();
-		const { data } = await modal.onWillDismiss();
-		if (data) this.env.showMessage('Updated price success', 'success');
+	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
+	presentCopyPopover(e) {
+		this.copyPopover.event = e;
+		this.isOpenCopyPopover = !this.isOpenCopyPopover;
 	}
 }

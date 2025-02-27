@@ -1,9 +1,11 @@
 <ion-header>
 	<ion-toolbar>
-		<ion-title> {{'Item in vendor'| translate}}</ion-title>
+		<ion-buttons slot="start">
+			<ion-button color="dark"> {{'Send request quotation' | translate}} </ion-button>
+		</ion-buttons>
 
 		<ion-buttons slot="end">
-			<ion-buttons *ngIf="defaultVendor.Id && vendorList.length > 0" style="justify-content: flex-end">
+			<ion-buttons *ngIf="defaultVendor?.Id && vendorList.length > 0" style="justify-content: flex-end">
 				<span>{{'Vendor'|translate}}</span> &nbsp;
 				<div class="c-control" style="margin-bottom: 0px; max-width: 250px; min-width: 250px">
 					<app-input-control
@@ -14,7 +16,14 @@
 					</app-input-control>
 				</div>
 			</ion-buttons>
-			<ion-button fill="solid" size="small" (click)="submitForm()">{{'Submit' | translate}}</ion-button>
+			<ion-button [disabled]="selectedItems.length==0" fill="solid" size="small" (click)="submitForm()">{{'Submit' | translate}}</ion-button>
+			<ion-button (click)="refresh()" title="{{'Refresh' | translate}}">
+				<ion-icon slot="icon-only" name="reload-outline"></ion-icon>
+			</ion-button>
+
+			<ion-button title="{{'Help' | translate}}" (click)="help()">
+				<ion-icon slot="icon-only" name="help-circle-outline"></ion-icon>
+			</ion-button>
 			<ion-button (click)="modal.dismiss()">
 				<ion-icon name="close"></ion-icon>
 			</ion-button>

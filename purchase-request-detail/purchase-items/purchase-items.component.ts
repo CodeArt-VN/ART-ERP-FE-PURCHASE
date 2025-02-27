@@ -6,18 +6,16 @@ import { PageBase } from 'src/app/page-base';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PROD_ItemInVendorProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
 
-@Component({
-	selector: 'app-purchase-items',
-	templateUrl: './purchase-items.component.html',
-	styleUrls: ['./purchase-items.component.scss'],
-	standalone: false,
-})
+@Component({ selector: 'app-purchase-items', templateUrl: './purchase-items.component.html', styleUrls: ['./purchase-items.component.scss'], standalone: false })
 export class PurchaseItemsComponent extends PageBase {
 	_preloadItems;
 	_canEdit = false;
 	_IDPurchaseRequest;
 	_IDVendor = '';
 	_contentType = 'Item';
+	_showStatus = false;
+	_status = '';
+	_statusLineList = [];
 	@Input() set contentType(value) {
 		this._contentType = value;
 	}
@@ -33,6 +31,15 @@ export class PurchaseItemsComponent extends PageBase {
 	@Input() set IDVendor(value: any) {
 		this._IDVendor = value;
 	}
+
+	@Input() set status(value: any) {
+		this._status = value;
+	}
+
+	@Input() set statusLineList(value: any) {
+		this._statusLineList = value;
+	}
+
 	@Input() set orderLines(value: any) {
 		this.items = value;
 		this.setOrderLines();
@@ -57,10 +64,7 @@ export class PurchaseItemsComponent extends PageBase {
 		public loadingController: LoadingController
 	) {
 		super();
-		this.formGroup = this.formBuilder.group({
-			IDPurchaseRequest: [''],
-			OrderLines: this.formBuilder.array([]),
-		});
+		this.formGroup = this.formBuilder.group({ IDPurchaseRequest: [''], OrderLines: this.formBuilder.array([]) });
 	}
 
 	loadData() {
@@ -69,17 +73,23 @@ export class PurchaseItemsComponent extends PageBase {
 	}
 	setOrderLines() {
 		this.formGroup.controls.OrderLines = new FormArray([]);
-		if (this.items?.length)
-			this.items?.forEach((i) => {
-				this.addLine(i);
-			});
+		if (this.items?.length){
+			var showStatusLines = ['Approved', 'Closed', 'QuotationSent'];
+			this._showStatus = showStatusLines.includes(this._status)
+		} 
+		this.items?.forEach((i) => {
+			this.addLine(i);
+		});
 		if (!this._canEdit) this.formGroup.disable();
+		console.log(this.formGroup.controls.OrderLines);
+
 		this.renderFormArray.emit(this.formGroup.controls.OrderLines);
 	}
 
 	addLine(line, markAsDirty = false) {
 		let groups = <FormArray>this.formGroup.controls.OrderLines;
 		let selectedItem = line._Item;
+		line.Status = line.Status ?? 'Open';
 		let group = this.formBuilder.group({
 			_IDItemDataSource: this.buildSelectDataSource((term) => {
 				return this.itemProvider.search({
@@ -104,7 +114,7 @@ export class PurchaseItemsComponent extends PageBase {
 			IDBaseUoM: [line.IDBaseUoM],
 			IDVendor: [this._IDVendor ? this._IDVendor : line.IDVendor],
 			Id: [line.Id],
-			Status: ['Open'],
+			Status: [line.Status],
 			Sort: [line.Sort],
 			Name: [line.Name],
 			Remark: [line.Remark],
@@ -134,6 +144,7 @@ export class PurchaseItemsComponent extends PageBase {
 			CreatedBy: [line.CreatedBy],
 			ModifiedBy: [line.ModifiedBy],
 			CreatedDate: [line.CreatedDate],
+			_Status : [this._statusLineList.find((d) => d.Code == line.Status)]
 		});
 		groups.push(group);
 		if (selectedItem) group.get('_IDItemDataSource').value.selected.push(selectedItem);
@@ -143,6 +154,7 @@ export class PurchaseItemsComponent extends PageBase {
 			group.get('IDVendor').markAsDirty();
 			group.get('Status').markAsDirty();
 		}
+
 	}
 
 	removeLine(index) {

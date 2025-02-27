@@ -7,6 +7,7 @@ import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { FormBuilder } from '@angular/forms';
+import { PURCHASE_OrderService } from '../purchase-order-service';
 
 @Component({
 	selector: 'app-purchase-order',
@@ -21,7 +22,7 @@ export class PurchaseOrderPage extends PageBase {
 	paymentReasonList = [];
 	showRequestOutgoingPayment = false;
 	constructor(
-		public pageProvider: PURCHASE_OrderProvider,
+		public pageProvider: PURCHASE_OrderService,
 		public sysConfigProvider: SYS_ConfigProvider,
 		public outgoingPaymentProvider: BANK_OutgoingPaymentProvider,
 		public modalController: ModalController,
@@ -102,201 +103,6 @@ export class PurchaseOrderPage extends PageBase {
 	merge() {}
 	split() {}
 
-	submitForApproval() {
-		// submit PO
-		if (!this.pageConfig.canSubmitOrdersForApproval) return;
-		if (this.submitAttempt) return;
-
-		let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Draft' || i.Status == 'Unapproved'));
-		if (itemsCanNotProcess.length == this.selectedItems.length) {
-			this.env.showMessage('Your selected invoices cannot be approved. Please select new or draft or disapproved ones', 'warning');
-		} else {
-			itemsCanNotProcess.forEach((i) => {
-				i.checked = false;
-			});
-			this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'Unapproved');
-
-			this.env
-				.showPrompt(
-					{
-						code: 'SUBMIT_FOR_APPROVE_MESSAGE',
-						value: { value: this.selectedItems.length },
-					},
-					null,
-					{ code: 'SUBMIT_FOR_APPROVE', value: { value: this.selectedItems.length } }
-				)
-				.then((_) => {
-					this.submitAttempt = true;
-					let postDTO = { Ids: [] };
-					postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-					this.pageProvider.commonService
-						.connect('POST', ApiSetting.apiDomain('PURCHASE/Order/SubmitOrdersForApproval/'), postDTO)
-						.toPromise()
-						.then((savedItem: any) => {
-							this.env.publishEvent({
-								Code: this.pageConfig.pageName,
-							});
-							this.submitAttempt = false;
-
-							if (savedItem > 0) {
-								this.env.showMessage('{{value}} orders sent for approval', 'success', savedItem);
-							} else {
-								this.env.showMessage('Please check again, orders must have at least 1 item to be approved', 'warning');
-							}
-						})
-						.catch((err) => {
-							this.submitAttempt = false;
-							console.log(err);
-						});
-				});
-		}
-	}
-	approve() {
-		if (!this.pageConfig.canApprove) return;
-		if (this.submitAttempt) return;
-
-		let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Submitted'));
-		if (itemsCanNotProcess.length == this.selectedItems.length) {
-			this.env.showMessage('Your selected order cannot be approved. Please only select pending for approval order', 'warning');
-		} else {
-			itemsCanNotProcess.forEach((i) => {
-				i.checked = false;
-			});
-			this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted');
-			this.env
-				.showPrompt({ code: 'Bạn có chắc muốn DUYỆT {{value}} đơn hàng đang chọn?', value: this.selectedItems.length }, null, {
-					code: 'Duyệt {{value}} đơn hàng',
-					value: this.selectedItems.length,
-				})
-				.then((_) => {
-					this.submitAttempt = true;
-					let postDTO = { Ids: [] };
-					postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-					this.pageProvider.commonService
-						.connect('POST', ApiSetting.apiDomain('PURCHASE/Order/ApproveOrders/'), postDTO)
-						.toPromise()
-						.then((savedItem: any) => {
-							this.env.publishEvent({
-								Code: this.pageConfig.pageName,
-							});
-							this.submitAttempt = false;
-
-							if (savedItem > 0) {
-								this.env.showMessage('{{value}} orders approved', 'success', savedItem);
-							} else {
-								this.env.showMessage('Please check again, orders must have at least 1 item to be approved', 'warning');
-							}
-						})
-						.catch((err) => {
-							this.submitAttempt = false;
-							console.log(err);
-						});
-				});
-		}
-	}
-	disapprove() {
-		if (!this.pageConfig.canApprove) return;
-		if (this.submitAttempt) return;
-
-		let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Submitted' || i.Status == 'Approved'));
-		if (itemsCanNotProcess.length == this.selectedItems.length) {
-			this.env.showMessage('Your selected invoices cannot be disaaproved. Please select approved or pending for approval invoice', 'warning');
-		} else {
-			itemsCanNotProcess.forEach((i) => {
-				i.checked = false;
-			});
-			this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Submitted' || i.Status == 'Approved');
-			this.env
-				.showPrompt({ code: 'Bạn có chắc muốn TRẢ LẠI {{value}} đơn hàng đang chọn?', value: this.selectedItems.length }, null, {
-					code: 'Duyệt {{value}} đơn hàng',
-					value: this.selectedItems.length,
-				})
-				.then((_) => {
-					this.submitAttempt = true;
-					let postDTO = { Ids: [] };
-					postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-					this.pageProvider.commonService
-						.connect('POST', ApiSetting.apiDomain('PURCHASE/Order/DisapproveOrders/'), postDTO)
-						.toPromise()
-						.then((savedItem: any) => {
-							this.env.publishEvent({
-								Code: this.pageConfig.pageName,
-							});
-							this.env.showMessage('Saving completed!', 'success');
-							this.submitAttempt = false;
-						})
-						.catch((err) => {
-							this.submitAttempt = false;
-							console.log(err);
-						});
-				});
-		}
-	}
-	cancel() {
-		if (!this.pageConfig.canCancel) return;
-		if (this.submitAttempt) return;
-
-		let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Draft' || i.Status == 'Unapproved'));
-		if (itemsCanNotProcess.length == this.selectedItems.length) {
-			this.env.showMessage('Your selected invoices cannot be canceled. Please select draft or pending for approval invoice', 'warning');
-		} else {
-			itemsCanNotProcess.forEach((i) => {
-				i.checked = false;
-			});
-			this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Draft' || i.Status == 'Unapproved');
-			this.env
-				.showPrompt({ code: 'Bạn có chắc muốn HỦY {{value}} đơn hàng đang chọn?', value: this.selectedItems.length }, null, {
-					code: 'Duyệt {{value}} đơn hàng',
-					value: this.selectedItems.length,
-				})
-				.then((_) => {
-					this.submitAttempt = true;
-					let postDTO = { Ids: [] };
-					postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-					this.pageProvider.commonService
-						.connect('POST', ApiSetting.apiDomain('PURCHASE/Order/CancelOrders/'), postDTO)
-						.toPromise()
-						.then((savedItem: any) => {
-							this.env.publishEvent({
-								Code: this.pageConfig.pageName,
-							});
-							this.env.showMessage('Saving completed!', 'success');
-							this.submitAttempt = false;
-						})
-						.catch((err) => {
-							this.submitAttempt = false;
-							console.log(err);
-						});
-				});
-		}
-	}
-	submitOrders() {
-		if (this.submitAttempt) {
-			return;
-		}
-
-		this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Approved');
-		this.submitAttempt = true;
-		let postDTO = { Ids: [] };
-		postDTO.Ids = this.selectedItems.map((e) => e.Id);
-
-		this.pageProvider.commonService
-			.connect('POST', ApiSetting.apiDomain('PURCHASE/Order/SubmitOrders/'), postDTO)
-			.toPromise()
-			.then((savedItem: any) => {
-				this.env.publishEvent({ Code: this.pageConfig.pageName });
-				this.env.showMessage('Purchased ordered', 'success');
-				this.submitAttempt = false;
-			})
-			.catch((err) => {
-				this.submitAttempt = false;
-				console.log(err);
-			});
-	}
 
 	ngOnDestroy() {
 		this.dismissPopover();
@@ -419,5 +225,23 @@ export class PurchaseOrderPage extends PageBase {
 			.catch((err) => {
 				this.env.showMessage('Cannot create ASN, please try again later', 'danger');
 			});
+	}
+
+	createInvoice() {
+		this.pageProvider
+			.createInvoice(this.selectedItems, this.env, this.pageConfig)
+			.then((resp: any) => {
+				this.env
+					.showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
+					.then((_) => {
+						if (resp.length == 1) {
+							this.nav('/ap-invoice/' + resp[0]);
+						} else {
+							this.nav('/ap-invoice');
+						}
+					})
+					.catch((_) => {});
+			})
+			.catch((err) => this.env.showMessage(err));
 	}
 }

@@ -2,7 +2,7 @@
 	<app-toolbar [page]="this">
 		<ion-button
 			*ngIf="pageConfig.canCopyToPO && formGroup.get('ContentType').value != 'Service' && (formGroup.get('Status').value == 'Approved' || formGroup.get('Status').value == 'Open')"
-			(click)="createPO()"
+			(click)="copyToPO()"
 			title="{{'Cpoy to purchase order' | translate}}"
 		>
 			<ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
@@ -94,6 +94,8 @@
 					[canEdit]="pageConfig.canEdit"
 					(onChange)="saveChange()"
 					[IDVendor]="formGroup.get('IDVendor').value"
+					[status]="formGroup.get('Status').value"
+					[statusLineList]="statusLineList"
 					[orderLines]="item.OrderLines"
 					(removeItem)="removeItem($event)"
 					(onRefresh)="refresh()"

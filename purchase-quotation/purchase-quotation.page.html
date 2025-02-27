@@ -2,121 +2,105 @@
 	<app-toolbar [page]="this">
 		<ion-button
 			tollbarSelected
+			title="{{'Copy' | translate}}"
+			(click)="presentCopyPopover($event)"
+			*ngIf="
+			(pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion) 
+			||(pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder)"
+		>
+			<ion-icon slot="icon-only" name="documents-outline"></ion-icon>
+		</ion-button>
+		<ion-popover #copyPopover [isOpen]="isOpenCopyPopover" (didDismiss)="isOpenCopyPopover = false">
+			<ng-template>
+				<ion-content scroll-y="false">
+					<ion-list lines="none">
+						<ion-item
+							title="{{'Copy to price list' | translate}}"
+							*ngIf="pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion"
+							[button]="true"
+							[detail]="false"
+							(click)="updatePriceList()"
+						>
+							<ion-icon slot="start" name="pricetags-outline"></ion-icon>
+							<ion-label> {{'Copy to price list' | translate}}</ion-label>
+						</ion-item>
+
+						<ion-item
+							title="{{'Copy to purchase order' | translate}}"
+							*ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder && selectedItems?.length ==1"
+							[button]="true"
+							[detail]="false"
+							(click)="copyCopyToPurchaseOrder()"
+						>
+							<ion-icon slot="start" name="clipboard-list"></ion-icon>
+							<ion-label>{{'Copy to purchase order' | translate}}</ion-label>
+						</ion-item>
+					</ion-list>
+				</ion-content>
+			</ng-template>
+		</ion-popover>
+		<!-- <ion-button
+			tollbarSelected
 			*ngIf="pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion"
 			(click)="updatePriceList()"
 			title="{{'Update price list' | translate}}"
 		>
 			<ion-icon name="pricetags-outline"></ion-icon>
 		</ion-button>
+		<ion-button
+			*ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder"
+			(click)="copyCopyToPurchaseOrder()"
+			title="{{'Copy to purchase order' | translate}}"
+		>
+			<ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
+		</ion-button> -->
 	</app-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme class="header-table">
-	<app-data-table
-		style="width: fit-content; min-width: calc(100% - 32px)"
-		class="box-shadow responsive"
-		[rows]="items"
-		[trackBy]="'Id'"
-		[(selectedRows)]="selectedItems"
-		[showSpinner]="pageConfig.showSpinner"
-		[showFilter]="pageConfig.isShowSearch"
-		[(query)]="query"
-		(dataInfinite)="loadData($event)"
-		(filter)="onDatatableFilter($event)"
-		(sort)="onSort($event)"
-	>
-		<datatable-column class="col-checkbox cell" [checkbox]="true" name="" property="Id">
-			<ng-template datatable-filter-template></ng-template>
-			<ng-template datatable-header-template> </ng-template>
-			<ng-template let-i="row" datatable-cell-template>
-				<input (click)="changeSelection(i, $event)" class="c-checkbox" [(ngModel)]="i.checked" type="checkbox" />
-			</ng-template>
-		</datatable-column>
+	<app-page-title
+		class="ion-padding safe-max-width"
+		[icon]="pageConfig.pageIcon"
+		[color]="pageConfig.pageColor"
+		[title]="pageConfig.pageTitle"
+		[remark]="pageConfig.pageRemark"
+	></app-page-title>
 
-		<datatable-column class="col-id cell" name="#" property="Id">
-			<ng-template datatable-header-template>
-				<div class="col-id cell" (click)="sortToggle('Id')">
-					{{'Id' | translate}}
-					<ion-icon class="min-btn" *ngIf="sort.Id" [name]="sort.Id == 'Id'?'arrow-down': 'arrow-up'"></ion-icon>
-					<ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.Id" name="search" color="primary"></ion-icon>
-				</div>
-			</ng-template>
-			<ng-template let-i="row" datatable-cell-template>
-				<div (click)="nav('purchase-quotation/'+i.Id,'forward')" class="col-id cell">{{i.Id}}</div>
-			</ng-template>
-		</datatable-column>
-		<datatable-column class="col-name cell" name="Source" property="SourceKey">
-			<ng-template let-i="row" datatable-cell-template>
-				<ng-container *ngIf="i.SourceType=='FromPurchaseRequest'" (click)="nav('purchase-request/'+i.SourceLine,'forward')" class="col-id cell">
-					#{{i.SourceType}}: {{i.SourceKey}}</ng-container
-				>
-				<ng-container v *ngIf="i.SourceType!='FromPurchaseRequest'">{{i.SourceKey}}</ng-container>
-			</ng-template>
-		</datatable-column>
-		<datatable-column class="col-name cell" name="" property="Id">
-			<ng-template datatable-header-template>
-				<div class="col-code cell">{{'Branch' | translate}}</div>
-			</ng-template>
+	<div class="safe-max-width">
+		<app-data-table
+			class="box-shadow responsive"
+			[rows]="items"
+			[trackBy]="'Id'"
+			[(selectedRows)]="selectedItems"
+			[showSpinner]="pageConfig.showSpinner"
+			[showFilter]="pageConfig.isShowSearch"
+			[(query)]="query"
+			(dataInfinite)="loadData($event)"
+			(filter)="onDatatableFilter($event)"
+			(sort)="onSort($event)"
+			(selectedRowsChange)="showCommandBySelectedRows($event)"
+		>
+			<datatable-column [checkbox]="true" name=""></datatable-column>
+			<datatable-column class="col-id" name="#" property="Id" [navLink]="pageConfig.pageName"></datatable-column>
+			<datatable-column class="col-date" format="yyyy-MM-dd" name="Required date" property="RequiredDate" filterControlType="date"></datatable-column>
+			<datatable-column class="col-name" name="Source" property="SourceKey">
+				<ng-template let-i="row" datatable-cell-template>
+					<ng-container *ngIf="i.SourceType=='FromPurchaseRequest'" (click)="nav('purchase-request/'+i.SourceLine,'forward')" class="col-id cell">
+						#{{i.SourceType}}: {{i.SourceKey}}</ng-container
+					>
+					<ng-container *ngIf="i.SourceType!='FromPurchaseRequest'">{{i.SourceKey}}</ng-container>
+				</ng-template>
+			</datatable-column>
+			<datatable-column class="col-name" name="Vendor" property="_BusinessPartnerName"> </datatable-column>
+			<datatable-column class="col-name flex-break" name="Title" property="Name"></datatable-column>
 
-			<ng-template let-i="row" datatable-cell-template>
-				<div *ngIf="i._BranchName" class="col-code cell">{{i._BranchName | translate}}</div>
-			</ng-template>
-		</datatable-column>
+			<datatable-column class="col-status" name="Status" property="Status" filterControlType="ng-select" [filterDataSource]="statusList">
+				<ng-template let-i="row" datatable-cell-template>
+					<ion-badge [color]="i._Status?.Color" [title]="i._Status?.Name"> {{i._Status?.Name | translate}} </ion-badge>
+				</ng-template>
+			</datatable-column>
+		</app-data-table>
+	</div>
 
-		<datatable-column class="col-name cell" name="Vendor" property="Id">
-			<ng-template let-i="row" datatable-cell-template>
-				<div *ngIf="i._BusinessPartnerName" class="col-staff cell">{{i._BusinessPartnerName}}</div>
-			</ng-template>
-		</datatable-column>
-
-		<datatable-column class="col-date cell" name="" property="RequiredDate">
-			<ng-template datatable-filter-template>
-				<input class="c-input" type="date" [ngModelOptions]="{standalone: true}" [(ngModel)]="query.RequiredDate" (change)="refresh()" />
-			</ng-template>
-			<ng-template datatable-header-template>
-				<div class="col-date cell" (click)="sortToggle('RequiredDate')">
-					{{'Required date' | translate}}
-					<ion-icon class="min-btn" *ngIf="sort.RequiredDate" [name]="sort.RequiredDate == 'RequiredDate'?'arrow-down': 'arrow-up'"></ion-icon>
-					<ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.RequiredDate" name="search" color="primary"></ion-icon>
-				</div>
-			</ng-template>
-
-			<ng-template let-i="row" datatable-cell-template>
-				<div *ngIf="i.RequiredDate" class="col-date cell" (click)="nav('purchase-quotation/'+i.Id,'forward')">
-					{{i.RequiredDate | date :'dd/MM/yyyy'}}
-					<small>{{i.RequiredDate | date:'hh:mm'}}</small>
-				</div>
-			</ng-template>
-		</datatable-column>
-
-		<datatable-column class="col-status cell" name="" property="Status">
-			<ng-template datatable-filter-template>
-				<select (change)="refresh()" class="c-input c-dropdown" [ngModelOptions]="{standalone: true}" [(ngModel)]="query.Status" [ngClass]="{active: query.Status}">
-					<option value="">{{'All' | translate}}</option>
-					<option disabled value="">----------</option>
-					<option *ngFor="let t of statusList" [value]="t.Code">{{t.Name}}</option>
-				</select>
-			</ng-template>
-			<ng-template datatable-header-template>
-				<div class="col-status cell" (click)="sortToggle('Status')">
-					{{'Status' | translate}}
-					<ion-icon class="min-btn" *ngIf="sort.Status" [name]="sort.Status == 'Status'?'arrow-down': 'arrow-up'"> </ion-icon>
-					<ion-icon class="min-btn" (click)="pageConfig.isShowSearch = !pageConfig.isShowSearch" *ngIf="query.Status" name="search" color="primary"></ion-icon>
-				</div>
-			</ng-template>
-
-			<ng-template let-i="row" datatable-cell-template>
-				<span class="bar-holder">
-					<ion-text class="bar-title" [color]="i.StatusColor">{{i.StatusText | translate}}</ion-text>
-					<span
-						class="bar"
-						[ngClass]="{active: s.Code==i.Status}"
-						[ngStyle]="{'background-color': 'var(--ion-color-'+s.Color+')'}"
-						*ngFor="let s of statusList"
-						[title]="s.Name | translate"
-					></span>
-				</span>
-			</ng-template>
-		</datatable-column>
-	</app-data-table>
+	<div class="ion-padding"></div>
 </ion-content>
