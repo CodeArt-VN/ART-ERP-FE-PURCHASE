@@ -19,15 +19,11 @@ import { PurchaseOrderModalPage } from './purchase-order-modal/purchase-order-mo
 import { PurchaseQuotationModalPage } from './purchase-quotation-modal/purchase-quotation-modal.page';
 import { PURCHASE_RequestService } from '../purchase-request.service';
 
-@Component({
-	selector: 'app-purchase-request-detail',
-	templateUrl: './purchase-request-detail.page.html',
-	styleUrls: ['./purchase-request-detail.page.scss'],
-	standalone: false,
-})
+@Component({ selector: 'app-purchase-request-detail', templateUrl: './purchase-request-detail.page.html', styleUrls: ['./purchase-request-detail.page.scss'], standalone: false })
 export class PurchaseRequestDetailPage extends PageBase {
 	@ViewChild('importfile') importfile: any;
 	statusList = [];
+	statusLineList = [];
 	contentTypeList = [];
 	branchList;
 	markAsPristine = false;
@@ -100,22 +96,24 @@ export class PurchaseRequestDetailPage extends PageBase {
 		];
 		this.branchList = [...this.env.branchList];
 
-		Promise.all([this.env.getStatus('PurchaseRequest'), this.contactProvider.read({ IsVendor: true, Take: 20 })]).then((values: any) => {
-			if (values[0]) this.statusList = values[0];
-			if (values[1] && values[1].data) {
-				this._vendorDataSource.selected.push(...values[1].data);
+		Promise.all([this.env.getStatus('PurchaseRequest'), this.contactProvider.read({ IsVendor: true, Take: 20 }),
+			 this.env.getStatus('PurchaseQuotationLine')]
+			).then(
+			(values: any) => {
+				if (values[0]) this.statusList = values[0];
+				if (values[1] && values[1].data) {
+					this._vendorDataSource.selected.push(...values[1].data);
+				}
+				if (values[2]) this.statusLineList = values[2];
+				super.preLoadData(event);
 			}
-			super.preLoadData(event);
-		});
+		);
 	}
 
 	loadedData(event) {
 		if (!this.item.Id) {
 			this.item.IDRequester = this.env.user.StaffID;
-			this.item._Requester = {
-				Id: this.env.user.StaffID,
-				FullName: this.env.user.FullName,
-			};
+			this.item._Requester = { Id: this.env.user.StaffID, FullName: this.env.user.FullName };
 		}
 		super.loadedData(event, true);
 		if (this.item?._Vendor) {
@@ -283,19 +281,14 @@ export class PurchaseRequestDetailPage extends PageBase {
 	}
 
 	async copyToPO() {
-		const loading = await this.loadingController.create({
-			cssClass: 'my-custom-class',
-			message: 'Please wait for a few moments',
-		});
+		const loading = await this.loadingController.create({ cssClass: 'my-custom-class', message: 'Please wait for a few moments' });
 		await loading.present().then(() => {
 			this.commonService
 				.connect('POST', ApiSetting.apiDomain('PURCHASE/Request/CopyToPO/'), this.item.Id)
 				.toPromise()
 				.then((resp: any) => {
 					if (loading) loading.dismiss();
-					this.env.publishEvent({
-						Code: this.pageConfig.pageName,
-					});
+					this.env.publishEvent({ Code: this.pageConfig.pageName });
 				})
 				.catch((err) => {
 					console.log(err);
@@ -346,11 +339,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 
 		const modal = await this.modalController.create({
 			component: PurchaseOrderModalPage,
-			componentProps: {
-				orderLines: orderLines,
-				defaultVendor: this._currentVendor,
-				vendorList: vendorList,
-			},
+			componentProps: { orderLines: orderLines, defaultVendor: this._currentVendor, vendorList: vendorList },
 
 			cssClass: 'modal90',
 		});
@@ -359,10 +348,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 		const { data } = await modal.onWillDismiss();
 
 		if (data && data.IDVendor && data.OrderLines.length > 0) {
-			const loading = await this.loadingController.create({
-				cssClass: 'my-custom-class',
-				message: 'Xin vui lòng chờ tạo PO...',
-			});
+			const loading = await this.loadingController.create({ cssClass: 'my-custom-class', message: 'Xin vui lòng chờ tạo PO...' });
 			await loading.present().then(() => {
 				let postData = {
 					// SelectedRecommendations: this.items.filter((d) => d.checked).map((m) => ({ Id: m.Id, IDVendor: m.VendorId })),
@@ -380,9 +366,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 								this.nav('/purchase-order/' + resp.Id, 'forward');
 							});
 							this.refresh();
-							this.env.publishEvent({
-								Code: this.pageConfig.pageName,
-							});
+							this.env.publishEvent({ Code: this.pageConfig.pageName });
 						}
 					})
 					.catch((err) => {
@@ -420,14 +404,9 @@ export class PurchaseRequestDetailPage extends PageBase {
 		const { data } = await modal.onWillDismiss();
 
 		if (data && data.some((d) => d.Vendors.length > 0)) {
-			const loading = await this.loadingController.create({
-				cssClass: 'my-custom-class',
-				message: 'Xin vui lòng chờ tạo PQ...',
-			});
+			const loading = await this.loadingController.create({ cssClass: 'my-custom-class', message: 'Xin vui lòng chờ tạo PQ...' });
 			await loading.present().then(() => {
-				let postData = {
-					data: data.filter((d) => d.Vendors.length > 0),
-				};
+				let postData = { data: data.filter((d) => d.Vendors.length > 0) };
 				this.commonService
 					.connect('POST', 'PURCHASE/Request/SendRequestQuotationToVendor/' + this.formGroup.get('Id').value, postData)
 					.toPromise()
@@ -441,9 +420,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 							//     // this.nav('/purchase-quotation/' + resp.Id, 'forward');
 							//   });
 							this.refresh();
-							this.env.publishEvent({
-								Code: this.pageConfig.pageName,
-							});
+							this.env.publishEvent({ Code: this.pageConfig.pageName });
 						}
 					})
 					.catch((err) => {

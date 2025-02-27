@@ -161,35 +161,35 @@ export class PurchaseQuotationPage extends PageBase {
 			});
 	}
 
-	cancel() {
-		if (this.submitAttempt) return;
+	// cancel() {
+	// 	if (this.submitAttempt) return;
 
-		this.env
-			.showPrompt({ code: 'Bạn có chắc muốn HỦY {{value}} báo giá đang chọn?', value: this.selectedItems.length }, null, {
-				code: 'Huỷ {{value}} báo giá',
-				value: this.selectedItems.length,
-			})
-			.then((_) => {
-				this.submitAttempt = true;
-				let postDTO = { Ids: [] };
-				postDTO.Ids = this.selectedItems.map((e) => e.Id);
+	// 	this.env
+	// 		.showPrompt({ code: 'Bạn có chắc muốn HỦY {{value}} báo giá đang chọn?', value: this.selectedItems.length }, null, {
+	// 			code: 'Huỷ {{value}} báo giá',
+	// 			value: this.selectedItems.length,
+	// 		})
+	// 		.then((_) => {
+	// 			this.submitAttempt = true;
+	// 			let postDTO = { Ids: [] };
+	// 			postDTO.Ids = this.selectedItems.map((e) => e.Id);
 
-				this.pageProvider.commonService
-					.connect('POST', ApiSetting.apiDomain('PURCHASE/Quotation/Cancel/'), postDTO)
-					.toPromise()
-					.then((savedItem: any) => {
-						this.env.publishEvent({
-							Code: this.pageConfig.pageName,
-						});
-						this.env.showMessage('Saving completed!', 'success');
-						this.submitAttempt = false;
-					})
-					.catch((err) => {
-						this.submitAttempt = false;
-						console.log(err);
-					});
-			});
-	}
+	// 			this.pageProvider.commonService
+	// 				.connect('POST', ApiSetting.apiDomain('PURCHASE/Quotation/Cancel/'), postDTO)
+	// 				.toPromise()
+	// 				.then((savedItem: any) => {
+	// 					this.env.publishEvent({
+	// 						Code: this.pageConfig.pageName,
+	// 					});
+	// 					this.env.showMessage('Saving completed!', 'success');
+	// 					this.submitAttempt = false;
+	// 				})
+	// 				.catch((err) => {
+	// 					this.submitAttempt = false;
+	// 					console.log(err);
+	// 				});
+	// 		});
+	// }
 
 	async updatePriceList() {
 		const modal = await this.modalController.create({

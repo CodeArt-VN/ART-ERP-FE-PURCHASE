@@ -12,6 +12,7 @@ import { catchError, distinctUntilChanged, switchMap, tap } from 'rxjs/operators
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
 import { CopyToReceiptModalPage } from '../copy-to-receipt-modal/copy-to-receipt-modal.page';
+import { PURCHASE_OrderService } from '../purchase-order-service';
 
 @Component({
 	selector: 'app-purchase-order-detail',
@@ -39,7 +40,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 	});
 	paymentFormGroup: FormGroup;
 	constructor(
-		public pageProvider: PURCHASE_OrderProvider,
+		public pageProvider: PURCHASE_OrderService,
 		public purchaseOrderDetailProvider: PURCHASE_OrderDetailProvider,
 		public contactProvider: CRM_ContactProvider,
 		public branchProvider: BRA_BranchProvider,
@@ -702,18 +703,10 @@ export class PurchaseOrderDetailPage extends PageBase {
 		if (this.submitAttempt) {
 			return;
 		}
-
-		this.selectedItems = this.selectedItems.filter((i) => i.Status == 'Approved');
 		this.submitAttempt = true;
-		let postDTO = { Ids: [] };
-		postDTO.Ids = [this.item.Id];
-
-		this.pageProvider.commonService
-			.connect('POST', ApiSetting.apiDomain('PURCHASE/Order/SubmitOrders/'), postDTO)
-			.toPromise()
-			.then((savedItem: any) => {
-				this.env.publishEvent({ Code: this.pageConfig.pageName });
-				this.env.showMessage('Purchased ordered', 'success');
+		this.pageProvider
+			.submitOrders(this.item,this.env,this.pageConfig)
+			.then((rs: any) => {
 				this.submitAttempt = false;
 			})
 			.catch((err) => {

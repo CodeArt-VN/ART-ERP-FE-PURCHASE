@@ -94,6 +94,8 @@
 					[canEdit]="pageConfig.canEdit"
 					(onChange)="saveChange()"
 					[IDVendor]="formGroup.get('IDVendor').value"
+					[status]="formGroup.get('Status').value"
+					[statusLineList]="statusLineList"
 					[orderLines]="item.OrderLines"
 					(removeItem)="removeItem($event)"
 					(onRefresh)="refresh()"

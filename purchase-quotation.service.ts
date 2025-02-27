@@ -19,4 +19,11 @@ export class PURCHASE_RequestService extends PURCHASE_RequestProvider {
 		{ Status: 'Merged', ShowBtns: ['ShowArchive'] }, // Đơn đã gộp
 		{ Status: 'Canceled', ShowBtns: ['ShowArchive'] }, // Đơn đã gộp
 	];
+
+
+
+
+
+	
+
 }
