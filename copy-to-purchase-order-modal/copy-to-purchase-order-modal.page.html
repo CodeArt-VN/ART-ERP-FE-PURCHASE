@@ -1,23 +1,11 @@
 <ion-header>
 	<ion-toolbar>
-		<ion-title> {{'Copy to purchase order'| translate}}</ion-title>
+		<ion-buttons slot="start">
+			<ion-button color="dark"> {{'Copy to purchase order' | translate}} </ion-button>
+		</ion-buttons>
+
 		<ion-buttons slot="end">
-			<ion-buttons>
-				<div class="total">
-					<span>{{'Total: ' | translate}}</span>
-					<input
-						[ngModelOptions]="{standalone: true}"
-						[(ngModel)]="TotalAfterTax"
-						class="c-input"
-						[ngClass]="{active: TotalAfterTax}"
-						type="text"
-						[disabled]="true"
-						mask="separator.2"
-						thousandSeparator=","
-						suffix=" ₫"
-					/>
-				</div>
-			</ion-buttons>
+			<ion-button color="primary" fill="solid" size="small" (click)="submitForm()">{{'Save' | translate}}</ion-button>
 			<ion-button (click)="closeModal()">
 				<ion-icon name="close"></ion-icon>
 			</ion-button>
@@ -157,25 +145,4 @@
 		</datatable-column>
 	</app-data-table>
 </ion-content>
-<ion-footer>
-	<ion-toolbar>
-		<!-- *ngIf="showButtonSave" -->
-		<ion-button size="large" slot="end" (click)="submitForm()">{{'Save' | translate}}</ion-button>
-		<!-- <ion-title *ngIf="!showButtonSave">
-      <ion-chip>
-        <ion-icon name="alert-circle-outline" color="warning"> </ion-icon>
-        <ion-label>{{'PO has been entered into the warehouse. See more at ASN:' | translate}} 
-          <ng-container *ngFor="let r of listIDASN" >
-            <a
-            href="/#/receipt/{{r}}"
-            class="clickable"
-            (click)="nav('/receipt/' + r);modalController.dismiss(null)"
-            (mousedown)="$event.stopPropagation()"
-            >#{{ r }} </a>
-          </ng-container>
-          
-        </ion-label>
-      </ion-chip>
-    </ion-title> -->
-	</ion-toolbar>
-</ion-footer>
+
