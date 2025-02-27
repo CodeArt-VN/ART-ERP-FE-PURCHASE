@@ -90,4 +90,7 @@ export class PurchaseRequestPage extends PageBase {
 	
 	}
 
+	createPO(){
+		this.pageProvider.copyToPO(this.selectedItems, this.env, this.pageConfig);
+	}
 }

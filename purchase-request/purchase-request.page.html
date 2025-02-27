@@ -1,6 +1,13 @@
 <ion-header>
 	<app-toolbar [page]="this">
 		<ion-button
+			*ngIf="pageConfig.canCopyToPO"
+			(click)="createPO()"
+			title="{{'Copy to purchase order' | translate}}"
+		>
+			<ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
+		</ion-button>
+		<ion-button
 			tollbarSelected
 			*ngIf="pageConfig.ShowCopyToPurchaseQuotation && pageConfig.canCopyToPurchaseQuotation && selectedItems?.length  == 1"
 			(click)="sendRequestQuotationToVendor()"
