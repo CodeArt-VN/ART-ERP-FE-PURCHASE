@@ -67,7 +67,7 @@ export class PurchaseQuotationModalPage extends PageBase {
 			return { ...d, Quantity: d.Quantity, UoMName: d.UoMName, IDDetail: d.IDDetail, UoMPrice: d.UoMPrice };
 		});
 		this.vendorList = [...new Set(this.vendorList)];
-		this.formGroup.controls.IDVendor.setValue(this.defaultVendor.Id);
+		this.formGroup.controls.IDVendor.setValue(this.defaultVendor?.Id);
 		this.items = this.itemInVendors;
 
 		console.log(this.items);

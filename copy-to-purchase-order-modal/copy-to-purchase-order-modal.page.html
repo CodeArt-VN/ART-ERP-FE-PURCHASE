@@ -56,11 +56,11 @@
 				<!-- appendTo: '#ng-select-table' -->
 			</ng-template>
 		</datatable-column>
-		<datatable-column class="col-number" name="Quantity" property="Quantity">
+		<datatable-column class="col-number" name="Quantity required" property="QuantityRequired">
 			<ng-template let-i="row" datatable-cell-template>
 				<app-input-control
 					[field]="{
-        id: 'Quantity',
+        id: 'QuantityRequired',
         type: 'number',
         form: i._formGroup,
       }"

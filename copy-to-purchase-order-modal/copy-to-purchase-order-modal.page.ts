@@ -88,23 +88,15 @@ export class CopyToPurchaseOrderModalPage extends PageBase {
 			// IDPO: [row.IDOrder],
 			// IDPOLine: [row.Id],
 			SourceLine: [row.Id],
-			Quantity: new FormControl({ value: row.Quantity, disabled: true }),
+			QuantityRequired: new FormControl({ value: row.QuantityRequired, disabled: true }),
 			QuantityRemainingOpen: new FormControl({ value: row.QuantityRemainingOpen, disabled: true }),
 			UoMQuantityExpected: [row.UoMQuantityExpected],
 			Price: new FormControl({ value: row.Price, disabled: true }),
 			Discount: new FormControl({ value: row.TotalDiscount ?? 0, disabled: true }),
 			TaxRate: new FormControl({ value: row.TaxRate, disabled: true }),
 			Total: new FormControl({ value: 0, disabled: true }),
-			// QuantityReceived: new FormControl({ value: _qtyReceipted, disabled: true }),
-			// QuantityImport: new FormControl({ value: row.QuantityImport, disabled: row.UoMQuantityExpected - _qtyReceipted == 0 }),
-			// Lottable5: ['2021/01/01'],
-			// Lottable6: ['2099/01/01'],
-			// Lottable0: new FormControl({ value: '-', disabled: true }),
 		});
 		this._IDItemDataSource.selected.push(selectedItem);
-		// if(row.UoMQuantityExpected - _qtyReceipted != 0 ){
-		//   this.showButtonSave = true;
-		// }
 		this.formArray.push(row._formGroup);
 	}
 
