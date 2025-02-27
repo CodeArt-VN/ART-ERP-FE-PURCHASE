@@ -281,7 +281,11 @@ export class PurchaseOrderPage extends PageBase {
 		}
 		this.submitAttempt = true;
 		this.pageProvider
-			.submitOrders(this.selectedItems.filter((i) => i.Status == 'Approved'),this.env,this.pageConfig)
+			.submitOrders(
+				this.selectedItems.filter((i) => i.Status == 'Approved'),
+				this.env,
+				this.pageConfig
+			)
 			.then((savedItem: any) => {
 				this.submitAttempt = false;
 			})
@@ -412,5 +416,23 @@ export class PurchaseOrderPage extends PageBase {
 			.catch((err) => {
 				this.env.showMessage('Cannot create ASN, please try again later', 'danger');
 			});
+	}
+
+	createInvoice() {
+		this.pageProvider
+			.createInvoice(this.selectedItems, this.env, this.pageConfig)
+			.then((resp: any) => {
+				this.env
+					.showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
+					.then((_) => {
+						if (resp.length == 1) {
+							this.nav('/ap-invoice/' + resp[0]);
+						} else {
+							this.nav('/ap-invoice');
+						}
+					})
+					.catch((_) => {});
+			})
+			.catch((err) => this.env.showMessage(err));
 	}
 }

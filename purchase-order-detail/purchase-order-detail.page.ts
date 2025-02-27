@@ -527,14 +527,32 @@ export class PurchaseOrderDetailPage extends PageBase {
 		const { data } = await modal.onWillDismiss();
 		if (data) {
 			this.env.showPrompt(null, 'Do you want to move to the just created ASN page ?', 'ASN created!').then((_) => {
+				this.env.publishEvent({ Code: this.pageConfig.pageName });
 				this.nav('/receipt/' + data.Id);
 			});
 		}
 	}
 
 	async createInvoice() {
-		this.env
-			.showLoading('Please wait for a few moments', this.pageProvider.commonService.connect('POST', 'PURCHASE/Order/CopyToAPInvoice/', { Ids: [this.item.Id] }).toPromise())
+		// this.env
+		// 	.showLoading('Please wait for a few moments', this.pageProvider.commonService.connect('POST', 'PURCHASE/Order/CopyToAPInvoice/', { Ids: [this.item.Id] }).toPromise())
+		// 	.then((resp: any) => {
+		// 		this.env
+		// 			.showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
+		// 			.then((_) => {
+		// 				if (resp.length == 1) {
+		// 					this.nav('/ap-invoice/' + resp[0]);
+		// 				} else {
+		// 					this.nav('/ap-invoice');
+		// 				}
+		// 			})
+		// 			.catch((_) => {});
+		// 	})
+		// 	.catch((err) => {
+		// 		this.env.showMessage(err);
+		// 	});
+		this.pageProvider
+			.createInvoice(this.item, this.env, this.pageConfig)
 			.then((resp: any) => {
 				this.env
 					.showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
@@ -547,9 +565,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 					})
 					.catch((_) => {});
 			})
-			.catch((err) => {
-				this.env.showMessage(err);
-			});
+			.catch((err) => this.env.showMessage(err));
 	}
 
 	async showSaleOrderPickerModal() {
@@ -705,7 +721,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 		}
 		this.submitAttempt = true;
 		this.pageProvider
-			.submitOrders(this.item,this.env,this.pageConfig)
+			.submitOrders(this.item, this.env, this.pageConfig)
 			.then((rs: any) => {
 				this.submitAttempt = false;
 			})
