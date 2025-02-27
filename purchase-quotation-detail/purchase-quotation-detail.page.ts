@@ -49,7 +49,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	});
 
 	constructor(
-		public pageProvider: PURCHASE_QuotationProvider,
+		public pageProvider: PURCHASE_QuotationService,
 		public purchaseRequestDetailProvider: PURCHASE_RequestDetailProvider,
 		public contactProvider: CRM_ContactProvider,
 		public branchProvider: BRA_BranchProvider,
