@@ -8,6 +8,7 @@ import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
 import { PURCHASE_QuotationService } from '../purchase-quotation.service';
+import { CopyToPurchaseOrderModalPage } from '../copy-to-purchase-order-modal/copy-to-purchase-order-modal.page';
 @Component({
 	selector: 'app-purchase-quotation',
 	templateUrl: 'purchase-quotation.page.html',
@@ -32,21 +33,8 @@ export class PurchaseQuotationPage extends PageBase {
 	}
 
 	preLoadData(event) {
-		super.preLoadData(event);
-		this.query.Type = 'PurchaseRequest';
-		if (!this.sort.Id) {
-			this.sort.Id = 'Id';
-			this.sortToggle('Id', true);
-		}
-		let sysConfigQuery = ['PRUsedApprovalModule'];
-		Promise.all([this.env.getStatus('PurchaseQuotation'), this.sysConfigProvider.read({ Code_in: sysConfigQuery })]).then((values) => {
+		Promise.all([this.env.getStatus('PurchaseQuotation')]).then((values) => {
 			this.statusList = values[0];
-			values[1]['data'].forEach((e) => {
-				if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
-					e.Value = e._InheritedConfig.Value;
-				}
-				this.pageConfig[e.Code] = JSON.parse(e.Value);
-			});
 			super.preLoadData(event);
 		});
 	}
@@ -59,17 +47,54 @@ export class PurchaseQuotationPage extends PageBase {
 		console.log(this.items);
 	}
 
-	 updatePriceList() {
-		this.pageProvider.updatePriceList(this.selectedItems.map((d) => d.Id) ,PriceListVersionModalPage,this.modalController,this.env)
-	
+	updatePriceList() {
+		if (this.submitAttempt) return;
+		this.submitAttempt = true;
+		this.pageProvider.updatePriceList(
+			this.selectedItems.map((d) => d.Id),
+			PriceListVersionModalPage,
+			this.modalController,
+			this.env
+		).then(()=>{	this.submitAttempt = false})
+		.catch((err) => {this.submitAttempt = false});
 	}
-	copyCopyToPurchaseOrder(){
 
+	copyCopyToPurchaseOrder() {
+		if (this.submitAttempt) return;
+		this.submitAttempt = true;
+		this.pageProvider
+			.getAnItem(this.selectedItems[0].Id)
+			.then((data) => {
+				if (data) {
+					this.pageProvider
+						.copyCopyToPurchaseOrder(data, CopyToPurchaseOrderModalPage, this.modalController)
+						.then((data: any) => {
+							if (data) {
+								this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
+									this.nav('/purchase-order/' + data.Id);
+								});
+								this.env.publishEvent({ Code: this.pageConfig.pageName });
+								this.refresh();
+							}
+						})
+						.catch((err) => {
+							this.env.showMessage(err, 'danger');
+						}).finally(() => {
+							this.submitAttempt = false;
+						});;
+				}
+			})
+			.catch((err) => {
+				this.env.showMessage(err, 'danger');
+			})
+			.finally(() => {
+				this.submitAttempt = false;
+			});
 	}
+
 	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
-	presentCopyPopover(e){
+	presentCopyPopover(e) {
 		this.copyPopover.event = e;
 		this.isOpenCopyPopover = !this.isOpenCopyPopover;
 	}
 }
-

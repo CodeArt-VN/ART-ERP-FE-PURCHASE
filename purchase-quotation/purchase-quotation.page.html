@@ -27,7 +27,7 @@
 
 						<ion-item
 							title="{{'Copy to purchase order' | translate}}"
-							*ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder"
+							*ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder && selectedItems?.length ==1"
 							[button]="true"
 							[detail]="false"
 							(click)="copyCopyToPurchaseOrder()"
