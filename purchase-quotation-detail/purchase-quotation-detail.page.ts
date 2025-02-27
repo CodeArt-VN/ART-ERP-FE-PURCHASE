@@ -323,4 +323,11 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		this.item = savedItem;
 		this.loadedData(null);
 	}
+	
+	isOpenCopyPopover: boolean = false;
+	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
+	presentCopyPopover(e){
+		this.copyPopover.event = e;
+		this.isOpenCopyPopover = !this.isOpenCopyPopover;
+	}
 }

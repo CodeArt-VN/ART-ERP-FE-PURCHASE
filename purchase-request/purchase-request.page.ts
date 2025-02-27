@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { AlertController, LoadingController, ModalController, NavController, PopoverController } from '@ionic/angular';
 import { PageBase } from 'src/app/page-base';
 import { EnvService } from 'src/app/services/core/env.service';
@@ -7,6 +7,7 @@ import { ApiSetting } from 'src/app/services/static/api-setting';
 import { PURCHASE_RequestProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
 import { PURCHASE_RequestService } from '../purchase-request.service';
 import { PurchaseQuotationModalPage } from '../purchase-request-detail/purchase-quotation-modal/purchase-quotation-modal.page';
+import { PurchaseOrderModalPage } from '../purchase-request-detail/purchase-order-modal/purchase-order-modal.page';
 
 @Component({
 	selector: 'app-purchase-request',
@@ -61,36 +62,75 @@ export class PurchaseRequestPage extends PageBase {
 		}
 	}
 
-
 	sendRequestQuotationToVendor() {
-		this.pageProvider.getAnItem(this.selectedItems[0].Id).then((rs:any) => {
-			if(rs){
-				let orderLines = rs.OrderLines.filter((d) => d.Id);
-				orderLines.forEach(d=> d._Vendors = d._Item._Vendors);
-				this.pageProvider.sendRequestQuotationToVendor(rs.Id,orderLines,rs.IDVendor,PurchaseQuotationModalPage,this.modalController,this.env)
-				.then((rs)=>{
-					if(rs){
-						this.env.showMessage('Purchase quotations created!', 'success');
-						this.refresh();
-						this.env.publishEvent({
-							Code: this.pageConfig.pageName,
+		this.pageProvider
+			.getAnItem(this.selectedItems[0].Id)
+			.then((rs: any) => {
+				if (rs) {
+					let orderLines = rs.OrderLines.filter((d) => d.Id);
+					orderLines.forEach((d) => (d._Vendors = d._Item._Vendors));
+					this.pageProvider
+						.sendRequestQuotationToVendor(rs.Id, orderLines, rs.IDVendor, PurchaseQuotationModalPage, this.modalController, this.env)
+						.then((rs) => {
+							if (rs) {
+								this.env.showMessage('Purchase quotations created!', 'success');
+								this.refresh();
+								this.env.publishEvent({
+									Code: this.pageConfig.pageName,
+								});
+							}
+						})
+						.catch((err) => {
+							console.log(err);
+							this.env.showMessage('Cannot create PQ, please try again later', 'danger');
 						});
-					}
-					
-				}).catch((err) => {
-					console.log(err);
-					this.env.showMessage('Cannot create PQ, please try again later', 'danger');
-				});
-			}
-		}).catch((err) => {
-			console.log(err);
-			this.env.showMessage(err, 'danger');
-		});
-		
-	
+				}
+			})
+			.catch((err) => {
+				console.log(err);
+				this.env.showMessage(err, 'danger');
+			});
 	}
 
-	createPO(){
-		this.pageProvider.copyToPO(this.selectedItems, this.env, this.pageConfig);
+	copyToPO() {
+		this.pageProvider
+			.getAnItem(this.selectedItems[0].Id)
+			.then((rs: any) => {
+				if (rs) {
+					let orderLines = rs.OrderLines.filter((d) => d.Id);
+					let vendorList = [];
+					orderLines.forEach((o) => {
+						o._Vendors = o._Item._Vendors;	
+						if (o.IDVendor) {
+							vendorList = [...vendorList, ...o._Vendors.filter((v) => v.Id == o.IDVendor && !vendorList.some((vd) => v.Id == vd.Id))];
+						} else {
+							vendorList = [...vendorList, ...o._Vendors.filter((v) => !vendorList.some((vd) => v.Id == vd.Id))];
+						}
+					});
+					this.pageProvider.copyToPO(rs.Id, orderLines, rs._Vendor, vendorList, PurchaseOrderModalPage, this.modalController, this.env).then((rs:any) => {
+						if (rs) {
+							this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
+								this.nav('/purchase-order/' + rs.Id, 'forward');
+							});
+							this.refresh();
+							this.env.publishEvent({ Code: this.pageConfig.pageName });
+				
+						}
+					}).catch(err=>{
+						this.env.showMessage('Cannot create PO, please try again later', 'danger');
+					});
+				} else {
+					this.env.showMessage('Cannot get item!', 'danger');
+				}
+			})
+			.catch((err) => {
+				this.env.showMessage(err, 'danger');
+			});
+	}
+	isOpenCopyPopover = false;
+	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
+	presentCopyPopover(e) {
+		this.copyPopover.event = e;
+		this.isOpenCopyPopover = !this.isOpenCopyPopover;
 	}
 }

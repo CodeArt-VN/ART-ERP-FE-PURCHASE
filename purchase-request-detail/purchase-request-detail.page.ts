@@ -308,7 +308,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 		this.segmentView = ev.detail.value;
 	}
 
-	async createPO() {
+	copyToPO() {
 		let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
 		let vendorList = [];
 		this.formGroup.get('OrderLines').value.forEach((o) => {
@@ -318,56 +318,33 @@ export class PurchaseRequestDetailPage extends PageBase {
 				vendorList = [...vendorList, ...o._Vendors.filter((v) => !vendorList.some((vd) => v.Id == vd.Id))];
 			}
 		});
-
-		const modal = await this.modalController.create({
-			component: PurchaseOrderModalPage,
-			componentProps: { orderLines: orderLines, defaultVendor: this._currentVendor, vendorList: vendorList },
-
-			cssClass: 'modal90',
+		this.pageProvider.copyToPO(this.formGroup.get('Id').value, orderLines, this._currentVendor, vendorList, PurchaseOrderModalPage, this.modalController, this.env)
+		.then((rs:any)=>{
+			if(rs){
+				this.env.showMessage('PO created!', 'success');
+				this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
+					this.nav('/purchase-order/' + rs.Id, 'forward');
+				});
+				this.refresh();
+				this.env.publishEvent({ Code: this.pageConfig.pageName });
+			}
+		}).catch((err) => {
+			console.log(err);
+			this.env.showMessage('Cannot create PO, please try again later', 'danger');
 		});
-
-		await modal.present();
-		const { data } = await modal.onWillDismiss();
-
-		if (data && data.IDVendor && data.OrderLines.length > 0) {
-			const loading = await this.loadingController.create({ cssClass: 'my-custom-class', message: 'Xin vui lòng chờ tạo PO...' });
-			await loading.present().then(() => {
-				let postData = {
-					// SelectedRecommendations: this.items.filter((d) => d.checked).map((m) => ({ Id: m.Id, IDVendor: m.VendorId })),
-					IDVendor: data.IDVendor,
-					IDOrderlines: data.OrderLines.map((o) => o.Id),
-				};
-				this.commonService
-					.connect('POST', 'PURCHASE/Request/CopyToPO/' + this.formGroup.get('Id').value, postData)
-					.toPromise()
-					.then((resp: any) => {
-						if (resp) {
-							if (loading) loading.dismiss();
-							this.env.showMessage('PO created!', 'success');
-							this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
-								this.nav('/purchase-order/' + resp.Id, 'forward');
-							});
-							this.refresh();
-							this.env.publishEvent({ Code: this.pageConfig.pageName });
-						}
-					})
-					.catch((err) => {
-						console.log(err);
-						this.env.showMessage('Cannot create PO, please try again later', 'danger');
-						if (loading) loading.dismiss();
-					});
-			});
-		}
+		
 	}
 	sendRequestQuotationToVendor() {
 		let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
 		this.pageProvider.sendRequestQuotationToVendor(this.formGroup.get('Id').value,orderLines,this._currentVendor,PurchaseQuotationModalPage,this.modalController,this.env)
 		.then((rs)=>{
-			this.env.showMessage('Purchase quotations created!', 'success');
-			this.refresh();
-			this.env.publishEvent({
-				Code: this.pageConfig.pageName,
-			});
+			if(rs){
+				this.env.showMessage('Purchase quotations created!', 'success');
+				this.refresh();
+				this.env.publishEvent({
+					Code: this.pageConfig.pageName,
+				});
+			}
 		}).catch((err) => {
 			console.log(err);
 			this.env.showMessage('Cannot create PQ, please try again later', 'danger');
