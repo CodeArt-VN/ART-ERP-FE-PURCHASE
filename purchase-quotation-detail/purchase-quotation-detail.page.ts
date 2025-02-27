@@ -17,6 +17,7 @@ import { CommonService } from 'src/app/services/core/common.service';
 import { lib } from 'src/app/services/static/global-functions';
 import { CopyToPurchaseOrderModalPage } from '../copy-to-purchase-order-modal/copy-to-purchase-order-modal.page';
 import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
+import { PURCHASE_QuotationService } from '../purchase-quotation.service';
 
 @Component({
 	selector: 'app-purchase-quotation-detail',
@@ -27,7 +28,7 @@ import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-
 export class PurchaseQuotationDetailPage extends PageBase {
 	@ViewChild('importfile') importfile: any;
 	statusList = [];
-	statusLinesList = [];
+	_statusLineList = [];
 	contentTypeList = [];
 	vendorView = false;
 	markAsPristine = false;
@@ -49,7 +50,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	});
 
 	constructor(
-		public pageProvider: PURCHASE_QuotationProvider,
+		public pageProvider: PURCHASE_QuotationService,
 		public purchaseRequestDetailProvider: PURCHASE_RequestDetailProvider,
 		public contactProvider: CRM_ContactProvider,
 		public branchProvider: BRA_BranchProvider,
@@ -110,13 +111,13 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			{ Code: 'Item', Name: 'Items' },
 			{ Code: 'Service', Name: 'Service' },
 		];
-		Promise.all([this.env.getStatus('PurchaseQuotation'), this.contactProvider.read({ IsVendor: true, Take: 20 }), this.env.getStatus('PurchaseQuotaionLine')]).then(
+		Promise.all([this.env.getStatus('PurchaseQuotation'), this.contactProvider.read({ IsVendor: true, Take: 20 }), this.env.getStatus('PurchaseQuotationLine')]).then(
 			(values: any) => {
 				if (values[0]) this.statusList = values[0];
 				if (values[1] && values[1].data) {
 					this._vendorDataSource.selected.push(...values[1].data);
 				}
-				if (values[2]) this.statusLinesList = values[2];
+				if (values[2]) this._statusLineList = values[2];
 				super.preLoadData(event);
 			}
 		);
@@ -131,17 +132,22 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		else this.pageConfig.ShowAddPriceListVersion = false;
 
 		if (this.item.SourceType == 'FromPurchaseRequest') {
-			this.formGroup.disable();
+			this.formGroup.controls.ContentType.disable();
+			this.formGroup.controls.IDBusinessPartner.disable();
+			this.formGroup.controls.RequiredDate.disable();
+			this.formGroup.controls.DocumentDate.disable();
+			this.formGroup.controls.PostingDate.disable();
+			this.formGroup.controls.DueDate.disable();
 			let enableValid = ['Submitted', 'Approved', 'Closed'];
-			if (!enableValid.includes(this.item.Status)) this.formGroup.controls.ValidUntilDate.enable();
+			if (!enableValid.includes(this.item.Status)){
+				this.formGroup.controls.ValidUntilDate.enable();
+			} 
 		}
 
 		if (this.item._Vendor) {
 			this._vendorDataSource.selected = [...this._vendorDataSource.selected, ...[this.item._Vendor]];
 		}
 		this._vendorDataSource.initSearch();
-		if (this.item.Status == 'Approved') this.pageConfig.ShowCopyToPurchaseOrder = true;
-		else this.pageConfig.ShowCopyToPurchaseOrder = false;
 		if (this.vendorView && this.item.Status == 'Open') this.pageConfig.ShowConfirm = true;
 		else this.pageConfig.ShowCanConfirm = false;
 	}
@@ -160,6 +166,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		if (this.item?.QuotationLines.length)
 			this.item?.QuotationLines.forEach((i) => {
 				this.addLine(i);
+			
 			});
 		if (!this.pageConfig.canEdit) {
 			this.formGroup.controls.QuotationLines.disable();
@@ -169,6 +176,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	addLine(line, markAsDirty = false) {
 		let groups = <FormArray>this.formGroup.controls.QuotationLines;
 		let selectedItem = line._Item;
+		line.Status = line.Status || 'Open';
 		let group = this.formBuilder.group({
 			_IDItemDataSource: this.buildSelectDataSource((term) => {
 				return this.itemProvider.search({
@@ -188,7 +196,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				[this.item?.contentType === 'Item' ? Validators.required : null].filter(Boolean)
 			),
 			Id: [line.Id],
-			Status: [line.Status || 'Open'],
+			Status: [line.Status ],
 			Sort: [line.Sort],
 			Name: [line.Name],
 			Remark: [line.Remark],
@@ -221,8 +229,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			ModifiedBy: [line.ModifiedBy],
 			CreatedDate: [line.CreatedDate],
 			DeletedLines: [],
-			StatusText: lib.getAttrib(line.Status || 'Open', this.statusLinesList, 'Name', '--', 'Code'),
-			StatusColor: lib.getAttrib(line.Status || 'Open', this.statusLinesList, 'Color', 'dark', 'Code'),
+			_Status : [this._statusLineList.find((d) => d.Code == line.Status)]
 		});
 		groups.push(group);
 		if (selectedItem) group.get('_IDItemDataSource').value.selected.push(selectedItem);
@@ -231,6 +238,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		if (markAsDirty) {
 			group.get('Status').markAsDirty();
 		}
+	 
 	}
 
 	removeLine(index) {
@@ -276,20 +284,19 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			.reduce((a, b) => +a + +b, 0);
 	}
 
-	async copyCopyToPurchaseOrder() {
-		this.item._qtyReceipted = this.item._Receipts;
-		const modal = await this.modalController.create({
-			component: CopyToPurchaseOrderModalPage,
-			componentProps: { _item: this.item },
-			cssClass: 'modal90',
+	copyCopyToPurchaseOrder() {
+		this.pageProvider.copyCopyToPurchaseOrder(this.item, CopyToPurchaseOrderModalPage, this.modalController)
+		.then((data:any) => {
+			if(data){
+				this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
+					this.nav('/purchase-order/' + data.Id);
+				});
+				this.env.publishEvent({ Code: this.pageConfig.pageName });
+				this.refresh();
+			}
+		}).catch(err=>{
+			this.env.showMessage(err,'danger');
 		});
-		await modal.present();
-		const { data } = await modal.onWillDismiss();
-		if (data) {
-			this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
-				this.nav('/purchase-order/' + data.Id);
-			});
-		}
 	}
 	confirm() {
 		let Ids = [this.item.Id];
@@ -305,11 +312,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				});
 		});
 	}
-	saveOrder() {
-		this.debounce(() => {
-			super.saveChange2();
-		}, 300);
-	}
 
 	async updatePriceList() {
 		const modal = await this.modalController.create({
@@ -320,5 +322,14 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		await modal.present();
 		const { data } = await modal.onWillDismiss();
 		if (data) this.env.showMessage('Updated price success', 'success');
+	}
+
+	IDUoMChange(g){
+
+	}
+	savedChange(savedItem = null, form = this.formGroup) {
+		super.savedChange(savedItem, form);
+		this.item = savedItem;
+		this.loadedData(null);
 	}
 }

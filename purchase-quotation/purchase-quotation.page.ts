@@ -2,11 +2,12 @@ import { Component } from '@angular/core';
 import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
-import { PURCHASE_QuotationProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
+import { SYS_ConfigProvider } from 'src/app/services/static/services.service';
 import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
+import { PURCHASE_QuotationService } from '../purchase-quotation.service';
 @Component({
 	selector: 'app-purchase-quotation',
 	templateUrl: 'purchase-quotation.page.html',
@@ -16,7 +17,7 @@ import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-
 export class PurchaseQuotationPage extends PageBase {
 	statusList: any = [];
 	constructor(
-		public pageProvider: PURCHASE_QuotationProvider,
+		public pageProvider: PURCHASE_QuotationService,
 		public sysConfigProvider: SYS_ConfigProvider,
 		public modalController: ModalController,
 		public popoverCtrl: PopoverController,

@@ -8,7 +8,6 @@ import {
 	CRM_ContactProvider,
 	HRM_StaffProvider,
 	PURCHASE_RequestDetailProvider,
-	PURCHASE_RequestProvider,
 	WMS_ItemProvider,
 } from 'src/app/services/static/services.service';
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
@@ -282,28 +281,6 @@ export class PurchaseRequestDetailPage extends PageBase {
 		this.saveChange();
 	}
 
-	async copyToPO() {
-		const loading = await this.loadingController.create({
-			cssClass: 'my-custom-class',
-			message: 'Please wait for a few moments',
-		});
-		await loading.present().then(() => {
-			this.commonService
-				.connect('POST', ApiSetting.apiDomain('PURCHASE/Request/CopyToPO/'), this.item.Id)
-				.toPromise()
-				.then((resp: any) => {
-					if (loading) loading.dismiss();
-					this.env.publishEvent({
-						Code: this.pageConfig.pageName,
-					});
-				})
-				.catch((err) => {
-					console.log(err);
-					this.env.showMessage('erp.app.pages.purchase.purchase-request.message.can-not-add', 'danger');
-					if (loading) loading.dismiss();
-				});
-		});
-	}
 
 	async saveChange() {
 		this.formGroup.get('TotalAfterTax').setValue(this.calcTotalAfterTax());
@@ -393,66 +370,27 @@ export class PurchaseRequestDetailPage extends PageBase {
 			});
 		}
 	}
-	async sendRequestQuotationToVendor() {
+	sendRequestQuotationToVendor() {
 		let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
-		let vendorList = [];
-		this.formGroup.get('OrderLines').value.forEach((o) => {
-			if (o.IDVendor) {
-				vendorList = [...vendorList, ...o._Vendors.filter((v) => v.Id == o.IDVendor && !vendorList.some((vd) => v.Id == vd.Id))];
-			} else {
-				vendorList = [...vendorList, ...o._Vendors.filter((v) => !vendorList.some((vd) => v.Id == vd.Id))];
-			}
-		});
-
-		const modal = await this.modalController.create({
-			component: PurchaseQuotationModalPage,
-			componentProps: {
-				itemInVendors: orderLines,
-				isMultiple: true,
-				defaultVendor: this._currentVendor,
-				// vendorList : vendorList,
-			},
-
-			cssClass: 'modal90',
-		});
-
-		await modal.present();
-		const { data } = await modal.onWillDismiss();
-
-		if (data && data.some((d) => d.Vendors.length > 0)) {
-			const loading = await this.loadingController.create({
-				cssClass: 'my-custom-class',
-				message: 'Xin vui lòng chờ tạo PQ...',
+		this.pageProvider.sendRequestQuotationToVendor(this.formGroup.get('Id').value,orderLines,this._currentVendor,PurchaseQuotationModalPage,this.modalController,this.env)
+		.then((rs)=>{
+			this.env.showMessage('Purchase quotations created!', 'success');
+			this.refresh();
+			this.env.publishEvent({
+				Code: this.pageConfig.pageName,
 			});
-			await loading.present().then(() => {
-				let postData = {
-					data: data.filter((d) => d.Vendors.length > 0),
-				};
-				this.commonService
-					.connect('POST', 'PURCHASE/Request/SendRequestQuotationToVendor/' + this.formGroup.get('Id').value, postData)
-					.toPromise()
-					.then((resp: any) => {
-						if (resp) {
-							if (loading) loading.dismiss();
-							this.env.showMessage('Purchase quotations created!', 'success');
-							// this.env
-							//  .showPrompt('Create purchase quotation successfully!','Do you want to navigate to purchase quotation?' )
-							//  .then((d) => {
-							//     // this.nav('/purchase-quotation/' + resp.Id, 'forward');
-							//   });
-							this.refresh();
-							this.env.publishEvent({
-								Code: this.pageConfig.pageName,
-							});
-						}
-					})
-					.catch((err) => {
-						console.log(err);
-						this.env.showMessage('Cannot create PQ, please try again later', 'danger');
-						if (loading) loading.dismiss();
-					});
-			});
-		}
+		}).catch((err) => {
+			console.log(err);
+			this.env.showMessage('Cannot create PQ, please try again later', 'danger');
+		});
+		// let vendorList = [];
+		// this.formGroup.get('OrderLines').value.forEach((o) => {
+		// 	if (o.IDVendor) {
+		// 		vendorList = [...vendorList, ...o._Vendors.filter((v) => v.Id == o.IDVendor && !vendorList.some((vd) => v.Id == vd.Id))];
+		// 	} else {
+		// 		vendorList = [...vendorList, ...o._Vendors.filter((v) => !vendorList.some((vd) => v.Id == vd.Id))];
+		// 	}
+		// });
 	}
 	selectedRequestBranch;
 	getNearestCompany(IDBranch) {
