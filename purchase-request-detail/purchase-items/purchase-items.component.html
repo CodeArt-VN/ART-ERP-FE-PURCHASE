@@ -121,7 +121,9 @@
 
 					<datatable-column *ngIf="_showStatus" class="col-status" name="Status" property="value" filterControlType="ng-select" [filterDataSource]="statusLineList">
 						<ng-template let-g="row" datatable-cell-template>
-							<ion-badge [color]="g.controls._Status.value?.Color" [title]="g.controls._Status.value?.Name"> {{g.controls._Status.value?.Name | translate}} </ion-badge>
+							<ion-badge [color]="g.controls._Status.value?.Color" [title]="g.controls._Status.value?.Name">
+								{{ g.controls._Status.value?.Name | translate }}
+							</ion-badge>
 						</ng-template>
 					</datatable-column>
 
@@ -130,8 +132,6 @@
 							<ion-icon color="danger" class="min-btn clickable" name="trash-outline" (click)="removeLine(idx)"></ion-icon>
 						</ng-template>
 					</datatable-column>
-					
-					
 				</app-data-table>
 			</div>
 		</ng-container>

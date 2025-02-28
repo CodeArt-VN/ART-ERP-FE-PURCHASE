@@ -73,10 +73,10 @@ export class PurchaseItemsComponent extends PageBase {
 	}
 	setOrderLines() {
 		this.formGroup.controls.OrderLines = new FormArray([]);
-		if (this.items?.length){
+		if (this.items?.length) {
 			var showStatusLines = ['Approved', 'Closed', 'QuotationSent'];
-			this._showStatus = showStatusLines.includes(this._status)
-		} 
+			this._showStatus = showStatusLines.includes(this._status);
+		}
 		this.items?.forEach((i) => {
 			this.addLine(i);
 		});
@@ -144,7 +144,7 @@ export class PurchaseItemsComponent extends PageBase {
 			CreatedBy: [line.CreatedBy],
 			ModifiedBy: [line.ModifiedBy],
 			CreatedDate: [line.CreatedDate],
-			_Status : [this._statusLineList.find((d) => d.Code == line.Status)]
+			_Status: [this._statusLineList.find((d) => d.Code == line.Status)],
 		});
 		groups.push(group);
 		if (selectedItem) group.get('_IDItemDataSource').value.selected.push(selectedItem);
@@ -154,7 +154,6 @@ export class PurchaseItemsComponent extends PageBase {
 			group.get('IDVendor').markAsDirty();
 			group.get('Status').markAsDirty();
 		}
-
 	}
 
 	removeLine(index) {

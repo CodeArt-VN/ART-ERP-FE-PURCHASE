@@ -1,58 +1,50 @@
 <ion-header>
 	<app-toolbar [page]="this">
 		<ion-button
-		class="clickable"
-		tollbarSelected
-		title="{{'Copy' | translate}}"
-		(click)="presentCopyPopover($event)"
-		*ngIf="
+			class="clickable"
+			tollbarSelected
+			title="{{'Copy' | translate}}"
+			(click)="presentCopyPopover($event)"
+			*ngIf="
 		(pageConfig.ShowCopyToPurchaseQuotation && pageConfig.canCopyToPurchaseQuotation && selectedItems?.length  == 1) 
 		||(pageConfig.canCopyToPO && pageConfig.ShowCopyToPO && selectedItems?.length == 1)"
-	>
-		<ion-icon slot="icon-only" name="documents-outline"></ion-icon>
-	</ion-button>
-	<ion-popover #copyPopover [isOpen]="isOpenCopyPopover" (didDismiss)="isOpenCopyPopover = false">
-		<ng-template>
-			<ion-content scroll-y="false">
-				<ion-list lines="none">
-					<ion-item
-						*ngIf="pageConfig.ShowCopyToPurchaseQuotation && pageConfig.canCopyToPurchaseQuotation && selectedItems?.length  == 1"
-						[button]="true"
-						[detail]="false"
-						(click)="sendRequestQuotationToVendor()"
-						title="{{'Send quote request' | translate}}"
-					>
-					<ion-icon name="documents-outline"></ion-icon>
-						<ion-label> {{'Send quote request' | translate}}</ion-label>
-					</ion-item>
+		>
+			<ion-icon name="duplicate-outline" color="success" slot="icon-only"></ion-icon>
+		</ion-button>
+		<ion-popover #copyPopover [isOpen]="isOpenCopyPopover" (didDismiss)="isOpenCopyPopover = false">
+			<ng-template>
+				<ion-content scroll-y="false">
+					<ion-list lines="none">
+						<ion-item
+							*ngIf="pageConfig.ShowCopyToPurchaseQuotation && pageConfig.canCopyToPurchaseQuotation && selectedItems?.length  == 1"
+							[button]="true"
+							[detail]="false"
+							(click)="sendRequestQuotationToVendor()"
+							title="{{'Copy to purchase quotation' | translate}}"
+						>
+							<ion-icon name="quotation" color="success" slot="start"></ion-icon>
+							<ion-label> {{'Copy to purchase quotation' | translate}}</ion-label>
+						</ion-item>
 
-					<ion-item
-						title="{{'Copy to purchase order' | translate}}"
-						*ngIf="pageConfig.canCopyToPO && pageConfig.ShowCopyToPO && selectedItems?.length == 1"
-
-						[button]="true"
-						[detail]="false"
-						(click)="copyToPO()"
-					>
-						<ion-icon slot="start" name="clipboard-list"></ion-icon>
-						<ion-label>{{'Copy to purchase order' | translate}}</ion-label>
-					</ion-item>
-				</ion-list>
-			</ion-content>
-		</ng-template>
-	</ion-popover>
-	
+						<ion-item
+							title="{{'Copy to purchase order' | translate}}"
+							*ngIf="pageConfig.canCopyToPO && pageConfig.ShowCopyToPO && selectedItems?.length == 1"
+							[button]="true"
+							[detail]="false"
+							(click)="copyToPO()"
+						>
+							<ion-icon name="clipboard-list" color="success" slot="start"></ion-icon>
+							<ion-label>{{'Copy to purchase order' | translate}}</ion-label>
+						</ion-item>
+					</ion-list>
+				</ion-content>
+			</ng-template>
+		</ion-popover>
 	</app-toolbar>
 </ion-header>
 
 <ion-content appScrollbarTheme class="scrollx">
-	<app-page-title
-		class="ion-padding safe-max-width"
-		[icon]="pageConfig.pageIcon"
-		[color]="pageConfig.pageColor"
-		[title]="pageConfig.pageTitle"
-		[remark]="pageConfig.pageRemark"
-	></app-page-title>
+	<app-page-title class="ion-padding safe-max-width" [pageConfig]="pageConfig"></app-page-title>
 
 	<div class="safe-max-width">
 		<app-data-table
@@ -85,5 +77,7 @@
 	</div>
 
 	<div class="ion-padding"></div>
-	
+	<ion-infinite-scroll color="primary" threshold="30%" (ionInfinite)="loadData($event)" [disabled]="!pageConfig.infiniteScroll || pageConfig.isEndOfData">
+		<ion-infinite-scroll-content loadingSpinner="dots"></ion-infinite-scroll-content>
+	</ion-infinite-scroll>
 </ion-content>

@@ -1,43 +1,41 @@
 <ion-header>
 	<app-toolbar [page]="this">
 		<ion-button
-		title="{{'Copy' | translate}}"
-		(click)="presentCopyPopover($event)"
-		*ngIf="
-		(pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion) 
-		||(pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder)"
-	>
-		<ion-icon slot="icon-only" name="documents-outline"></ion-icon>
-	</ion-button>
-	<ion-popover #copyPopover [isOpen]="isOpenCopyPopover" (didDismiss)="isOpenCopyPopover = false">
-		<ng-template>
-			<ion-content scroll-y="false">
-				<ion-list lines="none">
-					<ion-item
-						title="{{'Copy to price list' | translate}}"
-						*ngIf="pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion"
-						[button]="true"
-						[detail]="false"
-						(click)="updatePriceList()"
-					>
-						<ion-icon slot="start" name="pricetags-outline"></ion-icon>
-						<ion-label> {{'Copy to price list' | translate}}</ion-label>
-					</ion-item>
+			title="{{'Copy' | translate}}"
+			(click)="presentCopyPopover($event)"
+			*ngIf=" (pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion)  ||(pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder)"
+		>
+			<ion-icon slot="icon-only" name="duplicate-outline"></ion-icon>
+		</ion-button>
+		<ion-popover #copyPopover [isOpen]="isOpenCopyPopover" (didDismiss)="isOpenCopyPopover = false">
+			<ng-template>
+				<ion-content scroll-y="false">
+					<ion-list lines="none">
+						<ion-item
+							title="{{'Copy to price list' | translate}}"
+							*ngIf="pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion"
+							[button]="true"
+							[detail]="false"
+							(click)="updatePriceList()"
+						>
+							<ion-icon slot="start" name="pricetags-outline"></ion-icon>
+							<ion-label> {{'Copy to price list' | translate}}</ion-label>
+						</ion-item>
 
-					<ion-item
-						title="{{'Copy to purchase order' | translate}}"
-						*ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder"
-						[button]="true"
-						[detail]="false"
-						(click)="copyCopyToPurchaseOrder()"
-					>
-						<ion-icon slot="start" name="clipboard-list"></ion-icon>
-						<ion-label>{{'Copy to purchase order' | translate}}</ion-label>
-					</ion-item>
-				</ion-list>
-			</ion-content>
-		</ng-template>
-	</ion-popover>
+						<ion-item
+							title="{{'Copy to purchase order' | translate}}"
+							*ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder"
+							[button]="true"
+							[detail]="false"
+							(click)="copyCopyToPurchaseOrder()"
+						>
+							<ion-icon slot="start" name="clipboard-list"></ion-icon>
+							<ion-label>{{'Copy to purchase order' | translate}}</ion-label>
+						</ion-item>
+					</ion-list>
+				</ion-content>
+			</ng-template>
+		</ion-popover>
 	</app-toolbar>
 </ion-header>
 
@@ -49,75 +47,48 @@
 				<ion-row class="hr-group">
 					<ion-col size="12" size-sm="12" size-md="12" size-xl="3">
 						<ion-list-header class="ion-no-padding">
-							<ion-label color="primary">{{'Purchase order' | translate}}</ion-label>
+							<ion-label color="primary">{{'Purchase quotation' | translate}}</ion-label>
 						</ion-list-header>
 					</ion-col>
 					<ion-col size="12" size-sm size-xl="4">
-						<app-form-control (change)="saveChange();" [field]="{id:'Name', type : 'text', label:'Name', form : formGroup}"></app-form-control>
+						<app-form-control (change)="saveChange();" [field]="{id: 'Name', type: 'text', label: 'Name', form: formGroup}"></app-form-control>
+
+						<app-form-control (change)="saveChange()" [field]="{id: 'Code', label: 'Code', type: 'text',form: formGroup}"> </app-form-control>
 
 						<app-form-control
-							(change)="saveChange()"
-							[field]="{id :'Code', label:'Code' ,
-              type:'text',form:formGroup}"
-						>
-						</app-form-control>
-
-						<app-form-control
-							[field]="{id:'IDBusinessPartner',label:'Vendor', type : 'ng-select-bp', form : formGroup,  dataSource: _vendorDataSource,  bindLabel: 'Name',  bindValue: 'Id',clearable:true, appendTo:'#ng-select-header' }"
+							[field]="{id: 'IDBusinessPartner',label: 'Vendor', type: 'ng-select-bp', form: formGroup, dataSource: _vendorDataSource, bindLabel: 'Name', bindValue: 'Id',clearable: true, appendTo: '#ng-select-header' }"
 							(change)="changeVendor($event)"
 						></app-form-control>
 
 						<app-form-control
-							[field]="{id :'ContentType', label:'Content type' ,
-               type:'ng-select',dataSource:contentTypeList,
-               bindLabel:'Name',bindValue:'Code' ,form:formGroup}"
+							[field]="{id: 'ContentType', label: 'Content type', type: 'ng-select',dataSource: contentTypeList, bindLabel: 'Name',bindValue: 'Code', form: formGroup}"
 							(change)="changeContentType($event)"
 						>
 						</app-form-control>
 						<app-form-control
 							(change)="saveChange();"
-							[field]="{id:'Status', type : 'ng-select', dataSource:statusList, bindLabel:'Name', bindValue:'Code', label:'Status', form : formGroup}"
+							[field]="{id: 'Status', type: 'ng-select', dataSource: statusList, bindLabel: 'Name', bindValue: 'Code', label: 'Status', form: formGroup}"
 						>
 						</app-form-control>
-						<app-form-control [field]="{id:'Remark', type : 'textarea', label: 'Remark', form : formGroup }" (change)="saveChange()"></app-form-control>
+						<app-form-control [field]="{id: 'Remark', type: 'textarea', label: 'Remark', form: formGroup }" (change)="saveChange()"></app-form-control>
 					</ion-col>
 					<ion-col size="12" size-sm size-xl="4">
-						<app-form-control
-							[field]="{id :'RequiredDate', label:'Required date' ,
-              type:'datetime-local',form:formGroup}"
-							(change)="changeRequiredDate($event)"
-						>
+						<app-form-control [field]="{id: 'RequiredDate', label: 'Required date', type: 'datetime-local',form: formGroup}" (change)="changeRequiredDate($event)">
 						</app-form-control>
 
-						<app-form-control
-							[field]="{id :'ValidUntilDate', label:'Valid until date' ,
-            type:'datetime-local',form:formGroup}"
-						>
+						<app-form-control [field]="{id: 'ValidUntilDate', label: 'Valid until date', type: 'datetime-local',form: formGroup}">
 							<!-- (change) = "changeRequiredDate($event)" -->
 						</app-form-control>
 
-						<app-form-control
-							[field]="{id :'DocumentDate', label:'Document date' ,
-            type:'datetime-local',form:formGroup}"
-							(change)="changeDate($event)"
-						>
+						<app-form-control [field]="{id: 'DocumentDate', label: 'Document date', type: 'datetime-local',form: formGroup}" (change)="changeDate($event)">
 						</app-form-control>
 
-						<app-form-control
-							[field]="{id :'PostingDate', label:'Posting date' ,
-              type:'datetime-local',form:formGroup}"
-							(change)="changeDate($event)"
-						>
+						<app-form-control [field]="{id: 'PostingDate', label: 'Posting date', type: 'datetime-local',form: formGroup}" (change)="changeDate($event)">
 						</app-form-control>
 
-						<app-form-control
-							[field]="{id :'DueDate', label:'Due date' ,
-              type:'datetime-local',form:formGroup}"
-							(change)="changeDate($event)"
-						>
-						</app-form-control>
+						<app-form-control [field]="{id: 'DueDate', label: 'Due date', type: 'datetime-local',form: formGroup}" (change)="changeDate($event)"> </app-form-control>
 						<!-- <app-form-control [clearable]="true" 
-            [field]="{id:'IDRequester', label:'Requester', type : 'ng-select-staff', form : formGroup,  dataSource: _staffDataSource,  bindLabel: 'FullName',  bindValue: 'Id' }"
+            [field]="{id: 'IDRequester', label: 'Requester', type: 'ng-select-staff', form: formGroup, dataSource: _staffDataSource, bindLabel: 'FullName', bindValue: 'Id' }"
             (change)="saveChange()"></app-form-control> -->
 
 						<div class="c-control">
@@ -175,13 +146,15 @@
 												id: 'IDItem',
 												label: 'Item',
 												type: 'ng-select-item',
-												form: g,
-												dataSource: g.get('_IDItemDataSource').value,
-												bindValue: 'Id',
-												bindLabel: 'Name',
-												clearable: true,
-												placeholder: 'Type to search...',
-												appendTo: '#ng-select-table',
+										form: g,
+										dataSource: g.get('_IDItemDataSource').value,
+										bindValue: 'Id',
+										bindLabel: 'Name',
+										
+										clearable: true,
+										placeholder: 'Type to search...',
+
+										appendTo: '#ng-select-table',
 											}"
 											(change)="IDItemChange($event, g)"
 										></app-input-control>
@@ -246,7 +219,7 @@
 										<app-input-control (change)="saveChange()" [field]="{ id: 'Quantity', type: 'number', form: g }"></app-input-control>
 									</ng-template>
 								</datatable-column>
-							
+
 								<datatable-column class="col-money" name="Info price" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control [field]="{ id: 'InfoPrice', type: 'span-number', form: g }"> </app-input-control>
@@ -333,20 +306,20 @@
 								</ion-list-header>
 							</ion-col>
 							<ion-col size="12" size-sm size-xl="4">
-								<app-form-control [field]="{id:'CreatedBy', type : 'text', label: 'Created by', form : formGroup }"></app-form-control>
-								<app-form-control [field]="{id:'CreatedDate', type : 'span-datetime', label: 'Created date', form : formGroup }"></app-form-control>
-								<app-form-control [field]="{id:'ModifiedBy', type : 'text', label: 'Last modified by', form : formGroup }"></app-form-control>
-								<app-form-control [field]="{id:'ModifiedDate', type : 'span-datetime', label: 'Last modified date', form : formGroup }"></app-form-control>
+								<app-form-control [field]="{id: 'CreatedBy', type: 'text', label: 'Created by', form: formGroup }"></app-form-control>
+								<app-form-control [field]="{id: 'CreatedDate', type: 'span-datetime', label: 'Created date', form: formGroup }"></app-form-control>
+								<app-form-control [field]="{id: 'ModifiedBy', type: 'text', label: 'Last modified by', form: formGroup }"></app-form-control>
+								<app-form-control [field]="{id: 'ModifiedDate', type: 'span-datetime', label: 'Last modified date', form: formGroup }"></app-form-control>
 							</ion-col>
 							<ion-col size="12" size-sm size-xl="4">
 								<app-form-control
-									[field]="{id:'IDBranch', type : 'branch-breadcrumbs', label: 'Branch', form : formGroup, dataSource:env.branchList }"
+									[field]="{id: 'IDBranch', type: 'branch-breadcrumbs', label: 'Branch', form: formGroup, dataSource: env.branchList }"
 								></app-form-control>
 								<app-form-control
 									*ngIf="formGroup.get('SourceType').value && formGroup.get('SourceKey').value "
-									[field]="{id:'SourceKey', type : 'text',
-                 label: formGroup.get('SourceType').value =='FromPurchaseRequest'?'Purchase request':'Source'
-                , form : formGroup}"
+									[field]="{id: 'SourceKey', type: 'text',
+                 label: formGroup.get('SourceType').value =='FromPurchaseRequest'?'Purchase request': 'Source'
+            , form: formGroup}"
 								>
 									<small label class="danger"
 										><ng-container *ngIf="formGroup.get('SourceType').value =='FromPurchaseRequest'">

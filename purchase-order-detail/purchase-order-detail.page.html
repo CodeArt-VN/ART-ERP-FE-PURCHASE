@@ -1,8 +1,6 @@
 <ion-header>
 	<app-toolbar [page]="this">
-		<ion-button *ngIf="pageConfig.ShowSubmitOrders && pageConfig.canSubmitOrders" 
-		fill="clear" title="Order submitted"
-		 (click)="submitOrders()">
+		<ion-button *ngIf="pageConfig.ShowSubmitOrders && pageConfig.canSubmitOrders" fill="clear" title="Order submitted" (click)="submitOrders()">
 			<ion-icon slot="start" name="cart-outline"></ion-icon>
 		</ion-button>
 		<ion-button title="{{'Copy to A/P invoice' | translate}}" *ngIf="pageConfig.canCopyToAPInvoice" (click)="createInvoice()">
@@ -198,11 +196,7 @@
 									</ng-template>
 								</datatable-column>
 
-								<datatable-column
-									class="col-remark"
-									name="Remark"
-									property="value"
-								>
+								<datatable-column class="col-remark" name="Remark" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control (change)="saveOrder()" [field]="{id:'Remark',type:'text',form:g}"> </app-input-control>
 									</ng-template>

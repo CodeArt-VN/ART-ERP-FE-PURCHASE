@@ -3,13 +3,7 @@ import { NavController, LoadingController, AlertController, ModalController, Pop
 import { PageBase } from 'src/app/page-base';
 import { ActivatedRoute } from '@angular/router';
 import { EnvService } from 'src/app/services/core/env.service';
-import {
-	BRA_BranchProvider,
-	CRM_ContactProvider,
-	HRM_StaffProvider,
-	PURCHASE_RequestDetailProvider,
-	WMS_ItemProvider,
-} from 'src/app/services/static/services.service';
+import { BRA_BranchProvider, CRM_ContactProvider, HRM_StaffProvider, PURCHASE_RequestDetailProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
 import { lib } from 'src/app/services/static/global-functions';
@@ -95,9 +89,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 		];
 		this.branchList = [...this.env.branchList];
 
-		Promise.all([this.env.getStatus('PurchaseRequest'), this.contactProvider.read({ IsVendor: true, Take: 20 }),
-			 this.env.getStatus('PurchaseQuotationLine')]
-			).then(
+		Promise.all([this.env.getStatus('PurchaseRequest'), this.contactProvider.read({ IsVendor: true, Take: 20 }), this.env.getStatus('PurchaseQuotationLine')]).then(
 			(values: any) => {
 				if (values[0]) this.statusList = values[0];
 				if (values[1] && values[1].data) {
@@ -279,7 +271,6 @@ export class PurchaseRequestDetailPage extends PageBase {
 		this.saveChange();
 	}
 
-
 	async saveChange() {
 		this.formGroup.get('TotalAfterTax').setValue(this.calcTotalAfterTax());
 		return super.saveChange2();
@@ -318,37 +309,40 @@ export class PurchaseRequestDetailPage extends PageBase {
 				vendorList = [...vendorList, ...o._Vendors.filter((v) => !vendorList.some((vd) => v.Id == vd.Id))];
 			}
 		});
-		this.pageProvider.copyToPO(this.formGroup.get('Id').value, orderLines, this._currentVendor, vendorList, PurchaseOrderModalPage, this.modalController, this.env)
-		.then((rs:any)=>{
-			if(rs){
-				this.env.showMessage('PO created!', 'success');
-				this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
-					this.nav('/purchase-order/' + rs.Id, 'forward');
-				});
-				this.refresh();
-				this.env.publishEvent({ Code: this.pageConfig.pageName });
-			}
-		}).catch((err) => {
-			console.log(err);
-			this.env.showMessage('Cannot create PO, please try again later', 'danger');
-		});
-		
+		this.pageProvider
+			.copyToPO(this.formGroup.get('Id').value, orderLines, this._currentVendor, vendorList, PurchaseOrderModalPage, this.modalController, this.env)
+			.then((rs: any) => {
+				if (rs) {
+					this.env.showMessage('PO created!', 'success');
+					this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
+						this.nav('/purchase-order/' + rs.Id, 'forward');
+					});
+					this.refresh();
+					this.env.publishEvent({ Code: this.pageConfig.pageName });
+				}
+			})
+			.catch((err) => {
+				console.log(err);
+				this.env.showMessage('Cannot create PO, please try again later', 'danger');
+			});
 	}
 	sendRequestQuotationToVendor() {
 		let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
-		this.pageProvider.sendRequestQuotationToVendor(this.formGroup.get('Id').value,orderLines,this._currentVendor,PurchaseQuotationModalPage,this.modalController,this.env)
-		.then((rs)=>{
-			if(rs){
-				this.env.showMessage('Purchase quotations created!', 'success');
-				this.refresh();
-				this.env.publishEvent({
-					Code: this.pageConfig.pageName,
-				});
-			}
-		}).catch((err) => {
-			console.log(err);
-			this.env.showMessage('Cannot create PQ, please try again later', 'danger');
-		});
+		this.pageProvider
+			.sendRequestQuotationToVendor(this.formGroup.get('Id').value, orderLines, this._currentVendor, PurchaseQuotationModalPage, this.modalController, this.env)
+			.then((rs) => {
+				if (rs) {
+					this.env.showMessage('Purchase quotations created!', 'success');
+					this.refresh();
+					this.env.publishEvent({
+						Code: this.pageConfig.pageName,
+					});
+				}
+			})
+			.catch((err) => {
+				console.log(err);
+				this.env.showMessage('Cannot create PQ, please try again later', 'danger');
+			});
 		// let vendorList = [];
 		// this.formGroup.get('OrderLines').value.forEach((o) => {
 		// 	if (o.IDVendor) {
@@ -372,5 +366,12 @@ export class PurchaseRequestDetailPage extends PageBase {
 				}
 			}
 		}
+	}
+
+	isOpenCopyPopover = false;
+	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
+	presentCopyPopover(e) {
+		this.copyPopover.event = e;
+		this.isOpenCopyPopover = !this.isOpenCopyPopover;
 	}
 }

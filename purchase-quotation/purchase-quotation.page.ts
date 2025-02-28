@@ -50,13 +50,19 @@ export class PurchaseQuotationPage extends PageBase {
 	updatePriceList() {
 		if (this.submitAttempt) return;
 		this.submitAttempt = true;
-		this.pageProvider.updatePriceList(
-			this.selectedItems.map((d) => d.Id),
-			PriceListVersionModalPage,
-			this.modalController,
-			this.env
-		).then(()=>{	this.submitAttempt = false})
-		.catch((err) => {this.submitAttempt = false});
+		this.pageProvider
+			.updatePriceList(
+				this.selectedItems.map((d) => d.Id),
+				PriceListVersionModalPage,
+				this.modalController,
+				this.env
+			)
+			.then(() => {
+				this.submitAttempt = false;
+			})
+			.catch((err) => {
+				this.submitAttempt = false;
+			});
 	}
 
 	copyCopyToPurchaseOrder() {
@@ -79,9 +85,10 @@ export class PurchaseQuotationPage extends PageBase {
 						})
 						.catch((err) => {
 							this.env.showMessage(err, 'danger');
-						}).finally(() => {
+						})
+						.finally(() => {
 							this.submitAttempt = false;
-						});;
+						});
 				}
 			})
 			.catch((err) => {

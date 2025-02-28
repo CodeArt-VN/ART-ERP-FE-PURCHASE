@@ -100,25 +100,27 @@ export class PurchaseRequestPage extends PageBase {
 					let orderLines = rs.OrderLines.filter((d) => d.Id);
 					let vendorList = [];
 					orderLines.forEach((o) => {
-						o._Vendors = o._Item._Vendors;	
+						o._Vendors = o._Item._Vendors;
 						if (o.IDVendor) {
 							vendorList = [...vendorList, ...o._Vendors.filter((v) => v.Id == o.IDVendor && !vendorList.some((vd) => v.Id == vd.Id))];
 						} else {
 							vendorList = [...vendorList, ...o._Vendors.filter((v) => !vendorList.some((vd) => v.Id == vd.Id))];
 						}
 					});
-					this.pageProvider.copyToPO(rs.Id, orderLines, rs._Vendor, vendorList, PurchaseOrderModalPage, this.modalController, this.env).then((rs:any) => {
-						if (rs) {
-							this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
-								this.nav('/purchase-order/' + rs.Id, 'forward');
-							});
-							this.refresh();
-							this.env.publishEvent({ Code: this.pageConfig.pageName });
-				
-						}
-					}).catch(err=>{
-						this.env.showMessage('Cannot create PO, please try again later', 'danger');
-					});
+					this.pageProvider
+						.copyToPO(rs.Id, orderLines, rs._Vendor, vendorList, PurchaseOrderModalPage, this.modalController, this.env)
+						.then((rs: any) => {
+							if (rs) {
+								this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
+									this.nav('/purchase-order/' + rs.Id, 'forward');
+								});
+								this.refresh();
+								this.env.publishEvent({ Code: this.pageConfig.pageName });
+							}
+						})
+						.catch((err) => {
+							this.env.showMessage('Cannot create PO, please try again later', 'danger');
+						});
 				} else {
 					this.env.showMessage('Cannot get item!', 'danger');
 				}

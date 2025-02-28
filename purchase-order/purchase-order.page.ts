@@ -103,7 +103,6 @@ export class PurchaseOrderPage extends PageBase {
 	merge() {}
 	split() {}
 
-
 	ngOnDestroy() {
 		this.dismissPopover();
 	}

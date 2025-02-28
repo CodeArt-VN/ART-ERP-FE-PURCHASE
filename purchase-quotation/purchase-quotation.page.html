@@ -8,7 +8,7 @@
 			(pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion) 
 			||(pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder)"
 		>
-			<ion-icon slot="icon-only" name="documents-outline"></ion-icon>
+			<ion-icon slot="icon-only" name="duplicate-outline"></ion-icon>
 		</ion-button>
 		<ion-popover #copyPopover [isOpen]="isOpenCopyPopover" (didDismiss)="isOpenCopyPopover = false">
 			<ng-template>
@@ -58,13 +58,7 @@
 </ion-header>
 
 <ion-content appScrollbarTheme class="header-table">
-	<app-page-title
-		class="ion-padding safe-max-width"
-		[icon]="pageConfig.pageIcon"
-		[color]="pageConfig.pageColor"
-		[title]="pageConfig.pageTitle"
-		[remark]="pageConfig.pageRemark"
-	></app-page-title>
+	<app-page-title class="ion-padding safe-max-width" [pageConfig]="pageConfig"></app-page-title>
 
 	<div class="safe-max-width">
 		<app-data-table
@@ -103,4 +97,7 @@
 	</div>
 
 	<div class="ion-padding"></div>
+	<ion-infinite-scroll color="primary" threshold="30%" (ionInfinite)="loadData($event)" [disabled]="!pageConfig.infiniteScroll || pageConfig.isEndOfData">
+		<ion-infinite-scroll-content loadingSpinner="dots"></ion-infinite-scroll-content>
+	</ion-infinite-scroll>
 </ion-content>

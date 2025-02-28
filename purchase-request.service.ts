@@ -7,7 +7,7 @@ export class PURCHASE_RequestService extends PURCHASE_RequestProvider {
 		{ Status: 'Draft', ShowBtns: ['ShowChangeBranch', 'ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Mới
 		{ Status: 'Unapproved', ShowBtns: ['ShowChangeBranch', 'ShowSubmit', 'ShowApprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Không duyệt
 		{ Status: 'Submitted', ShowBtns: ['ShowApprove', 'ShowDisapprove', 'ShowCancel', 'ShowDelete', 'ShowArchive'] }, // Chờ duyệt
-		{ Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel', 'ShowArchive', 'ShowCopyToPurchaseQuotation','ShowCopyToPO'] }, // Đã duyệt
+		{ Status: 'Approved', ShowBtns: ['ShowDisapprove', 'ShowCancel', 'ShowArchive', 'ShowCopyToPurchaseQuotation', 'ShowCopyToPO'] }, // Đã duyệt
 
 		{ Status: 'Open', ShowBtns: ['ShowArchive'] }, // Đang xử lý
 		{ Status: 'Closed', ShowBtns: ['ShowArchive'] }, // Đã xong
@@ -17,12 +17,12 @@ export class PURCHASE_RequestService extends PURCHASE_RequestProvider {
 		{ Status: 'Canceled', ShowBtns: ['ShowArchive'] }, // Đơn đã gộp
 	];
 
-	copyToPO(id, orderLines: any,currentVendor,vendorList, modalComponent, modalController, env) {
+	copyToPO(id, orderLines: any, currentVendor, vendorList, modalComponent, modalController, env) {
 		return new Promise(async (resolve, reject) => {
 			const modal = await modalController.create({
 				component: modalComponent,
 				componentProps: { orderLines: orderLines, defaultVendor: currentVendor, vendorList: vendorList },
-	
+
 				cssClass: 'modal90',
 			});
 			await modal.present();
@@ -33,11 +33,10 @@ export class PURCHASE_RequestService extends PURCHASE_RequestProvider {
 					IDVendor: data.IDVendor,
 					IDOrderlines: data.OrderLines.map((o) => o.Id),
 				};
-				env.showLoading('Please wait for a few moments',this.commonService.connect('POST', 'PURCHASE/Request/CopyToPO/' + id, postData)
-					.toPromise()).then((resp: any) => {
+				env.showLoading('Please wait for a few moments', this.commonService.connect('POST', 'PURCHASE/Request/CopyToPO/' + id, postData).toPromise())
+					.then((resp: any) => {
 						if (resp) {
 							resolve(resp);
-							
 						}
 					})
 					.catch((err) => {
@@ -45,8 +44,7 @@ export class PURCHASE_RequestService extends PURCHASE_RequestProvider {
 						env.showMessage('Cannot create PO, please try again later', 'danger');
 						reject(err);
 					});
-			}
-			else resolve(null);
+			} else resolve(null);
 		});
 	}
 

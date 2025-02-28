@@ -35,14 +35,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	_currentVendor;
 	_isVendorSearch = false;
 	_vendorDataSource = this.buildSelectDataSource((term) => {
-		return this.contactProvider.search({
-			SkipAddress: true,
-			IsVendor: true,
-			SortBy: ['Id_desc'],
-			Take: 20,
-			Skip: 0,
-			Term: term,
-		});
+		return this.contactProvider.search({ SkipAddress: true, IsVendor: true, SortBy: ['Id_desc'], Take: 20, Skip: 0, Term: term });
 	});
 
 	_staffDataSource = this.buildSelectDataSource((term) => {
@@ -128,7 +121,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		if (this.item.Status == 'Confirmed' && this.vendorView) this.pageConfig.canEdit = false;
 		super.loadedData(event);
 		this.setQuotationLines();
-	
+
 		if (this.item.SourceType == 'FromPurchaseRequest') {
 			this.formGroup.controls.ContentType.disable();
 			this.formGroup.controls.IDBusinessPartner.disable();
@@ -137,9 +130,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			this.formGroup.controls.PostingDate.disable();
 			this.formGroup.controls.DueDate.disable();
 			let enableValid = ['Submitted', 'Approved', 'Closed'];
-			if (!enableValid.includes(this.item.Status)){
+			if (!enableValid.includes(this.item.Status)) {
 				this.formGroup.controls.ValidUntilDate.enable();
-			} 
+			}
 		}
 
 		if (this.item._Vendor) {
@@ -164,7 +157,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		if (this.item?.QuotationLines.length)
 			this.item?.QuotationLines.forEach((i) => {
 				this.addLine(i);
-			
 			});
 		if (!this.pageConfig.canEdit) {
 			this.formGroup.controls.QuotationLines.disable();
@@ -194,7 +186,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				[this.item?.contentType === 'Item' ? Validators.required : null].filter(Boolean)
 			),
 			Id: [line.Id],
-			Status: [line.Status ],
+			Status: [line.Status],
 			Sort: [line.Sort],
 			Name: [line.Name],
 			Remark: [line.Remark],
@@ -227,7 +219,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			ModifiedBy: [line.ModifiedBy],
 			CreatedDate: [line.CreatedDate],
 			DeletedLines: [],
-			_Status : [this._statusLineList.find((d) => d.Code == line.Status)]
+			_Status: [this._statusLineList.find((d) => d.Code == line.Status)],
 		});
 		groups.push(group);
 		if (selectedItem) group.get('_IDItemDataSource').value.selected.push(selectedItem);
@@ -236,7 +228,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		if (markAsDirty) {
 			group.get('Status').markAsDirty();
 		}
-	 
 	}
 
 	removeLine(index) {
@@ -283,18 +274,20 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	}
 
 	copyCopyToPurchaseOrder() {
-		this.pageProvider.copyCopyToPurchaseOrder(this.item, CopyToPurchaseOrderModalPage, this.modalController)
-		.then((data:any) => {
-			if(data){
-				this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
-					this.nav('/purchase-order/' + data.Id);
-				});
-				this.env.publishEvent({ Code: this.pageConfig.pageName });
-				this.refresh();
-			}
-		}).catch(err=>{
-			this.env.showMessage(err,'danger');
-		});
+		this.pageProvider
+			.copyCopyToPurchaseOrder(this.item, CopyToPurchaseOrderModalPage, this.modalController)
+			.then((data: any) => {
+				if (data) {
+					this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
+						this.nav('/purchase-order/' + data.Id);
+					});
+					this.env.publishEvent({ Code: this.pageConfig.pageName });
+					this.refresh();
+				}
+			})
+			.catch((err) => {
+				this.env.showMessage(err, 'danger');
+			});
 	}
 	confirm() {
 		let Ids = [this.item.Id];
@@ -311,22 +304,20 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		});
 	}
 
-	 updatePriceList() {
-		this.pageProvider.updatePriceList([this.item.Id],PriceListVersionModalPage,this.modalController,this.env)
+	updatePriceList() {
+		this.pageProvider.updatePriceList([this.item.Id], PriceListVersionModalPage, this.modalController, this.env);
 	}
 
-	IDUoMChange(g){
-
-	}
+	IDUoMChange(g) {}
 	savedChange(savedItem = null, form = this.formGroup) {
 		super.savedChange(savedItem, form);
 		this.item = savedItem;
 		this.loadedData(null);
 	}
-	
+
 	isOpenCopyPopover: boolean = false;
 	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
-	presentCopyPopover(e){
+	presentCopyPopover(e) {
 		this.copyPopover.event = e;
 		this.isOpenCopyPopover = !this.isOpenCopyPopover;
 	}

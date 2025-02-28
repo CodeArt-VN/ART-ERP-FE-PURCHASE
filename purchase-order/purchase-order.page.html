@@ -35,65 +35,41 @@
 </ion-header>
 
 <ion-content appScrollbarTheme class="header-table" scroll-x="true">
-	<app-page-title
-		class="ion-padding safe-max-width"
-		[icon]="pageConfig.pageIcon"
-		[color]="pageConfig.pageColor"
-		[title]="pageConfig.pageTitle"
-		[remark]="pageConfig.pageRemark"
-	></app-page-title>
-	<app-data-table
-		class="box-shadow responsive"
-		[rows]="items"
-		[trackBy]="'Id'"
-		[(selectedRows)]="selectedItems"
-		[showSpinner]="pageConfig.showSpinner"
-		[showFilter]="pageConfig.isShowSearch"
-		[(query)]="query"
-		(dataInfinite)="loadData($event)"
-		(filter)="onDatatableFilter($event)"
-		(sort)="onSort($event)"
-		(selectedRowsChange)="showCommandBySelectedRows($event)"
-	>
-		<datatable-column [checkbox]="true" name=""></datatable-column>
-		<datatable-column class="col-id" name="#" property="Id" [navLink]="pageConfig.pageName"></datatable-column>
-		<datatable-column class="col-date" name="Order date" property="OrderDate" filterControlType="date">
-			<ng-template let-i="row" datatable-cell-template>
-				{{i.OrderDate |date:'dd/mm/yyyy'}}
-				<small>{{i.OrderDate |date:'hh:MM'}}</small>
-			</ng-template>
-		</datatable-column>
-		<datatable-column class="col-date" name="Expected receipt date" property="ExpectedReceiptDate" filterControlType="date">
-			<ng-template let-i="row" datatable-cell-template>
-				{{i.ExpectedReceiptDate |date:'dd/mm/yyyy'}}
-				<small>{{i.ExpectedReceiptDate |date:'hh:MM'}}</small>
-			</ng-template>
-		</datatable-column>
-		<datatable-column class="col-status" name="Status" property="Status" filterControlType="ng-select" [filterDataSource]="statusList">
-			<ng-template let-i="row" datatable-cell-template>
-				<ng-container *ngFor="let s of paymentStatusList">
-					<ion-badge *ngIf="s.Code==i.PaymentStatus" [color]="s.Color" [title]="s.Name"> {{s.Name| translate}} </ion-badge>
-				</ng-container>
-			</ng-template>
-		</datatable-column>
+	<app-page-title class="ion-padding safe-max-width" [pageConfig]="pageConfig"></app-page-title>
 
-		<datatable-column class="col-name" name="Goods owner" property="StorerName"></datatable-column>
-		<datatable-column class="col-name" name="Vendor" property="VendorName"></datatable-column>
-		<datatable-column class="col-number bold" format="1.0-0" name="Total" property="TotalAfterTax"></datatable-column>
+	<div class="safe-max-width">
+		<app-data-table
+			class="box-shadow responsive"
+			[rows]="items"
+			[trackBy]="'Id'"
+			[(selectedRows)]="selectedItems"
+			[showSpinner]="pageConfig.showSpinner"
+			[showFilter]="pageConfig.isShowSearch"
+			[(query)]="query"
+			(dataInfinite)="loadData($event)"
+			(filter)="onDatatableFilter($event)"
+			(sort)="onSort($event)"
+			(selectedRowsChange)="showCommandBySelectedRows($event)"
+		>
+			<datatable-column [checkbox]="true" name=""></datatable-column>
+			<datatable-column class="col-id" name="#" property="Id" [navLink]="pageConfig.pageName"></datatable-column>
+			<datatable-column class="col-date" format="yyyy-MM-dd" name="Order date" property="OrderDate" filterControlType="time-frame"></datatable-column>
+			<datatable-column class="col-date" format="yyyy-MM-dd" name="Expected receipt date" property="ExpectedReceiptDate" filterControlType="date"></datatable-column>
+			<datatable-column class="col-name flex-break" name="Vendor" property="VendorName"></datatable-column>
+			<datatable-column class="col-name flex-break" name="Goods owner" property="StorerName"></datatable-column>
+			<datatable-column class="col-number bold" format="1.0-0" name="Total" property="TotalAfterTax"></datatable-column>
+			<datatable-column class="col-status" name="Status" property="Status" filterControlType="ng-select-status" [filterDataSource]="statusList">
+				<ng-template let-i="row" datatable-cell-template>
+					<ion-badge [color]="i.StatusColor" [title]="i.StatusText"> {{i.StatusText | translate}} </ion-badge>
+				</ng-template>
+			</datatable-column>
+		</app-data-table>
+	</div>
 
-		<datatable-column class="col-status" name="Status" property="Status" filterControlType="ng-select" [filterDataSource]="statusList">
-			<ng-template let-i="row" datatable-cell-template>
-				<ion-badge [color]="i.StatusColor" [title]="i.StatusText"> {{i.StatusText | translate}} </ion-badge>
-			</ng-template>
-		</datatable-column>
-	</app-data-table>
-
-	<app-page-message [itemsLength]="items.length" [showSpinner]="pageConfig.showSpinner"></app-page-message>
-
-	<div *ngIf="items.length && pageConfig.showSpinner==false"></div>
 	<ion-infinite-scroll color="primary" threshold="20%" (ionInfinite)="loadData($event)" [disabled]="!pageConfig.infiniteScroll || pageConfig.isEndOfData">
 		<ion-infinite-scroll-content loadingSpinner="dots"></ion-infinite-scroll-content>
 	</ion-infinite-scroll>
+
 	<ion-popover class="w300" #popover [isOpen]="isOpenPopover" (didDismiss)="dismissPopover()">
 		<ng-template>
 			<ion-content appScrollbarTheme>
