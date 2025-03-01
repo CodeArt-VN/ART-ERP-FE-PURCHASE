@@ -56,7 +56,7 @@ export class PriceListVersionModalPage extends PageBase {
 
 	loadedData(event?: any, ignoredFromGroup?: boolean): void {
 		super.loadedData(event);
-		if (this.priceListForVendor.length > 0) {
+		if (this.priceListForVendor?.length > 0) {
 			for (let p of this.priceListForVendor) {
 				let item = this.items.find((d) => d.IDBusinessPartner == p.IDBusinessPartner);
 				if (item) {

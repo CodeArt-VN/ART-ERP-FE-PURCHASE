@@ -292,6 +292,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 			super.saveChange2();
 		}, 300);
 	}
+
 	changeVendor(e) {
 		this._currentBusinessPartner = e;
 		this.saveOrder();
