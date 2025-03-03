@@ -84,7 +84,7 @@ export class CopyToReceiptModalPage extends PageBase {
 			QuantityImport: new FormControl({ value: row.QuantityImport, disabled: row.UoMQuantityExpected - _qtyReceipted == 0 }),
 			Lottable5: ['2021-01-01'],
 			Lottable6: ['2099-01-01'],
-			Lottable0:['-'] ,
+			Lottable0: ['-'],
 		});
 		if (row.UoMQuantityExpected - _qtyReceipted != 0) {
 			this.showButtonSave = true;
@@ -145,8 +145,8 @@ export class CopyToReceiptModalPage extends PageBase {
 			this.modalController.dismiss(null);
 			return;
 		}
-		let expectedReceiptDatethis =this.item.ExpectedReceiptDate;
-		if(!expectedReceiptDatethis){
+		let expectedReceiptDatethis = this.item.ExpectedReceiptDate;
+		if (!expectedReceiptDatethis) {
 			let orderDate = new Date(this.item.OrderDate);
 			orderDate.setDate(orderDate.getDate() + 1);
 			expectedReceiptDatethis = orderDate.toISOString();
@@ -156,7 +156,7 @@ export class CopyToReceiptModalPage extends PageBase {
 			IDVendor: this.item._Vendor.Id,
 			IDStorer: this.item._Storer.Id,
 			IDPurchaseOrder: this.item.Id,
-			ExpectedReceiptDate:expectedReceiptDatethis,
+			ExpectedReceiptDate: expectedReceiptDatethis,
 			Type: 'FromPO',
 			POCode: this.item.Code,
 			Lines: OrderLines,

@@ -24,7 +24,7 @@
 
 <ion-content appScrollbarTheme class="ion-padding">
 	<div id="order-detail-page" style="position: absolute"></div>
-	<div class="main-view" *ngIf="item && pageConfig.showSpinner==false">
+	<div class="main-view safe-max-width" *ngIf="item && pageConfig.showSpinner==false">
 		<ion-grid fixed>
 			<form [formGroup]="formGroup">
 				<ion-row class="hr-group">
@@ -122,7 +122,7 @@
 
 								<datatable-column class="col-id" name="No." property="#"></datatable-column>
 
-								<datatable-column class="col-name" name="Product" property="value">
+								<datatable-column class="col-name item-name" name="Product" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control
 											[field]="{id:'IDItem', label:'Item', type : 'ng-select-item', form : g,  dataSource: g.controls._IDItemDataSource.value,  bindLabel: 'Name',  bindValue: 'Id',clearable:true,  placeholder:'Type to search...'}"
@@ -131,7 +131,7 @@
 									</ng-template>
 								</datatable-column>
 
-								<datatable-column class="col-number" name="Unit" property="value">
+								<datatable-column class="col-code" name="Unit" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control
 											[field]="{id:'IDUoM', type : 'ng-select', form : g,  dataSource: g.controls._IDUoMDataSource.value,  bindLabel: 'Name',  bindValue: 'Id' }"
@@ -151,7 +151,7 @@
 									</ng-template>
 								</datatable-column>
 
-								<datatable-column class="col-qty" name="SL đặt" property="value">
+								<datatable-column class="col-qty text-right" name="SL đặt" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control (change)="saveOrder()" [field]="{ id: 'UoMQuantityExpected', type: 'number', form: g }"></app-input-control>
 									</ng-template>
