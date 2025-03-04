@@ -169,7 +169,6 @@ export class PurchaseOrderDetailPage extends PageBase {
 
 		super.loadedData(event, true);
 		this.setOrderLines();
-		this.pageConfig.ShowRequestOutgoingPayment = this.pageConfig.canRequestOutgoingPayment;
 		let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved', 'Paid'];
 		let notShowRequestOutgoingPayment = ['Draft', 'Submitted', 'Approved', 'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Canceled'];
 		if (
@@ -178,10 +177,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 		) {
 			this.pageConfig.ShowRequestOutgoingPayment = false;
 		}
-		this.pageConfig.ShowCopyToReceipt = this.pageConfig.canCopyToReceipt;
-		let onlyShowCopyToReceipt = ['Ordered'];
-		if (!onlyShowCopyToReceipt.includes(this.formGroup.get('Status').value)) this.pageConfig.ShowCopyToReceipt = false;
-
+		
 		if (this.item?._Vendor) {
 			this._vendorDataSource.selected = [...this._vendorDataSource.selected, this.item?._Vendor];
 			this._currentBusinessPartner = this.item._Vendor;
@@ -725,6 +721,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 			.submitOrders(this.item, this.env, this.pageConfig)
 			.then((rs: any) => {
 				this.submitAttempt = false;
+				this.refresh();
 			})
 			.catch((err) => {
 				this.submitAttempt = false;
