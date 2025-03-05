@@ -106,7 +106,7 @@
 									<span
 										><ion-text color="primary"
 											>#{{i.Id}}
-											<span *ngIf="i._BusinessPartnerName">{{i._BusinessPartnerName}} -> {{i._BranchName}}</span>
+											<span *ngIf="i._BusinessPartnerName">{{i._BusinessPartnerName}} → {{i._BranchName}}</span>
 										</ion-text>
 									</span>
 								</div>
@@ -114,7 +114,7 @@
 							<ng-template input-control-template ng-option-tmp let-i="item" let-search="searchTerm">
 								<div *ngIf="i">
 									<span><ion-text color="primary">#{{i.Id}}</ion-text></span>
-									<span *ngIf="i._BusinessPartnerName">{{i._BusinessPartnerName}} -> {{i._BranchName}}</span>
+									<span *ngIf="i._BusinessPartnerName">{{i._BusinessPartnerName}} → {{i._BranchName}}</span>
 								</div>
 							</ng-template>
 						</app-form-control>
