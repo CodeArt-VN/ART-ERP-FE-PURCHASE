@@ -2,7 +2,7 @@
 	<div>
 		<ion-list lines="none">
 			<div class="ion-padding">
-				<app-form-control [field]="{id:'IDPurchaseOrder',label: title||'Search', type: 'ng-select-async',dataSource:_dataSource,
+				<app-form-control (controlChange)="onChange($event)"[field]="{id:'Id',label: title||'Search', type: 'ng-select-async',dataSource:_dataSource,
 				bindLabel:'VendorName',bindValue:'Id', form:formGroup}"> 
 			
 				<ng-template  input-control-template ng-label-tmp let-i="item">

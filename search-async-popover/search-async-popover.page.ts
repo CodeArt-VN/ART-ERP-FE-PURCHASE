@@ -22,7 +22,7 @@ export class SearchAsyncPopoverPage {
 	 searchFunction: any;
 	 _dataSource :any;
 	 formGroup: any;
-	 purchaseOrder;
+	 item;
 	items = [];
 	constructor(
 		public env: EnvService,
@@ -33,7 +33,7 @@ export class SearchAsyncPopoverPage {
 		public formBuilder : FormBuilder
 	) {
 		this.formGroup = this.formBuilder.group({
-			IDPurchaseOrder: ['']
+			Id: ['']
 		})
 	}
 	ngOnInit() {
@@ -41,7 +41,10 @@ export class SearchAsyncPopoverPage {
 		this._dataSource.initSearch();
 		
 	}
-	command(ev){
-		this.popoverCtrl.dismiss(ev);
+	submit(){
+		this.popoverCtrl.dismiss(this.item);
+	}
+	onChange(ev){
+		this.item = ev;
 	}
 }
