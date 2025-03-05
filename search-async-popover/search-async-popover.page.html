@@ -2,32 +2,73 @@
 	<div>
 		<ion-list lines="none">
 			<div class="ion-padding">
-				<app-form-control (controlChange)="onChange($event)"[field]="{id:'Id',label: title||'Search', type: 'ng-select-async',dataSource:_dataSource,
-				bindLabel:'VendorName',bindValue:'Id', form:formGroup}"> 
-			
-				<ng-template  input-control-template ng-label-tmp let-i="item">
-					<div *ngIf="i">
-						<span
-							><ion-text color="primary"
-								>#{{i.Id}}
+				<ng-container [ngSwitch]="type">
+					<ng-container *ngSwitchDefault>
+						<app-form-control (controlChange)="onChange($event)"[field]="{id:'Id',label: title||'Search', type: 'ng-select-async',dataSource:_dataSource,
+						bindLabel:'Name',bindValue:'Id', form:formGroup}"> 
+						</app-form-control>
+					</ng-container>
+					<ng-container *ngSwitchCase="'PurchaseOrder'">
+					<app-form-control (controlChange)="onChange($event)"[field]="{id:'Id',label: title||'Search', type: 'ng-select-async',dataSource:_dataSource,
+					bindLabel:'VendorName',bindValue:'Id', form:formGroup}"> 
+						
+						<ng-template  input-control-template ng-label-tmp let-i="item">
+								<div *ngIf="i?.Id">
+								<span
+									><ion-text color="primary"
+										>#{{i.Id}}
+									</ion-text></span
+								>
 								<span *ngIf="i.VendorName"> {{i.VendorName}} → {{i.StorerName}}</span>
-							</ion-text></span
-						>
-					</div>
-				</ng-template>
-				<ng-template  input-control-template ng-option-tmp let-i="item" let-search="searchTerm">
-					<div *ngIf="i">
-						<span><ion-text color="primary">#{{i.Id}}</ion-text></span>
-						<small *ngIf="i.Code"> PO: {{i.Code}}</small>
-						<small *ngIf="i.ExpectedReceiptDate"> - {{i.ExpectedReceiptDate | date: 'HH:mm dd/MM/yy'}}</small>
-						<div>
-							<span>{{i.VendorName}}</span>
-							→
-							<span>{{i.StorerName}}</span>
-						</div>
-					</div>
-				</ng-template>
-				</app-form-control>
+		
+							</div>
+						</ng-template>
+						<ng-template  input-control-template ng-option-tmp let-i="item" let-search="searchTerm">
+							<div *ngIf="i">
+								<span><ion-text color="primary">#{{i.Id}}</ion-text></span>
+								<small *ngIf="i.Code"> PO: {{i.Code}}</small>
+								<small *ngIf="i.ExpectedReceiptDate"> - {{i.ExpectedReceiptDate | date: 'HH:mm dd/MM/yyyy'}}</small>
+								<div>
+									<span>{{i._Vendor?.Name || i.VendorName}}</span>
+									→
+									<span>{{i._Storer?.Name || i.StorerName}}</span>
+								</div>
+							</div>
+						</ng-template>
+					</app-form-control>
+					</ng-container>
+
+					<ng-container 	*ngSwitchCase="'PurchaseRequest'">
+						<app-form-control (controlChange)="onChange($event)"[field]="{id:'Id',label: title||'Search', type: 'ng-select-async',dataSource:_dataSource,
+							bindLabel:'Id',bindValue:'Id', form:formGroup}"> 
+						<ng-template  input-control-template ng-label-tmp let-i="item">
+							<div *ngIf="i?.Id">
+								<span
+									><ion-text color="primary"
+										>#{{i.Id}}
+									</ion-text></span
+								>
+								<span *ngIf="i._Requester">{{'Requester' | translate}}: {{i._Requester.Code}} - {{i._Requester.FullName}}</span> |
+								<span *ngIf="i._Vendor">{{'Vendor' | translate}}: {{i._Vendor.Code}} - {{i._Vendor.Name}}</span>
+		
+							</div>
+						</ng-template>
+						<ng-template  input-control-template ng-option-tmp let-i="item" let-search="searchTerm">
+							<div *ngIf="i">
+								<span><ion-text color="primary">#{{i.Id}}</ion-text></span>
+								
+								<small *ngIf="i.RequiredDate"> - {{i.RequiredDate | date: 'HH:mm dd/MM/yyyy'}}</small>
+								<div>
+									<span *ngIf="i._Requester">{{'Requester' | translate}}: {{i._Requester.Code}} - {{i._Requester.FullName}}</span> |
+									<span *ngIf="i._Vendor">{{'Vendor' | translate}}: {{i._Vendor.Code}} - {{i._Vendor.Name}}</span>
+								</div>
+							</div>
+						</ng-template>
+					</app-form-control>
+					</ng-container>
+				</ng-container>
+			
+				
 
 				<!-- <div class="c-control" >
 					<label class="c-label" for="IDstaff">{{'Purchase Order'}}</label>

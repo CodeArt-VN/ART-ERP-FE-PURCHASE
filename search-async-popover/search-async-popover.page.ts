@@ -16,7 +16,8 @@ import { FormBuilder } from '@angular/forms';
 })
 export class SearchAsyncPopoverPage {
 	provider: any;
-	 query: any;
+	type: string;
+	query: any;
 	 title : string;
 	 initDatasource = [];
 	 searchFunction: any;
