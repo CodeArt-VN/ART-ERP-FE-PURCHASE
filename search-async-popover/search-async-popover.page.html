@@ -1,0 +1,62 @@
+<ion-content [scrollY]="false">
+	<div>
+		<ion-list lines="none">
+			<div class="ion-padding">
+				<app-form-control [field]="{id:'IDPurchaseOrder',label: title||'Search', type: 'ng-select-async',dataSource:_dataSource,
+				bindLabel:'VendorName',bindValue:'Id', form:formGroup}"> 
+			
+				<ng-template  input-control-template ng-label-tmp let-i="item">
+					<div *ngIf="i">
+						<span
+							><ion-text color="primary"
+								>#{{i.Id}}
+								<span *ngIf="i.VendorName"> {{i.VendorName}} → {{i.StorerName}}</span>
+							</ion-text></span
+						>
+					</div>
+				</ng-template>
+				<ng-template  input-control-template ng-option-tmp let-i="item" let-search="searchTerm">
+					<div *ngIf="i">
+						<span><ion-text color="primary">#{{i.Id}}</ion-text></span>
+						<small *ngIf="i.Code"> PO: {{i.Code}}</small>
+						<small *ngIf="i.ExpectedReceiptDate"> - {{i.ExpectedReceiptDate | date: 'HH:mm dd/MM/yy'}}</small>
+						<div>
+							<span>{{i.VendorName}}</span>
+							→
+							<span>{{i.StorerName}}</span>
+						</div>
+					</div>
+				</ng-template>
+				</app-form-control>
+
+				<!-- <div class="c-control" >
+					<label class="c-label" for="IDstaff">{{'Purchase Order'}}</label>
+					<ng-select
+						[(ngModel)]="purchaseOrder"
+						class="c-input"
+						labelForId="Id"
+						[items]="_dataSource?.item$ | async"
+						[typeahead]="_dataSource?.input$"
+						[loading]="_dataSource?.loading"
+						[virtualScroll]="true"
+						bindLabel="Id"
+						placeholder="{{'Search...' | translate}}"
+					>
+						<ng-template ng-option-tmp let-i="item" let-search="searchTerm">
+							<div *ngIf="i">
+								<div>
+									<span [ngOptionHighlight]="search">{{i.Id}}</span>
+								</div>
+							
+							</div>
+						</ng-template>
+					</ng-select>
+				</div> -->
+
+				<div class="c-control">
+					<ion-button color="primary" expand="block" (click)="command($event)"> {{'Submit'| translate}} </ion-button>
+				</div>
+			</div>
+		</ion-list>
+	</div>
+</ion-content>
