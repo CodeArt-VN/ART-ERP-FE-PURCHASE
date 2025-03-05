@@ -8,6 +8,11 @@ import { lib } from 'src/app/services/static/global-functions';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { FormBuilder } from '@angular/forms';
 import { PURCHASE_OrderService } from '../purchase-order-service';
+import { PURCHASE_QuotationService } from '../purchase-quotation.service';
+import { CopyFromPurchaseQuotationToPurchaseOrder } from '../copy-from-purchase-quotation-to-purchase-order-modal/copy-from-purchase-quotation-to-purchase-order-modal.page';
+import { PURCHASE_RequestService } from '../purchase-request.service';
+import { PurchaseOrderModalPage } from '../purchase-request-detail/purchase-order-modal/purchase-order-modal.page';
+import { SearchAsyncPopoverPage } from '../search-async-popover/search-async-popover.page';
 
 @Component({
 	selector: 'app-purchase-order',
@@ -32,7 +37,9 @@ export class PurchaseOrderPage extends PageBase {
 		public formBuilder: FormBuilder,
 		public env: EnvService,
 		public navCtrl: NavController,
-		public location: Location
+		public location: Location,
+		public purchaseQuotationProvider: PURCHASE_QuotationService,
+		public purchaseRequestProvider: PURCHASE_RequestService
 	) {
 		super();
 
@@ -41,6 +48,8 @@ export class PurchaseOrderPage extends PageBase {
 			PaymentSubType: [''],
 			PaymentReason: [''],
 		});
+		this.pageConfig.ShowAdd = false;
+		this.pageConfig.ShowAddNew = true;
 	}
 
 	preLoadData(event) {
@@ -152,6 +161,13 @@ export class PurchaseOrderPage extends PageBase {
 		this.isOpenPopover = true;
 	}
 
+	isOpenAddNewPopover = false;
+	@ViewChild('addNewPopover') addNewPopover!: HTMLIonPopoverElement;
+	presentAddNewPopover(e) {
+		this.addNewPopover.event = e;
+		this.isOpenAddNewPopover = !this.isOpenAddNewPopover;
+	}
+
 	ShowRequestOutgoingPayment;
 	ShowSubmitForApproval;
 	changeSelection(i, e = null) {
@@ -224,6 +240,200 @@ export class PurchaseOrderPage extends PageBase {
 			.catch((err) => {
 				this.env.showMessage('Cannot create ASN, please try again later', 'danger');
 			});
+	}
+
+	initPQDatasource = [];
+	initPRDatasource = [];
+
+	isOpenPurchaseOrderPopover = false;
+
+	copyFromPurchaseQuotation(id: any) {
+		// Sau khi chọn PQ thì mở modal chọn các sản phẩm từ PQ để copy sang PO
+		this.env
+			.showLoading('Please wait for a few moments', this.purchaseQuotationProvider.getAnItem(id, null))
+			.then((data: any) => {
+				this.purchaseQuotationProvider
+					.copyCopyToPurchaseOrder(data, CopyFromPurchaseQuotationToPurchaseOrder, this.modalController)
+					.then((data: any) => {
+						if (data) {
+							// this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
+							// 	this.nav('/purchase-order/' + data.Id);
+							// });
+							this.env.showMessage('PO created!', 'success');
+							this.env.publishEvent({ Code: this.pageConfig.pageName });
+							this.refresh();
+						}
+					})
+					.catch((err) => {
+						this.env.showMessage(err, 'danger');
+					});
+			})
+			.catch((err) => {
+				this.env.showMessage(err, 'danger');
+			});
+	}
+
+	async openPurchaseQuotationPopover(ev: any) {
+		let queryPO = {
+			IDBranch: this.env.selectedBranchAndChildren,
+			Take: 20,
+			Skip: 0,
+			Status: '["Approved"]',
+		};
+		let searchFn = this.buildSelectDataSource(
+			(term) => {
+				return this.purchaseQuotationProvider.read({ ...queryPO, Term: term });
+			},
+			false
+		);
+
+		if (this.initPQDatasource.length == 0) {
+			this.purchaseQuotationProvider.read(queryPO).then(async (rs: any) => {
+				if (rs && rs.data) {
+					this.initPQDatasource = rs.data;
+					searchFn.selected = this.initPQDatasource;
+					let popover = await this.popoverCtrl.create({
+						component: SearchAsyncPopoverPage,
+						componentProps: {
+							title: 'Purchase quotation',
+							type:'PurchaseQuotation',
+							provider: this.purchaseQuotationProvider,
+							query: queryPO,
+							searchFunction: searchFn,
+						},
+						event: ev,
+						cssClass: 'w300',
+						translucent: true,
+					});
+					popover.onDidDismiss().then((result: any) => {
+						console.log(result);
+						if (result.data) {
+							this.copyFromPurchaseQuotation(result.data.Id);
+						}
+					});
+					return await popover.present();
+				}
+			});
+		} else {
+			searchFn.selected = this.initPQDatasource;
+			let popover = await this.popoverCtrl.create({
+				component: SearchAsyncPopoverPage,
+				componentProps: {
+					title: 'Purchase quotation',
+					type:'PurchaseQuotation',
+					provider: this.purchaseQuotationProvider,
+					query: queryPO,
+					searchFunction: searchFn,
+				},
+				event: ev,
+				cssClass: 'w300',
+				translucent: true,
+			});
+			popover.onDidDismiss().then((result: any) => {
+				console.log(result);
+				if (result.data) {
+					this.copyFromPurchaseQuotation(result.data.Id);
+				}
+			});
+			return await popover.present();
+		}
+	}
+
+	copyFromPurchaseRequest(id: any) {
+		this.env.showLoading('Please wait for a few moments', this.purchaseRequestProvider.getAnItem(id, null)).then((data: any) => {
+			let orderLines = data.OrderLines.filter((d) => d.Id);
+			let vendorList = [];
+			data.OrderLines.forEach((o) => {
+				o._Vendors = o._Item?._Vendors;
+				if (o.IDVendor) {
+					vendorList = [...vendorList, ...o._Item._Vendors.filter((v) => v.Id == o.IDVendor && !vendorList.some((vd) => v.Id == vd.Id))];
+				} else {
+					vendorList = [...vendorList, ...o._Item._Vendors.filter((v) => !vendorList.some((vd) => v.Id == vd.Id))];
+				}
+			});
+			this.purchaseRequestProvider
+				.copyToPO(data.Id, orderLines, data._Vendor, vendorList, PurchaseOrderModalPage, this.modalController, this.env)
+				.then((rs: any) => {
+					if (rs) {
+						this.env.showMessage('PO created!', 'success');
+						// this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
+						// 	this.nav('/purchase-order/' + rs.Id, 'forward');
+						// });
+						this.refresh();
+						this.env.publishEvent({ Code: this.pageConfig.pageName });
+					}
+				})
+				.catch((err) => {
+					console.log(err);
+					this.env.showMessage('Cannot create PO, please try again later', 'danger');
+				});
+		});
+	}
+
+	async openPurchaseRequestPopover(ev: any) {
+		let queryPO = {
+			IDBranch: this.env.selectedBranchAndChildren,
+			Take: 20,
+			Skip: 0,
+			Status: '["Approved"]',
+		};
+		let searchFn = this.buildSelectDataSource(
+			(term) => {
+				return this.purchaseRequestProvider.read({ ...queryPO, Term: term });
+			},
+			false
+		);
+
+		if (this.initPRDatasource.length == 0) {
+			this.purchaseRequestProvider.read(queryPO).then(async (rs: any) => {
+				if (rs && rs.data) {
+					this.initPRDatasource = rs.data;
+					searchFn.selected = this.initPRDatasource;
+					let popover = await this.popoverCtrl.create({
+						component: SearchAsyncPopoverPage,
+						componentProps: {
+							title: 'Purchase request',
+							type: 'PurchaseRequest',
+							provider: this.purchaseRequestProvider,
+							query: queryPO,
+							searchFunction: searchFn,
+						},
+						event: ev,
+						cssClass: 'w300',
+						translucent: true,
+					});
+					popover.onDidDismiss().then((result: any) => {
+						console.log(result);
+						if (result.data) {
+							this.copyFromPurchaseRequest(result.data.Id);
+						}
+					});
+					return await popover.present();
+				}
+			});
+		} else {
+			searchFn.selected = this.initPRDatasource;
+			let popover = await this.popoverCtrl.create({
+				component: SearchAsyncPopoverPage,
+				componentProps: {
+					title: 'Purchase request',
+					type:'PurchaseRequest',
+					provider: this.purchaseRequestProvider,
+					query: queryPO,
+					searchFunction: searchFn,
+				},
+				event: ev,
+				cssClass: 'w300',
+				translucent: true,
+			});
+			popover.onDidDismiss().then((result: any) => {
+				console.log(result);
+				if (result.data) {
+					this.copyFromPurchaseRequest(result.data.Id);
+				}
+			});
+			return await popover.present();
+		}
 	}
 
 	createInvoice() {

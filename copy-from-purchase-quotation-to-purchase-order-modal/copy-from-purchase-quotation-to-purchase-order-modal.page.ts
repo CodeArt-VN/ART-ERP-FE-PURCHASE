@@ -8,18 +8,17 @@ import { FormArray, FormBuilder, FormControl, Validators } from '@angular/forms'
 import { lib } from 'src/app/services/static/global-functions';
 
 @Component({
-	selector: 'app-copy-to-purchase-order-modal',
-	templateUrl: './copy-to-purchase-order-modal.page.html',
-	styleUrls: ['./copy-to-purchase-order-modal.page.scss'],
+	selector: 'app-copy-from-purchase-quotation-to-purchase-order-modal',
+	templateUrl: './copy-from-purchase-quotation-to-purchase-order-modal.page.html',
+	styleUrls: ['./copy-from-purchase-quotation-to-purchase-order-modal.page.scss'],
 	standalone: false,
 })
-export class CopyToPurchaseOrderModalPage extends PageBase {
+export class CopyFromPurchaseQuotationToPurchaseOrder extends PageBase {
 	@Input() set _item(value) {
 		this.item = { ...value };
 	}
 	formArray;
 	showButtonSave = false;
-	listIDASN = [];
 	TotalAfterTax = 0;
 	_IDItemDataSource = this.buildSelectDataSource((term) => {
 		return this.itemProvider.search({
@@ -58,9 +57,7 @@ export class CopyToPurchaseOrderModalPage extends PageBase {
 		});
 		this.item.QuotationLines.forEach((d) => {
 			this.addRow(d);
-			// this.listIDASN = [... this.listIDASN, ...d._Receipts.map(x=> x.IDReceipt)];
 		});
-		// this.listIDASN = [...new Set(this.listIDASN)];
 
 		this._IDItemDataSource.initSearch();
 		console.log(this.item);
@@ -89,7 +86,7 @@ export class CopyToPurchaseOrderModalPage extends PageBase {
 			// IDPOLine: [row.Id],
 			SourceLine: [row.Id],
 			QuantityRequired: new FormControl({ value: row.QuantityRequired, disabled: true }),
-			QuantityRemainingOpen: new FormControl({ value: row.QuantityRemainingOpen, disabled: true }),
+			QuantityRemainingOpen: new FormControl({ value: row.QuantityRemainingOpen || 0, disabled: true }),
 			UoMQuantityExpected: [row.UoMQuantityExpected],
 			Price: new FormControl({ value: row.Price, disabled: true }),
 			Discount: new FormControl({ value: row.TotalDiscount ?? 0, disabled: true }),

@@ -8,12 +8,12 @@ import { FormArray, FormBuilder, FormControl, Validators } from '@angular/forms'
 import { lib } from 'src/app/services/static/global-functions';
 
 @Component({
-	selector: 'app-copy-to-receipt-modal',
-	templateUrl: './copy-to-receipt-modal.page.html',
-	styleUrls: ['./copy-to-receipt-modal.page.scss'],
+	selector: 'app-copy-from-purchase-order-to-receipt-modal',
+	templateUrl: './copy-from-purchase-order-to-receipt-modal.page.html',
+	styleUrls: ['./copy-from-purchase-order-to-receipt-modal.page.scss'],
 	standalone: false,
 })
-export class CopyToReceiptModalPage extends PageBase {
+export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 	@Input() set _item(value) {
 		this.item = { ...value };
 	}
