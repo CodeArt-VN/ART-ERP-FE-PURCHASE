@@ -9,7 +9,7 @@ import { SearchAsyncPopoverPage } from '../search-async-popover/search-async-pop
 
 @NgModule({
 	imports: [IonicModule, CommonModule, FormsModule, ShareModule, RouterModule.forChild([{ path: '', component: PurchaseOrderPage }])],
-	declarations: [PurchaseOrderPage,SearchAsyncPopoverPage],
-	exports:[SearchAsyncPopoverPage]
+	declarations: [PurchaseOrderPage, SearchAsyncPopoverPage],
+	exports: [SearchAsyncPopoverPage],
 })
 export class PurchaseOrderPageModule {}

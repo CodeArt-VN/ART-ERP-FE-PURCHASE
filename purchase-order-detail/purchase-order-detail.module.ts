@@ -8,7 +8,6 @@ import { PurchaseOrderDetailPage } from './purchase-order-detail.page';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
 import { CopyFromPurchaseOrderToReceiptModalPage } from '../copy-from-purchase-order-to-receipt-modal/copy-from-purchase-order-to-receipt-modal.page';
 
-
 const routes: Routes = [
 	{
 		path: '',

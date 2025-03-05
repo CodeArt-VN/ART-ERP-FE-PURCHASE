@@ -10,9 +10,7 @@
 		>
 			<ion-icon slot="icon-only" name="clipboard-list"></ion-icon>
 		</ion-button>
-		<ion-button tollbarSelected fill="clear" title="Tạo hóa đơn" 
-		*ngIf="pageConfig.ShowCopyToAPInvoice&& pageConfig.canCopyToAPInvoice" 
-		(click)="createInvoice()">
+		<ion-button tollbarSelected fill="clear" title="Tạo hóa đơn" *ngIf="pageConfig.ShowCopyToAPInvoice&& pageConfig.canCopyToAPInvoice" (click)="createInvoice()">
 			<ion-icon slot="icon-only" name="receipt-outline"></ion-icon>
 		</ion-button>
 		<ion-button

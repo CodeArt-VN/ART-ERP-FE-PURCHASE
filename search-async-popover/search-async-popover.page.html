@@ -104,11 +104,8 @@
 							<ng-template input-control-template ng-label-tmp let-i="item">
 								<div *ngIf="i">
 									<span
-										><ion-text color="primary"
-											>#{{i.Id}}
-
-										</ion-text>
-										<span *ngIf="i.SourceType">{{i._BusinessPartnerName}} →  {{i.SourceType}}: {{i.SourceKey}}</span>
+										><ion-text color="primary">#{{i.Id}} </ion-text>
+										<span *ngIf="i.SourceType">{{i._BusinessPartnerName}} → {{i.SourceType}}: {{i.SourceKey}}</span>
 										<span *ngIf="!i.SourceType && i._BusinessPartnerName">{{i._BusinessPartnerName}} → {{i._BranchName}}</span>
 									</span>
 								</div>
@@ -118,7 +115,6 @@
 									<span><ion-text color="primary">#{{i.Id}}</ion-text></span>
 									<span *ngIf="i.SourceType">{{i._BusinessPartnerName}} → {{i.SourceType}}: {{i.SourceKey}}</span>
 									<span *ngIf="!i.SourceType && i._BusinessPartnerName">{{i._BusinessPartnerName}} {{i._BranchName}}</span>
-
 								</div>
 							</ng-template>
 						</app-form-control>

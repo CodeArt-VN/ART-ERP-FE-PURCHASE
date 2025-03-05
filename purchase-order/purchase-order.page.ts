@@ -280,12 +280,9 @@ export class PurchaseOrderPage extends PageBase {
 			Skip: 0,
 			Status: '["Approved"]',
 		};
-		let searchFn = this.buildSelectDataSource(
-			(term) => {
-				return this.purchaseQuotationProvider.read({ ...queryPO, Term: term });
-			},
-			false
-		);
+		let searchFn = this.buildSelectDataSource((term) => {
+			return this.purchaseQuotationProvider.read({ ...queryPO, Term: term });
+		}, false);
 
 		if (this.initPQDatasource.length == 0) {
 			this.purchaseQuotationProvider.read(queryPO).then(async (rs: any) => {
@@ -296,7 +293,7 @@ export class PurchaseOrderPage extends PageBase {
 						component: SearchAsyncPopoverPage,
 						componentProps: {
 							title: 'Purchase quotation',
-							type:'PurchaseQuotation',
+							type: 'PurchaseQuotation',
 							provider: this.purchaseQuotationProvider,
 							query: queryPO,
 							searchFunction: searchFn,
@@ -320,7 +317,7 @@ export class PurchaseOrderPage extends PageBase {
 				component: SearchAsyncPopoverPage,
 				componentProps: {
 					title: 'Purchase quotation',
-					type:'PurchaseQuotation',
+					type: 'PurchaseQuotation',
 					provider: this.purchaseQuotationProvider,
 					query: queryPO,
 					searchFunction: searchFn,
@@ -377,12 +374,9 @@ export class PurchaseOrderPage extends PageBase {
 			Skip: 0,
 			Status: '["Approved"]',
 		};
-		let searchFn = this.buildSelectDataSource(
-			(term) => {
-				return this.purchaseRequestProvider.read({ ...queryPO, Term: term });
-			},
-			false
-		);
+		let searchFn = this.buildSelectDataSource((term) => {
+			return this.purchaseRequestProvider.read({ ...queryPO, Term: term });
+		}, false);
 
 		if (this.initPRDatasource.length == 0) {
 			this.purchaseRequestProvider.read(queryPO).then(async (rs: any) => {
@@ -417,7 +411,7 @@ export class PurchaseOrderPage extends PageBase {
 				component: SearchAsyncPopoverPage,
 				componentProps: {
 					title: 'Purchase request',
-					type:'PurchaseRequest',
+					type: 'PurchaseRequest',
 					provider: this.purchaseRequestProvider,
 					query: queryPO,
 					searchFunction: searchFn,
