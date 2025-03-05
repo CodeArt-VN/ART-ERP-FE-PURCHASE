@@ -15,7 +15,7 @@ import {
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
 import { lib } from 'src/app/services/static/global-functions';
-import { CopyToPurchaseOrderModalPage } from '../copy-to-purchase-order-modal/copy-to-purchase-order-modal.page';
+import { CopyFromPurchaseQuotationToPurchaseOrder } from '../copy-from-purchase-quotation-to-purchase-order-modal/copy-from-purchase-quotation-to-purchase-order-modal.page';
 import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
 import { PURCHASE_QuotationService } from '../purchase-quotation.service';
 
@@ -275,7 +275,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 
 	copyCopyToPurchaseOrder() {
 		this.pageProvider
-			.copyCopyToPurchaseOrder(this.item, CopyToPurchaseOrderModalPage, this.modalController)
+			.copyCopyToPurchaseOrder(this.item, CopyFromPurchaseQuotationToPurchaseOrder, this.modalController)
 			.then((data: any) => {
 				if (data) {
 					this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {

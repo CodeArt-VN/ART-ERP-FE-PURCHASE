@@ -11,8 +11,8 @@ import { concat, of, Subject } from 'rxjs';
 import { catchError, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { ApiSetting } from 'src/app/services/static/api-setting';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
-import { CopyToReceiptModalPage } from '../copy-to-receipt-modal/copy-to-receipt-modal.page';
 import { PURCHASE_OrderService } from '../purchase-order-service';
+import { CopyFromPurchaseOrderToReceiptModalPage } from '../copy-from-purchase-order-to-receipt-modal/copy-from-purchase-order-to-receipt-modal.page';
 
 @Component({
 	selector: 'app-purchase-order-detail',
@@ -516,7 +516,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 	async copyToReceipt() {
 		this.item._qtyReceipted = this.item._Receipts;
 		const modal = await this.modalController.create({
-			component: CopyToReceiptModalPage,
+			component: CopyFromPurchaseOrderToReceiptModalPage,
 			componentProps: { _item: this.item },
 			cssClass: 'modal90',
 		});
