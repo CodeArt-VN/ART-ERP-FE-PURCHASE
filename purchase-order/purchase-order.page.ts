@@ -344,6 +344,7 @@ export class PurchaseOrderPage extends PageBase {
 			let orderLines = data.OrderLines.filter((d) => d.Id);
 			let vendorList = [];
 			data.OrderLines.forEach((o) => {
+				o._Vendors = o._Item?._Vendors;
 				if (o.IDVendor) {
 					vendorList = [...vendorList, ...o._Item._Vendors.filter((v) => v.Id == o.IDVendor && !vendorList.some((vd) => v.Id == vd.Id))];
 				} else {
