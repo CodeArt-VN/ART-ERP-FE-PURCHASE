@@ -54,7 +54,7 @@ export class PurchaseQuotationModalPage extends PageBase {
 		let list = [...this.itemInVendors];
 		list.forEach((x) => {
 			let index = this.itemInVendors.indexOf(x);
-			this.vendorList = [...this.vendorList, ...x._Vendors];
+			if(x.IDVendor) x._Vendors = [x._Vendors.find((d) => d.Id == x.IDVendor)];
 			this.itemInVendors.splice(
 				index + 1,
 				0,
@@ -63,10 +63,9 @@ export class PurchaseQuotationModalPage extends PageBase {
 				})
 			);
 		});
-		this.itemInVendors = this.itemInVendors?.map((d) => {
-			return { ...d, Quantity: d.Quantity, UoMName: d.UoMName, IDDetail: d.IDDetail, UoMPrice: d.UoMPrice };
-		});
-		this.vendorList = [...new Set(this.vendorList)];
+		// this.itemInVendors = this.itemInVendors?.map((d) => {
+		// 	return { ...d, Quantity: d.Quantity, UoMName: d.UoMName, IDDetail: d.IDDetail, UoMPrice: d.UoMPrice };
+		// });
 		this.formGroup.controls.IDVendor.setValue(this.defaultVendor?.Id);
 		this.items = this.itemInVendors;
 

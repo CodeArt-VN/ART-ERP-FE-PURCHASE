@@ -189,7 +189,7 @@ export class PurchaseItemsComponent extends PageBase {
 				group.controls.TaxRate.markAsDirty();
 				group.controls._Item.setValue(e._Item);
 
-				if (!e._Vendors.some((o) => o.Id == group.get('IDVendor').value)) {
+				if (!e._Vendors?.some((o) => o.Id == group.get('IDVendor').value)) {
 					group.get('IDVendor').setValue(null);
 					group.get('IDVendor').markAsDirty();
 				}
@@ -249,10 +249,10 @@ export class PurchaseItemsComponent extends PageBase {
 				let invalidControlsTranslated = values;
 				this.env.showMessage('Please recheck control(s): {{value}}', 'warning', invalidControlsTranslated.join(' | '));
 			});
-			g._Vendor = g.controls._Vendors.value.find((d) => d.Id == g.controls.IDVendor.value);
+			g._Vendor = g.controls._Vendors?.value?.find((d) => d.Id == g.controls.IDVendor.value);
 		} else {
 			this.onChange.emit();
-		}
+		} 
 	}
 
 	calcTotalDiscount() {

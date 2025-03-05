@@ -5,17 +5,7 @@
 		</ion-buttons>
 
 		<ion-buttons slot="end">
-			<ion-buttons *ngIf="defaultVendor?.Id && vendorList.length > 0" style="justify-content: flex-end">
-				<span>{{'Vendor'|translate}}</span> &nbsp;
-				<div class="c-control" style="margin-bottom: 0px; max-width: 250px; min-width: 250px">
-					<app-input-control
-						[field]="{ id:'IDVendor',label:'Vendor',type:'ng-select',
-        dataSource:vendorList,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
-        form:formGroup}"
-					>
-					</app-input-control>
-				</div>
-			</ion-buttons>
+	
 			<ion-button [disabled]="selectedItems.length==0" fill="solid" size="small" (click)="submitForm()">{{'Submit' | translate}}</ion-button>
 			<ion-button (click)="refresh()" title="{{'Refresh' | translate}}">
 				<ion-icon slot="icon-only" name="reload-outline"></ion-icon>
