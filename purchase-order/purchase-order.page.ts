@@ -282,7 +282,7 @@ export class PurchaseOrderPage extends PageBase {
 		};
 		let searchFn = this.buildSelectDataSource(
 			(term) => {
-				return this.purchaseQuotationProvider.read({ ...queryPQ, Term: term });
+				return this.purchaseQuotationProvider.search({ ...queryPQ, Term: term });
 			},
 			false
 		);
@@ -379,7 +379,7 @@ export class PurchaseOrderPage extends PageBase {
 		};
 		let searchFn = this.buildSelectDataSource(
 			(term) => {
-				return this.purchaseRequestProvider.read({ ...queryPR, Term: term });
+				return this.purchaseRequestProvider.search({ ...queryPR, Term: term });
 			},
 			false
 		);
