@@ -105,6 +105,7 @@ export class PurchaseQuotationPage extends PageBase {
 			});
 	}
 
+
 	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
 	presentCopyPopover(e) {
 		this.copyPopover.event = e;
