@@ -117,7 +117,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	}
 
 	loadedData(event) {
-		if (!['Open', 'Confirmed', 'Unapproved'].includes(this.item.Status)) this.pageConfig.canEdit = false;
+		if (!['Open', 'Unapproved'].includes(this.item.Status)) this.pageConfig.canEdit = false;
 		if (this.item.Status == 'Confirmed' && this.vendorView) this.pageConfig.canEdit = false;
 		super.loadedData(event);
 		this.setQuotationLines();
@@ -141,6 +141,16 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		this._vendorDataSource.initSearch();
 		if (this.vendorView && this.item.Status == 'Open') this.pageConfig.ShowConfirm = true;
 		else this.pageConfig.ShowCanConfirm = false;
+
+		// Quyền canQuote có thể báo giá (edit price, quantity,TotalDiscount)
+		if (['Open', 'Unapproved'].includes(this.item.Status) && this.pageConfig.canQuote && !this.pageConfig.canEdit) {
+			let groups = this.formGroup.controls.QuotationLines as FormArray;
+			groups.controls.forEach((c) => {
+				c.get('Price').enable();
+				c.get('Quantity').enable();
+				c.get('TotalDiscount').enable();
+			});
+		}
 	}
 
 	async saveChange() {
@@ -191,7 +201,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			Name: [line.Name],
 			Remark: [line.Remark],
 			RequiredDate: new FormControl({ value: line.RequiredDate, disabled: this.item?.SourceType != null }), //,Validators.required
-			InfoPrice: new FormControl({ value: line.InfoPrice, disabled: this.item?.SourceType != null }),
 			Price: [line.Price, Validators.required],
 			UoMName: [line.UoMName],
 			Quantity: new FormControl(
@@ -296,14 +305,29 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				.showLoading('Please wait for a few moments', this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/Confirm/', { Ids: Ids }).toPromise())
 				.then((x) => {
 					this.env.showMessage('Confirmed', 'success');
+					this.env.publishEvent({ Code: this.pageConfig.pageName });
 					this.refresh();
 				})
 				.catch((x) => {
-					this.env.showMessage('Failed', 'danger');
+					//this.env.showMessage('Failed', 'danger');
 				});
 		});
 	}
-
+	reopen() {
+		let Ids = [this.item.Id];
+		this.env
+			.actionConfirm('reopen', this.selectedItems.length, this.item?.Name, this.pageConfig.pageTitle, () =>
+				this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/Reopen/', { Ids: Ids }).toPromise()
+			)
+			.then((x) => {
+				this.env.showMessage('Reopened', 'success');
+				this.env.publishEvent({ Code: this.pageConfig.pageName });
+				this.refresh();
+			})
+			.catch((x) => {
+				//this.env.showMessage('Failed', 'danger');
+			});
+	}
 	updatePriceList() {
 		this.pageProvider.updatePriceList([this.item.Id], PriceListVersionModalPage, this.modalController, this.env);
 	}
@@ -320,5 +344,40 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	presentCopyPopover(e) {
 		this.copyPopover.event = e;
 		this.isOpenCopyPopover = !this.isOpenCopyPopover;
+	}
+
+	isOpenPriceListVersionPopover: boolean = false;
+	currentShowingPriceListVersionItem: any;
+	popoverSpinner = false;
+	@ViewChild('priceListVersionPopover') priceListVersionPopover!: HTMLIonPopoverElement;
+	OpenViewPriceListVersionPopover(i, e) {
+		// this.priceListVersionPopover.event = e;
+		this.isOpenPriceListVersionPopover = !this.isOpenPriceListVersionPopover;
+		if(this.isOpenPriceListVersionPopover){
+			if (!i.PriceListVersion) {
+				this.currentShowingPriceListVersionItem = null;
+				let queryPriceListVersion = {
+					IDItemUoM: i.get('IDItemUoM').value,
+					IDVendor: this.item.IDBusinessPartner,
+				};
+				this.popoverSpinner = true;
+				this.itemProvider.commonService
+					.connect('GET', 'WMS/Item/GetItemPriceListVersion', queryPriceListVersion)
+					.toPromise()
+					.then((x) => {
+						if (x) {
+							i.PriceListVersion = x;
+							this.currentShowingPriceListVersionItem = i.PriceListVersion;
+						}
+					})
+					.catch((err) => {
+						console.log(err);
+						this.env.showMessage(err, 'danger');
+					})
+					.finally(() => {
+						this.popoverSpinner = false;
+					});
+			}
+		}
 	}
 }

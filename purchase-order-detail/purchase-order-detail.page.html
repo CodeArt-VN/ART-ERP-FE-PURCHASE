@@ -205,7 +205,7 @@
 					</ng-container>
 				</form>
 				<div class="table-contain">
-					<div class="row" *ngIf="pageConfig.canEdit && item?.OrderLines?.length <= 1">
+					<div class="row" *ngIf="pageConfig.canEdit">
 						<div class="cell">
 							<ion-button fill="clear" size="small" (click)="addNewLine()">
 								<ion-icon slot="start" name="add-circle-outline"></ion-icon>

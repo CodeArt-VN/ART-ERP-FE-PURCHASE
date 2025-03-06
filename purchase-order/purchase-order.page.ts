@@ -274,18 +274,22 @@ export class PurchaseOrderPage extends PageBase {
 	}
 
 	async openPurchaseQuotationPopover(ev: any) {
-		let queryPO = {
+		let queryPQ = {
 			IDBranch: this.env.selectedBranchAndChildren,
 			Take: 20,
 			Skip: 0,
 			Status: '["Approved"]',
 		};
-		let searchFn = this.buildSelectDataSource((term) => {
-			return this.purchaseQuotationProvider.read({ ...queryPO, Term: term });
-		}, false);
+
+		let searchFn = this.buildSelectDataSource(
+			(term) => {
+				return this.purchaseQuotationProvider.search({ ...queryPQ, Term: term });
+			},
+			false
+		);
 
 		if (this.initPQDatasource.length == 0) {
-			this.purchaseQuotationProvider.read(queryPO).then(async (rs: any) => {
+			this.purchaseQuotationProvider.read(queryPQ).then(async (rs: any) => {
 				if (rs && rs.data) {
 					this.initPQDatasource = rs.data;
 					searchFn.selected = this.initPQDatasource;
@@ -295,7 +299,7 @@ export class PurchaseOrderPage extends PageBase {
 							title: 'Purchase quotation',
 							type: 'PurchaseQuotation',
 							provider: this.purchaseQuotationProvider,
-							query: queryPO,
+							query: queryPQ,
 							searchFunction: searchFn,
 						},
 						event: ev,
@@ -319,7 +323,7 @@ export class PurchaseOrderPage extends PageBase {
 					title: 'Purchase quotation',
 					type: 'PurchaseQuotation',
 					provider: this.purchaseQuotationProvider,
-					query: queryPO,
+					query: queryPQ,
 					searchFunction: searchFn,
 				},
 				event: ev,
@@ -368,18 +372,21 @@ export class PurchaseOrderPage extends PageBase {
 	}
 
 	async openPurchaseRequestPopover(ev: any) {
-		let queryPO = {
+		let queryPR = {
 			IDBranch: this.env.selectedBranchAndChildren,
 			Take: 20,
 			Skip: 0,
 			Status: '["Approved"]',
 		};
-		let searchFn = this.buildSelectDataSource((term) => {
-			return this.purchaseRequestProvider.read({ ...queryPO, Term: term });
-		}, false);
+		let searchFn = this.buildSelectDataSource(
+			(term) => {
+				return this.purchaseRequestProvider.search({ ...queryPR, Term: term });
+			},
+			false
+		);
 
 		if (this.initPRDatasource.length == 0) {
-			this.purchaseRequestProvider.read(queryPO).then(async (rs: any) => {
+			this.purchaseRequestProvider.read(queryPR).then(async (rs: any) => {
 				if (rs && rs.data) {
 					this.initPRDatasource = rs.data;
 					searchFn.selected = this.initPRDatasource;
@@ -389,7 +396,7 @@ export class PurchaseOrderPage extends PageBase {
 							title: 'Purchase request',
 							type: 'PurchaseRequest',
 							provider: this.purchaseRequestProvider,
-							query: queryPO,
+							query: queryPR,
 							searchFunction: searchFn,
 						},
 						event: ev,
@@ -413,7 +420,7 @@ export class PurchaseOrderPage extends PageBase {
 					title: 'Purchase request',
 					type: 'PurchaseRequest',
 					provider: this.purchaseRequestProvider,
-					query: queryPO,
+					query: queryPR,
 					searchFunction: searchFn,
 				},
 				event: ev,

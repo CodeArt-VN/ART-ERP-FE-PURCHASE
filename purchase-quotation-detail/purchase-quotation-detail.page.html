@@ -1,6 +1,13 @@
 <ion-header>
 	<app-toolbar [page]="this">
 		<ion-button
+			title="{{'Reopen' | translate}}"
+			(click)="reopen()"
+			*ngIf=" (pageConfig.canReopenConfirmedQuotation && pageConfig.ShowReopenConfirmedQuotation)"
+		>
+			<ion-icon slot="icon-only" name="lock-open"></ion-icon>
+		</ion-button>
+		<ion-button
 			title="{{'Copy' | translate}}"
 			(click)="presentCopyPopover($event)"
 			*ngIf=" (pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion)  ||(pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder)"
@@ -220,16 +227,19 @@
 									</ng-template>
 								</datatable-column>
 
-								<datatable-column class="col-money" name="Info price" property="value">
-									<ng-template let-g="row" datatable-cell-template>
-										<app-input-control [field]="{ id: 'InfoPrice', type: 'span-number', form: g }"> </app-input-control>
-									</ng-template>
-								</datatable-column>
+							
 								<datatable-column class="col-money" name="Unit price" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control (change)="saveChange()" [field]="{ id: 'Price', type: 'number', form: g }"> </app-input-control>
 									</ng-template>
 								</datatable-column>
+
+								<datatable-column class="col-icon" property="value" *ngIf="pageConfig.canViewPriceListVersion">
+										<ng-template let-i="row" datatable-cell-template>
+										<ion-icon class="clickable" color="danger" (click)="OpenViewPriceListVersionPopover(i,$event)" class="min-btn" name="pricetag-outline"></ion-icon>
+									</ng-template>
+								</datatable-column>
+								
 								<datatable-column class="col-number" name="Discount" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control (change)="saveChange()" [field]="{ id: 'TotalDiscount', type: 'number', form: g }"> </app-input-control>
@@ -281,7 +291,7 @@
 								<ion-buttons class="ion-justify-content-end" slot="end">
 									<ion-button
 										style="margin-right: 0"
-										*ngIf="pageConfig.ShowConfirm && pageConfig.canConfirm"
+										*ngIf="pageConfig.ShowConfirm && pageConfig.canConfirm && vendorView"
 										fill="solid"
 										expand="block"
 										size="small"
@@ -340,5 +350,29 @@
 			</div>
 		</div>
 	</div>
+	<ion-popover #priceListVersionPopover  class="w300" [isOpen]="isOpenPriceListVersionPopover" (didDismiss)="isOpenPriceListVersionPopover = false">
+		<ng-template>
+			<ion-content  scroll-y="false">
+				<ion-list lines="none">
+					<ion-list lines="none">
+						<div class="ion-padding">
+							<app-page-message [itemsLength]="currentShowingPriceListVersionItem" [showSpinner]="popoverSpinner"></app-page-message>
+							<ng-container *ngIf="currentShowingPriceListVersionItem">
+								<ion-item>
+									<ion-label class="bold">{{'Current price' | translate}}</ion-label>
+									<ion-text color="primary">{{currentShowingPriceListVersionItem.CurrentPrice| number: '1.0-0'}}</ion-text>
+								</ion-item>
+								<ion-item *ngFor="let p of currentShowingPriceListVersionItem.PriceVersions">
+									<ion-label>{{p.AppliedDate | date:'dd/MM/yyyy HH:mm'}}
+									</ion-label>
+									<ion-text>{{p.Price | number: '1.0-0'}}</ion-text>
+								</ion-item>
+							</ng-container >
+						</div>
+					</ion-list>
+				</ion-list>
+			</ion-content>
+		</ng-template>
+	</ion-popover>
 	<app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>
 </ion-content>

@@ -105,6 +105,7 @@ export class PurchaseQuotationPage extends PageBase {
 			});
 	}
 
+
 	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
 	presentCopyPopover(e) {
 		this.copyPopover.event = e;
@@ -119,28 +120,31 @@ export class PurchaseQuotationPage extends PageBase {
 	}
 	initDatasource = [];
 	async openPurchaseRequestPopover(ev: any) {
-		let queryPO = {
+		let queryPR = {
 			IDBranch: this.env.selectedBranchAndChildren,
 			Take: 20,
 			Skip: 0,
 			Status: '["Approved"]',
 		};
-		let searchFn = this.buildSelectDataSource((term) => {
-			return this.purchaseRequestProvider.read({ ...queryPO, Term: term });
-		}, false);
+		let searchFn = this.buildSelectDataSource(
+			(term) => {
+				return this.purchaseRequestProvider.read({ ...queryPR, Term: term });
+			},
+			false
+		);
 
 		if (this.initDatasource.length == 0) {
-			this.purchaseRequestProvider.read(queryPO).then(async (rs: any) => {
+			this.purchaseRequestProvider.read(queryPR).then(async (rs: any) => {
 				if (rs && rs.data) {
 					this.initDatasource = rs.data;
 					searchFn.selected = this.initDatasource;
 					let popover = await this.popoverCtrl.create({
 						component: SearchAsyncPopoverPage,
 						componentProps: {
-							title: 'Purchase order',
-							type: 'PurchaseOrder',
+							title: 'Purchase request',
+							type:'PurchaseRequest',
 							provider: this.purchaseRequestProvider,
-							query: queryPO,
+							query: queryPR,
 							searchFunction: searchFn,
 						},
 						event: ev,
@@ -161,10 +165,10 @@ export class PurchaseQuotationPage extends PageBase {
 			let popover = await this.popoverCtrl.create({
 				component: SearchAsyncPopoverPage,
 				componentProps: {
-					title: 'Purchase order',
-					type: 'PurchaseOrder',
+					title: 'Purchase request',
+					type:'PurchaseRequest',
 					provider: this.purchaseRequestProvider,
-					query: queryPO,
+					query: queryPR,
 					searchFunction: searchFn,
 				},
 				event: ev,
