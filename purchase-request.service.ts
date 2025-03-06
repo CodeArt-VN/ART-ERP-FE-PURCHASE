@@ -3,7 +3,6 @@ import { PURCHASE_RequestProvider } from 'src/app/services/static/services.servi
 
 @Injectable({ providedIn: 'root' })
 export class PURCHASE_RequestService extends PURCHASE_RequestProvider {
-
 	copyToPO(id, orderLines: any, currentVendor, vendorList, modalComponent, modalController, env) {
 		return new Promise(async (resolve, reject) => {
 			const modal = await modalController.create({

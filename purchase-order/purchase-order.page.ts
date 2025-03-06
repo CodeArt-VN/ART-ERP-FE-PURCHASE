@@ -280,6 +280,7 @@ export class PurchaseOrderPage extends PageBase {
 			Skip: 0,
 			Status: '["Approved"]',
 		};
+
 		let searchFn = this.buildSelectDataSource(
 			(term) => {
 				return this.purchaseQuotationProvider.search({ ...queryPQ, Term: term });
@@ -296,7 +297,7 @@ export class PurchaseOrderPage extends PageBase {
 						component: SearchAsyncPopoverPage,
 						componentProps: {
 							title: 'Purchase quotation',
-							type:'PurchaseQuotation',
+							type: 'PurchaseQuotation',
 							provider: this.purchaseQuotationProvider,
 							query: queryPQ,
 							searchFunction: searchFn,
@@ -320,7 +321,7 @@ export class PurchaseOrderPage extends PageBase {
 				component: SearchAsyncPopoverPage,
 				componentProps: {
 					title: 'Purchase quotation',
-					type:'PurchaseQuotation',
+					type: 'PurchaseQuotation',
 					provider: this.purchaseQuotationProvider,
 					query: queryPQ,
 					searchFunction: searchFn,
@@ -417,7 +418,7 @@ export class PurchaseOrderPage extends PageBase {
 				component: SearchAsyncPopoverPage,
 				componentProps: {
 					title: 'Purchase request',
-					type:'PurchaseRequest',
+					type: 'PurchaseRequest',
 					provider: this.purchaseRequestProvider,
 					query: queryPR,
 					searchFunction: searchFn,

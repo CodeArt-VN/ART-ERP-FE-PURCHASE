@@ -177,7 +177,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 		) {
 			this.pageConfig.ShowRequestOutgoingPayment = false;
 		}
-		
+
 		if (this.item?._Vendor) {
 			this._vendorDataSource.selected = [...this._vendorDataSource.selected, this.item?._Vendor];
 			this._currentBusinessPartner = this.item._Vendor;

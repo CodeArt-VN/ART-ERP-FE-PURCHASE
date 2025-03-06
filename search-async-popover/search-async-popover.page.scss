@@ -1,13 +1,12 @@
-
 ion-popover {
 	--width: 470px !important;
 }
 
-:host{
+:host {
 	.w300 {
 		--min-width: 460px !important;
-		--width: 500px!important;
-		--max-width: 500px!important;
+		--width: 500px !important;
+		--max-width: 500px !important;
 	}
 	ion-popover {
 		--width: auto;
@@ -21,8 +20,8 @@ ion-popover {
 		}
 		&::part(content) {
 			min-width: 460px;
-		  }
-	
+		}
+
 		// ion-backdrop{
 		// opacity: 0.5 !important;
 		// }
@@ -34,7 +33,7 @@ ion-popover {
 				right: 16px !important;
 				top: calc(0vh + 40px) !important;
 			}
-	
+
 			.popover-content {
 				position: absolute;
 				left: calc(100vw - 280px) !important;

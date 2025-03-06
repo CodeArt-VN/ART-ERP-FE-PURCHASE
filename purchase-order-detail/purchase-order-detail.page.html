@@ -40,35 +40,28 @@
                         </div> -->
 						<app-form-control
 							(change)="saveOrder()"
-							[field]="{id:'IDStorer',label:'Goods owner',type:'ng-select',
-              dataSource:storerList ,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
-              form:formGroup}"
+							[field]="{id: 'IDStorer', label: 'Goods owner', type: 'ng-select', dataSource: storerList , bindLabel: 'Name', bindValue: 'Id', placeholder: 'Search', form: formGroup}"
 						>
 						</app-form-control>
 
 						<app-form-control
 							(change)="changeVendor()"
-							[field]="{id:'IDVendor',label:'Vendor',type:'ng-select-bp',
-              dataSource:_vendorDataSource ,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
-              form:formGroup}"
+							[field]="{id: 'IDVendor', label: 'Vendor', type: 'ng-select-bp', dataSource: _vendorDataSource , bindLabel: 'Name', bindValue: 'Id', placeholder: 'Search', form: formGroup}"
 						>
 						</app-form-control>
 
 						<app-form-control
 							(change)="saveOrder()"
-							[field]="{branchConfig:{showingType:'Warehouse',selectedBranch:this.env.selectedBranch},
-              id:'IDBranch',label:'Warehouse',type:'ng-select-branch',
-              dataSource:branchList,bindLabel:'Name',bindValue:'Id', placeholder:'Search',
-              form:formGroup}"
+							[field]="{branchConfig: {showingType: 'Warehouse', selectedBranch: this.env.selectedBranch}, id: 'IDBranch', label: 'Warehouse', type: 'ng-select-branch', dataSource: branchList, bindLabel: 'Name', bindValue: 'Id', placeholder: 'Search', form: formGroup}"
 						>
 						</app-form-control>
 					</ion-col>
 					<ion-col size="12" size-sm size-xl="4">
-						<app-form-control (change)="saveOrder()" [field]="{id:'Code',label:'PO code (Vendors)',type:'text',form:formGroup}">
+						<app-form-control (change)="saveOrder()" [field]="{id: 'Code', label: 'PO code (Vendors)', type: 'text', form: formGroup}">
 							<small label *ngIf="item.Id">{{'Id' | translate}}: {{item.Id}}</small>
 						</app-form-control>
 
-						<app-form-control (change)="saveOrder()" [field]="{id:'ExpectedReceiptDate',label:'Expected receipt date',type:'datetime-local',form:formGroup}">
+						<app-form-control (change)="saveOrder()" [field]="{id: 'ExpectedReceiptDate', label: 'Expected receipt date', type: 'datetime-local', form: formGroup}">
 						</app-form-control>
 
 						<div class="c-control">
@@ -125,8 +118,8 @@
 								<datatable-column class="col-name item-name" name="Product" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control
-											[field]="{id:'IDItem', label:'Item', type : 'ng-select-item', form : g,  dataSource: g.controls._IDItemDataSource.value,  bindLabel: 'Name',  bindValue: 'Id',clearable:true,  placeholder:'Type to search...'}"
-											(change)="IDItemChange($event,g)"
+											[field]="{id: 'IDItem', label: 'Item', type : 'ng-select-item', form : g,  dataSource: g.controls._IDItemDataSource.value,  bindLabel: 'Name',  bindValue: 'Id', clearable: true,  placeholder: 'Type to search...'}"
+											(change)="IDItemChange($event, g)"
 										></app-input-control>
 									</ng-template>
 								</datatable-column>
@@ -134,7 +127,7 @@
 								<datatable-column class="col-code" name="Unit" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control
-											[field]="{id:'IDUoM', type : 'ng-select', form : g,  dataSource: g.controls._IDUoMDataSource.value,  bindLabel: 'Name',  bindValue: 'Id' }"
+											[field]="{id: 'IDUoM', type : 'ng-select', form : g,  dataSource: g.controls._IDUoMDataSource.value,  bindLabel: 'Name',  bindValue: 'Id' }"
 											(change)="IDUoMChange(g)"
 										></app-input-control>
 									</ng-template>
@@ -147,7 +140,7 @@
 									property="value"
 								>
 									<ng-template let-g="row" datatable-cell-template>
-										<app-input-control (change)="saveOrder()" [field]="{id:'SuggestedQuantity', type : 'number', form : g, }"></app-input-control>
+										<app-input-control (change)="saveOrder()" [field]="{id: 'SuggestedQuantity', type : 'number', form : g, }"></app-input-control>
 									</ng-template>
 								</datatable-column>
 
@@ -177,7 +170,7 @@
 
 								<datatable-column class="col-money" name="Unit price" property="value">
 									<ng-template let-g="row" datatable-cell-template>
-										<app-input-control (change)="saveOrder()" [field]="{id:'UoMPrice',type:'number',form:g}"> </app-input-control>
+										<app-input-control (change)="saveOrder()" [field]="{id: 'UoMPrice', type: 'number', form: g}"> </app-input-control>
 									</ng-template>
 								</datatable-column>
 
@@ -198,7 +191,7 @@
 
 								<datatable-column class="col-remark" name="Remark" property="value">
 									<ng-template let-g="row" datatable-cell-template>
-										<app-input-control (change)="saveOrder()" [field]="{id:'Remark',type:'text',form:g}"> </app-input-control>
+										<app-input-control (change)="saveOrder()" [field]="{id: 'Remark', type: 'text', form: g}"> </app-input-control>
 									</ng-template>
 								</datatable-column>
 
@@ -283,9 +276,8 @@
 
 									<app-form-control
 										*ngIf="formGroup.get('SourceType').value && formGroup.get('SourceKey').value "
-										[field]="{id:'SourceKey', type : 'text',
-                   label: 
-                   item.SourceType == 'FromPurchaseRequest'?'Purchase request' :
+										[field]="{id: 'SourceKey', type : 'text', label: 
+                   item.SourceType == 'FromPurchaseRequest'?'Purchase request' : 
                    item.SourceType =='FromPurchaseQuotation'?'Purchase quotation' : 'Source'
                   , form : formGroup}"
 									>
@@ -294,8 +286,8 @@
 												[ngClass]="{ 'no-check-dirty': noCheckDirty }"
 												class="clickable"
 												(click)="nav(
-                      (item.SourceType == 'FromPurchaseRequest'?'/purchase-request/':
-                      item.SourceType =='FromPurchaseQuotation'?'/purchase-quotation/':item.SourceType)
+                      (item.SourceType == 'FromPurchaseRequest'?'/purchase-request/': 
+                      item.SourceType =='FromPurchaseQuotation'?'/purchase-quotation/': item.SourceType)
                       + formGroup.get('SourceKey').value)"
 												(mousedown)="$event.stopPropagation()"
 												>#{{formGroup.get('SourceKey').value }} <ion-icon name="open-outline"></ion-icon
@@ -376,17 +368,17 @@
 					<datatable-column class="col-code" filterControlType="text" name="Type" property="Type"> </datatable-column>
 					<datatable-column class="col-number" filterControlType="number" name="Amount" property="Amount"> </datatable-column>
 					<datatable-column class="col-date" filterControlType="date" name="Posting date" property="PostingDate">
-						<ng-template let-i="row" datatable-cell-template> {{i.PostingDate | date:'dd/MM/yyyy HH:mm'}} </ng-template>
+						<ng-template let-i="row" datatable-cell-template> {{i.PostingDate | date: 'dd/MM/yyyy HH: mm'}} </ng-template>
 					</datatable-column>
 					<datatable-column class="col-date" filterControlType="date" name="Document date" property="DocumentDate">
-						<ng-template let-i="row" datatable-cell-template> {{i.DocumentDate | date:'dd/MM/yyyy HH:mm'}} </ng-template>
+						<ng-template let-i="row" datatable-cell-template> {{i.DocumentDate | date: 'dd/MM/yyyy HH: mm'}} </ng-template>
 					</datatable-column>
 					<datatable-column class="col-date" filterControlType="date" name="Due date" property="DueDate">
-						<ng-template let-i="row" datatable-cell-template> {{i.DueDate | date:'dd/MM/yyyy HH:mm'}} </ng-template>
+						<ng-template let-i="row" datatable-cell-template> {{i.DueDate | date: 'dd/MM/yyyy HH: mm'}} </ng-template>
 					</datatable-column>
 					<!-- <datatable-column class="col-date" filterControlType="date" name="Picked date" property="PickedDate">
             <ng-template let-i="row" datatable-cell-template>
-              {{i.PickedDate | date:'dd/MM/yyyy HH:mm'}}
+              {{i.PickedDate | date: 'dd/MM/yyyy HH: mm'}}
               </ng-template>
           </datatable-column> -->
 
@@ -442,9 +434,11 @@
 				<ion-grid>
 					<ion-row>
 						<ion-col size="12" size-sm size-xl="6">
-							<app-form-control [field]="{id:'Code',label:'PO code (Vendors)',type:'text',form:receiptFormGroup}"> </app-form-control>
+							<app-form-control [field]="{id: 'Code', label: 'PO code (Vendors)', type: 'text', form: receiptFormGroup}"> </app-form-control>
 
-							<app-form-control [field]="{id:'ExpectedReceiptDate',label:'Expected receipt date',type:'datetime-local',form:receiptFormGroup}"></app-form-control>
+							<app-form-control
+								[field]="{id: 'ExpectedReceiptDate', label: 'Expected receipt date', type: 'datetime-local', form: receiptFormGroup}"
+							></app-form-control>
 						</ion-col>
 						<ion-col size="12" size-sm size-xl="6">
 							<app-form-control

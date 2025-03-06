@@ -18,12 +18,12 @@ export class SearchAsyncPopoverPage {
 	provider: any;
 	type: string;
 	query: any;
-	 title : string;
-	 initDatasource = [];
-	 searchFunction: any;
-	 _dataSource :any;
-	 formGroup: any;
-	 item;
+	title: string;
+	initDatasource = [];
+	searchFunction: any;
+	_dataSource: any;
+	formGroup: any;
+	item;
 	items = [];
 	constructor(
 		public env: EnvService,
@@ -31,21 +31,20 @@ export class SearchAsyncPopoverPage {
 		public navParams: NavParams,
 		public popoverCtrl: PopoverController,
 		public translate: TranslateService,
-		public formBuilder : FormBuilder
+		public formBuilder: FormBuilder
 	) {
 		this.formGroup = this.formBuilder.group({
-			Id: ['']
-		})
+			Id: [''],
+		});
 	}
 	ngOnInit() {
-		this._dataSource =  this.searchFunction;
+		this._dataSource = this.searchFunction;
 		this._dataSource.initSearch();
-		
 	}
-	submit(){
+	submit() {
 		this.popoverCtrl.dismiss(this.item);
 	}
-	onChange(ev){
+	onChange(ev) {
 		this.item = ev;
 	}
 }

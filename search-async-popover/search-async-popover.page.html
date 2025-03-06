@@ -101,12 +101,14 @@
 								<div *ngIf="i">
 									<ion-text color="primary">#{{i.Id}} - {{i?._BusinessPartnerName}} → {{i._BranchName}}</ion-text>
 									<p *ngIf="i.SourceType">{{i.SourceType}}: {{i.SourceKey}}</p>
+
 								</div>
 							</ng-template>
 							<ng-template input-control-template ng-option-tmp let-i="item" let-search="searchTerm">
 								<div *ngIf="i">
 									<span><ion-text color="primary">#{{i.Id}} - {{i._BusinessPartnerName}} → {{i._BranchName}}</ion-text></span>
 									<p *ngIf="i.SourceType">{{i.SourceType}}: {{i.SourceKey}}</p>
+
 								</div>
 							</ng-template>
 						</app-form-control>
