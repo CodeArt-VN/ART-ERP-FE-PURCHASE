@@ -27,6 +27,7 @@ import { PURCHASE_QuotationService } from '../purchase-quotation.service';
 })
 export class PurchaseQuotationDetailPage extends PageBase {
 	@ViewChild('importfile') importfile: any;
+	checkingCanEdit = false;
 	statusList = [];
 	_statusLineList = [];
 	contentTypeList = [];
@@ -62,6 +63,12 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	) {
 		super();
 		this.pageConfig.isDetailPage = true;
+		this.buildFormGroup();
+		if (this.env.user.IDBusinessPartner > 0 && !this.env.user.SysRoles.includes('STAFF') && this.env.user.SysRoles.includes('VENDOR')) {
+			this.vendorView = true;
+		}
+	}
+	buildFormGroup() {
 		this.formGroup = this.formBuilder.group({
 			IDBranch: [this.env.selectedBranch, Validators.required],
 			IDRequester: [''],
@@ -77,11 +84,11 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			ForeignRemark: [''],
 			ContentType: ['Item', Validators.required],
 			Status: new FormControl({ value: 'Open', disabled: true }, Validators.required),
-			RequiredDate: [''],
-			ValidUntilDate: [''],
-			PostingDate: [''],
-			DueDate: [''],
-			DocumentDate: [''],
+			RequiredDate: ['', Validators.required],
+			ValidUntilDate: ['', Validators.required],
+			PostingDate: ['', Validators.required],
+			DueDate: ['', Validators.required],
+			DocumentDate: ['', Validators.required],
 			IsDisabled: new FormControl({ value: '', disabled: true }),
 			IsDeleted: new FormControl({ value: '', disabled: true }),
 			CreatedBy: new FormControl({ value: '', disabled: true }),
@@ -94,12 +101,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			TotalAfterTax: new FormControl({ value: '', disabled: true }),
 			DeletedLines: [''],
 		});
-		if (this.env.user.IDBusinessPartner > 0 && !this.env.user.SysRoles.includes('STAFF') && this.env.user.SysRoles.includes('VENDOR')) {
-			this.vendorView = true;
-		}
 	}
-
 	preLoadData(event) {
+		this.checkingCanEdit = this.pageConfig.canEdit;
 		this.contentTypeList = [
 			{ Code: 'Item', Name: 'Items' },
 			{ Code: 'Service', Name: 'Service' },
@@ -117,7 +121,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	}
 
 	loadedData(event) {
-		if (!['Open', 'Unapproved'].includes(this.item.Status)) this.pageConfig.canEdit = false;
+		this.pageConfig.canEdit = this.checkingCanEdit;
+		this.buildFormGroup();
+		if (!['Open', 'Draft', 'Unapproved'].includes(this.item.Status)) this.pageConfig.canEdit = false;
 		if (this.item.Status == 'Confirmed' && this.vendorView) this.pageConfig.canEdit = false;
 		super.loadedData(event);
 		this.setQuotationLines();
@@ -151,6 +157,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				c.get('TotalDiscount').enable();
 			});
 		}
+
+		if (this.item?.Id == 0) this.formGroup.controls.ContentType.markAsDirty();
 	}
 
 	async saveChange() {
@@ -160,6 +168,74 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	segmentView = 's1';
 	segmentChanged(ev: any) {
 		this.segmentView = ev.detail.value;
+	}
+	changeDate(e) {
+		if (!this.formGroup.get('DocumentDate').value) {
+			this.formGroup.get('DocumentDate').setValue(e.target.value);
+			this.formGroup.get('DocumentDate').markAsDirty();
+		}
+		if (!this.formGroup.get('PostingDate').value) {
+			this.formGroup.get('PostingDate').setValue(e.target.value);
+			this.formGroup.get('PostingDate').markAsDirty();
+		}
+		if (!this.formGroup.get('DueDate').value) {
+			this.formGroup.get('DueDate').setValue(e.target.value);
+			this.formGroup.get('DueDate').markAsDirty();
+		}
+		this.saveChange();
+	}
+	changeRequiredDate() {
+		let orderLines = this.formGroup.get('OrderLines') as FormArray;
+		orderLines?.controls.forEach((o) => {
+			if (!o.get('RequiredDate').value) {
+				o.get('RequiredDate').setValue(this.formGroup.get('RequiredDate').value);
+				o.get('RequiredDate').markAsDirty();
+			}
+		});
+		this.saveChange();
+	}
+
+	changeVendor(e) {
+		let orderLines = this.formGroup.get('OrderLines') as FormArray;
+		if (orderLines?.controls.length > 0) {
+			if (e) {
+				this.env
+					.showPrompt('Tất cả hàng hoá trong danh sách khác với nhà cung cấp được chọn sẽ bị xoá. Bạn có muốn tiếp tục ? ', null, 'Thông báo')
+					.then(() => {
+						let DeletedLines = orderLines
+							.getRawValue()
+							.filter((f) => f.Id && f.IDVendor != e.Id && !f._Vendors?.map((v) => v.Id)?.includes(e.Id))
+							.map((o) => o.Id);
+
+						orderLines.controls
+							.filter((f) =>
+								f
+									.get('_Vendors')
+									.value.map((v) => v.Id)
+									.includes(e.Id)
+							)
+							.forEach((o) => {
+								o.get('IDVendor').setValue(e.Id);
+								o.get('IDVendor').markAsDirty();
+							});
+						this.formGroup.get('DeletedLines').setValue(DeletedLines);
+						this.formGroup.get('DeletedLines').markAsDirty();
+
+						this._currentVendor = e;
+						this.saveChange();
+					})
+					.catch(() => {
+						this.formGroup.get('IDVendor').setValue(this._currentVendor?.Id);
+					});
+			} else {
+				this._currentVendor = e;
+				this.saveChange();
+			}
+			console.log(this.formGroup.get('IDVendor').value);
+		} else {
+			this._currentVendor = e;
+			this.saveChange();
+		}
 	}
 
 	setQuotationLines() {
@@ -299,25 +375,35 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			});
 	}
 	confirm() {
-		let Ids = [this.item.Id];
-		this.env.showPrompt(null, null, 'Do you want to confirm?').then((_) => {
-			this.env
-				.showLoading('Please wait for a few moments', this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/Confirm/', { Ids: Ids }).toPromise())
-				.then((x) => {
-					this.env.showMessage('Confirmed', 'success');
-					this.env.publishEvent({ Code: this.pageConfig.pageName });
-					this.refresh();
-				})
-				.catch((x) => {
-					//this.env.showMessage('Failed', 'danger');
-				});
-		});
+		this.formGroup.updateValueAndValidity();
+		if (!this.formGroup.valid) {
+			let invalidControls = this.findInvalidControlsRecursive(this.formGroup);
+			const translationPromises = invalidControls.map((control) => this.env.translateResource(control));
+			Promise.all(translationPromises).then((values) => {
+				let invalidControls = values;
+				this.env.showMessage('Please recheck control(s): {{value}}', 'warning', invalidControls.join(' | '));
+			});
+		} else {
+			let Ids = [this.item.Id];
+			this.env.showPrompt(null, null, 'Do you want to confirm?').then((_) => {
+				this.env
+					.showLoading('Please wait for a few moments', this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/Confirm/', { Ids: Ids }).toPromise())
+					.then((x) => {
+						this.env.showMessage('Confirmed', 'success');
+						this.env.publishEvent({ Code: this.pageConfig.pageName });
+						this.refresh();
+					})
+					.catch((x) => {
+						//this.env.showMessage('Failed', 'danger');
+					});
+			});
+		}
 	}
-	reopen() {
+	open() {
 		let Ids = [this.item.Id];
 		this.env
-			.actionConfirm('reopen', this.selectedItems.length, this.item?.Name, this.pageConfig.pageTitle, () =>
-				this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/Reopen/', { Ids: Ids }).toPromise()
+			.actionConfirm('SendQuotationRequest', this.selectedItems.length, this.item?.Name, this.pageConfig.pageTitle, () =>
+				this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/Open/', { Ids: Ids }).toPromise()
 			)
 			.then((x) => {
 				this.env.showMessage('Reopened', 'success');
@@ -331,12 +417,112 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	updatePriceList() {
 		this.pageProvider.updatePriceList([this.item.Id], PriceListVersionModalPage, this.modalController, this.env);
 	}
+	IDItemChange(e, group) {
+		if (e) {
+			if (e.PurchaseTaxInPercent != -99) {
+				group.controls._IDUoMDataSource.setValue(e.UoMs);
+				group.controls.IDTax.setValue(e.IDPurchaseTaxDefinition);
+				group.controls.IDTax.markAsDirty();
+				if (e.UoMs?.length > 0) {
+					group.controls.IDItemUoM.setValue(e.PurchasingUoM);
+					group.controls.IDItemUoM.markAsDirty();
+					var baseUoM = e.UoMs.find((d) => d.IsBaseUoM);
+					if (baseUoM) {
+						group.controls.IDBaseUoM.setValue(baseUoM.Id);
+						group.controls.IDItemUoM.markAsDirty();
+					}
+				}
+				group.controls.TaxRate.setValue(e.PurchaseTaxInPercent);
+				group.controls.TaxRate.markAsDirty();
+				group.controls._Item.setValue(e._Item);
 
-	IDUoMChange(g) {}
+				if (!e._Vendors?.some((o) => o.Id == group.get('IDVendor')?.value)) {
+					group.get('IDVendor').setValue(null);
+					group.get('IDVendor').markAsDirty();
+				}
+				group.controls._Vendors.setValue(e._Vendors);
+
+				this.IDUoMChange(group);
+				return;
+			} else {
+				this.env.showMessage('The item has not been set tax');
+			}
+		}
+	}
+	IDUoMChange(group) {
+		let idUoM = group.controls.IDItemUoM.value;
+
+		if (idUoM) {
+			let UoMs = group.controls._IDUoMDataSource?.value;
+			let u = UoMs.find((d) => d.Id == idUoM);
+			if (u && u.PriceList) {
+				let p = u.PriceList.find((d) => d.Type == 'PriceListForVendor');
+				let taxRate = group.controls.TaxRate?.value;
+				if (p && taxRate != null) {
+					let priceBeforeTax = null;
+
+					if (taxRate < 0) taxRate = 0; //(-1 || -2) In case goods are not taxed
+
+					if (p.IsTaxIncluded) {
+						priceBeforeTax = p.Price / (1 + taxRate / 100);
+					} else {
+						priceBeforeTax = p.Price;
+					}
+					let baseUOM = UoMs.find((d) => d.IsBaseUoM);
+					if (baseUOM) {
+						group.controls.IDBaseUoM.setValue(baseUOM.Id);
+						group.controls.IDBaseUoM.markAsDirty();
+					}
+					group.controls.UoMPrice.setValue(priceBeforeTax);
+					group.controls.UoMPrice.markAsDirty();
+
+					// this.submitData(group);
+					return;
+				}
+			}
+		} else {
+			group.controls.UoMPrice?.setValue(null);
+			group.controls.UoMPrice?.markAsDirty();
+			group.controls.IDBaseUoM?.setValue(null);
+			group.controls.IDBaseUoM?.markAsDirty();
+		}
+	}
 	savedChange(savedItem = null, form = this.formGroup) {
 		super.savedChange(savedItem, form);
 		this.item = savedItem;
 		this.loadedData(null);
+	}
+
+	toggleAllQuantity() {
+		this.item._IsShippedAll = !this.item._IsShippedAll;
+		var farr = this.formGroup.controls.QuotationLines as FormArray;
+		if (this.item._IsShippedAll) {
+			for (var i of farr.controls) {
+				i.get('Quantity').setValue(i.get('QuantityRequired').value);
+				i.get('Quantity').markAsDirty();
+				this.calcTotalAfterTax();
+			}
+		} else {
+			for (var i of farr.controls) {
+				i.get('Quantity').setValue(0);
+				i.get('Quantity').markAsDirty();
+				this.calcTotalAfterTax();
+			}
+		}
+		this.saveChange();
+		console.log('toggleAll');
+	}
+	toggleQuantity(group) {
+		if (group.controls.Quantity.value == group.controls.QuantityRequired.value) {
+			group.controls.Quantity.setValue(0);
+			group.controls.Quantity.markAsDirty();
+			this.calcTotalAfterTax();
+		} else {
+			group.controls.Quantity.setValue(group.controls.QuantityRequired.value);
+			group.controls.Quantity.markAsDirty();
+			this.calcTotalAfterTax();
+		}
+		this.saveChange();
 	}
 
 	isOpenCopyPopover: boolean = false;
@@ -353,7 +539,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	OpenViewPriceListVersionPopover(i, e) {
 		// this.priceListVersionPopover.event = e;
 		this.isOpenPriceListVersionPopover = !this.isOpenPriceListVersionPopover;
-		if(this.isOpenPriceListVersionPopover){
+		if (this.isOpenPriceListVersionPopover) {
 			if (!i.PriceListVersion) {
 				this.currentShowingPriceListVersionItem = null;
 				let queryPriceListVersion = {

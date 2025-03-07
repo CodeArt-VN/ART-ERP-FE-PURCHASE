@@ -13,6 +13,7 @@ import { CopyFromPurchaseQuotationToPurchaseOrder } from '../copy-from-purchase-
 import { PURCHASE_RequestService } from '../purchase-request.service';
 import { PurchaseOrderModalPage } from '../purchase-request-detail/purchase-order-modal/purchase-order-modal.page';
 import { SearchAsyncPopoverPage } from '../search-async-popover/search-async-popover.page';
+import { CopyFromPurchaseOrderToReceiptModalPage } from '../copy-from-purchase-order-to-receipt-modal/copy-from-purchase-order-to-receipt-modal.page';
 
 @Component({
 	selector: 'app-purchase-order',
@@ -111,7 +112,22 @@ export class PurchaseOrderPage extends PageBase {
 
 	merge() {}
 	split() {}
-
+	submitOrders() {
+		if (this.submitAttempt) {
+			return;
+		}
+		this.submitAttempt = true;
+		this.pageProvider
+			.submitOrders(this.selectedItems, this.env, this.pageConfig)
+			.then((rs: any) => {
+				this.submitAttempt = false;
+				this.refresh();
+			})
+			.catch((err) => {
+				this.submitAttempt = false;
+				console.log(err);
+			});
+	}
 	ngOnDestroy() {
 		this.dismissPopover();
 	}
@@ -181,67 +197,36 @@ export class PurchaseOrderPage extends PageBase {
 		}
 	}
 
-	copyToReceipt() {
-		if (!this.pageConfig.canCopyToReceipt) return;
-		let obj = this.selectedItems.map((d) => {
-			return { Id: d.Id };
-		});
-
-		this.pageProvider.commonService
-			.connect('POST', 'PURCHASE/Order/CopyToReceipt/', obj)
-			.toPromise()
-			.then(async (resp: any) => {
-				let messageTitle = 'Đã tạo ASN thành công : ';
-				let messageSubtile = 'Nhưng có lỗi khi tạo ASN ';
-				let message = '';
-				let ids = [];
-				let idsErr = [];
-				for (const r of resp) {
-					if (message != '') message += '<br>';
-					if (r.Id) {
-						ids.push(r.Id);
-					}
-					if (r.ErrorList && r.ErrorList.length) {
-						if (r.Id) {
-							idsErr.push(r.Id);
-						}
-						for (let i = 0; i < r.ErrorList.length && i <= 5; i++)
-							if (i == 5) message += '<br> Còn nữa...';
-							else {
-								const e = r.ErrorList[i];
-								const translationPromises = this.env.translateResource(e.Message);
-								await translationPromises.then((translated) => {
-									e.Message = translated;
-								});
-								message += '<br> ' + e.IDItem + ' - ' + e.Name + ': ' + e.Message;
-							}
-					} else {
-						this.env.showMessage('ASN created!', 'Success');
-					}
+	async copyToReceipt() {
+		this.env
+			.showLoading('Please wait for a few moments', this.pageProvider.getAnItem(this.selectedItems[0]?.Id)).then(async (rs: any) => {
+			if(rs){
+				const modal = await this.modalController.create({
+					component: CopyFromPurchaseOrderToReceiptModalPage,
+					componentProps: { _item: rs },
+					cssClass: 'modal90',
+				});
+				await modal.present();
+				const { data } = await modal.onWillDismiss();
+				if (data) {
+					this.env.showPrompt(null, 'Do you want to move to the just created ASN page ?', 'ASN created!').then((_) => {
+						this.env.publishEvent({ Code: this.pageConfig.pageName });
+						this.nav('/receipt/' + data.Id);
+					});
 				}
-				if (message != '') {
-					this.env
-						.showPrompt(
-							{
-								code: 'There was an error creating the ASN: {{value}}',
-								value: message,
-							},
-							ids.length > 0 ? messageSubtile + idsErr.join(', ') : null,
-							ids.length > 0 ? messageTitle + ids.join(', ') : 'Lỗi khi tạo ASN'
-						)
-						.then((_) => {
-							// if (messageSubtile) this.nav('/receipt/' + resp.Id);
-						})
-						.catch((e) => {});
-				} else {
-					this.env.showPrompt(null, null, messageTitle + ids.join(', '));
-				}
-			})
-			.catch((err) => {
-				this.env.showMessage('Cannot create ASN, please try again later', 'danger');
-			});
+			}
+			
+		
+		})
+		
+		}
+	
+	isOpenCopyPopover = false;
+	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
+	presentCopyPopover(e) {
+		this.copyPopover.event = e;
+		this.isOpenCopyPopover = !this.isOpenCopyPopover;
 	}
-
 	initPQDatasource = [];
 	initPRDatasource = [];
 
@@ -281,12 +266,9 @@ export class PurchaseOrderPage extends PageBase {
 			Status: '["Approved"]',
 		};
 
-		let searchFn = this.buildSelectDataSource(
-			(term) => {
-				return this.purchaseQuotationProvider.search({ ...queryPQ, Term: term });
-			},
-			false
-		);
+		let searchFn = this.buildSelectDataSource((term) => {
+			return this.purchaseQuotationProvider.search({ ...queryPQ, Term: term });
+		}, false);
 
 		if (this.initPQDatasource.length == 0) {
 			this.purchaseQuotationProvider.read(queryPQ).then(async (rs: any) => {
@@ -378,12 +360,9 @@ export class PurchaseOrderPage extends PageBase {
 			Skip: 0,
 			Status: '["Approved"]',
 		};
-		let searchFn = this.buildSelectDataSource(
-			(term) => {
-				return this.purchaseRequestProvider.search({ ...queryPR, Term: term });
-			},
-			false
-		);
+		let searchFn = this.buildSelectDataSource((term) => {
+			return this.purchaseRequestProvider.search({ ...queryPR, Term: term });
+		}, false);
 
 		if (this.initPRDatasource.length == 0) {
 			this.purchaseRequestProvider.read(queryPR).then(async (rs: any) => {
@@ -445,10 +424,8 @@ export class PurchaseOrderPage extends PageBase {
 					.showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
 					.then((_) => {
 						if (resp.length == 1) {
-							this.nav('/ap-invoice/' + resp[0]);
-						} else {
-							this.nav('/ap-invoice');
-						}
+							this.nav('/ap-invoice/' + resp[0],'forward');
+						} 
 					})
 					.catch((_) => {});
 			})

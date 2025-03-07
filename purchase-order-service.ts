@@ -15,7 +15,7 @@ export class PURCHASE_OrderService extends PURCHASE_OrderProvider {
 				postDTO.Ids = [items.Id];
 				itemName = items.Name;
 			}
-			env.actionConfirm('submit', length, items?.Name, pageConfig.pageTitle, () => this.commonService.connect('POST', 'PURCHASE/Order/SubmitOrders/', postDTO).toPromise())
+			env.actionConfirm('Order', length, items?.Name, pageConfig.pageTitle, () => this.commonService.connect('POST', 'PURCHASE/Order/SubmitOrders/', postDTO).toPromise())
 				.then((savedItem: any) => {
 					env.publishEvent({ Code: pageConfig.pageName });
 					env.showMessage('Purchased ordered', 'success');
@@ -51,4 +51,5 @@ export class PURCHASE_OrderService extends PURCHASE_OrderProvider {
 				});
 		});
 	}
+
 }
