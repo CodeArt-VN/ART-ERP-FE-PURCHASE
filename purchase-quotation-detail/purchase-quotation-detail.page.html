@@ -1,18 +1,15 @@
 <ion-header>
 	<app-toolbar [page]="this">
-		<ion-button
-			title="{{'Reopen' | translate}}"
-			(click)="reopen()"
-			*ngIf=" (pageConfig.canReopenConfirmedQuotation && pageConfig.ShowReopenConfirmedQuotation)"
-		>
+		<ion-button title="{{'Send quotaion request' | translate}}" (click)="open()" *ngIf=" (pageConfig.canSendQuotaionRequest && pageConfig.ShowSendQuotaionRequest)">
 			<ion-icon slot="icon-only" name="lock-open"></ion-icon>
 		</ion-button>
 		<ion-button
+			class="clickable"
 			title="{{'Copy' | translate}}"
 			(click)="presentCopyPopover($event)"
-			*ngIf=" (pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion)  ||(pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder)"
+			*ngIf=" (pageConfig.canCopyToPriceListVersion && pageConfig.ShowCopyToPriceListVersion)  ||(pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder)"
 		>
-			<ion-icon slot="icon-only" name="duplicate-outline"></ion-icon>
+			<ion-icon slot="icon-only" name="copy-outline"></ion-icon>
 		</ion-button>
 		<ion-popover #copyPopover [isOpen]="isOpenCopyPopover" (didDismiss)="isOpenCopyPopover = false">
 			<ng-template>
@@ -20,7 +17,7 @@
 					<ion-list lines="none">
 						<ion-item
 							title="{{'Copy to price list' | translate}}"
-							*ngIf="pageConfig.canAddPriceListVersion && pageConfig.ShowAddPriceListVersion"
+							*ngIf="pageConfig.canCopyToPriceListVersion && pageConfig.ShowCopyToPriceListVersion"
 							[button]="true"
 							[detail]="false"
 							(click)="updatePriceList()"
@@ -83,7 +80,7 @@
 						<app-form-control [field]="{id: 'RequiredDate', label: 'Required date', type: 'datetime-local',form: formGroup}" (change)="changeRequiredDate($event)">
 						</app-form-control>
 
-						<app-form-control [field]="{id: 'ValidUntilDate', label: 'Valid until date', type: 'datetime-local',form: formGroup}">
+						<app-form-control [field]="{id: 'ValidUntilDate', label: 'Valid until date', type: 'datetime-local',form: formGroup}" (change)="saveChange()">
 							<!-- (change) = "changeRequiredDate($event)" -->
 						</app-form-control>
 
@@ -161,7 +158,7 @@
 										clearable: true,
 										placeholder: 'Type to search...',
 
-										appendTo: '#ng-select-table',
+										appendTo: '#ng-select-header',
 											}"
 											(change)="IDItemChange($event, g)"
 										></app-input-control>
@@ -181,7 +178,7 @@
 												bindLabel: 'Name',
 												bindValue: 'Id',
 												clearable: true,
-												appendTo: '#ng-select-table',
+												appendTo: '#ng-select-header',
 											}"
 										></app-input-control>
 									</ng-template>
@@ -203,7 +200,7 @@
 												dataSource: g.controls._IDUoMDataSource.value,
 												bindLabel: 'Name',
 												bindValue: 'Id',
-												appendTo: '#ng-select-table',
+												appendTo: '#ng-select-header',
 											}"
 											(change)="IDUoMChange(g)"
 										></app-input-control>
@@ -222,12 +219,26 @@
 									</ng-template>
 								</datatable-column>
 								<datatable-column class="col-number" name="Quantity" property="value">
+									<ng-template datatable-header-template>
+										<span>{{'Quantity'|| translate}}</span>
+										<ion-icon
+											(click)="toggleAllQuantity()"
+											[color]="item._IsShippedAll? 'danger': 'success'"
+											[name]="item._IsShippedAll? 'remove-circle-outline': 'checkmark-done-circle-outline' "
+										></ion-icon>
+									</ng-template>
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control (change)="saveChange()" [field]="{ id: 'Quantity', type: 'number', form: g }"></app-input-control>
+										<ion-icon
+											*ngIf="g.controls.QuantityRequired.value != 0 "
+											(click)="toggleQuantity(g)"
+											[color]="g.controls.Quantity.value == g.controls.QuantityRequired.value ? 'danger' : 'primary'"
+											class="min-btn"
+											[name]="g.controls.Quantity.value ==g.controls.QuantityRequired.value ? 'remove-circle-outline' : 'checkmark-circle-outline'"
+										></ion-icon>
 									</ng-template>
 								</datatable-column>
 
-							
 								<datatable-column class="col-money" name="Unit price" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control (change)="saveChange()" [field]="{ id: 'Price', type: 'number', form: g }"> </app-input-control>
@@ -235,11 +246,17 @@
 								</datatable-column>
 
 								<datatable-column class="col-icon" property="value" *ngIf="pageConfig.canViewPriceListVersion">
-										<ng-template let-i="row" datatable-cell-template>
-										<ion-icon class="clickable" color="danger" (click)="OpenViewPriceListVersionPopover(i,$event)" class="min-btn" name="pricetag-outline"></ion-icon>
+									<ng-template let-i="row" datatable-cell-template>
+										<ion-icon
+											class="clickable"
+											color="danger"
+											(click)="OpenViewPriceListVersionPopover(i,$event)"
+											class="min-btn"
+											name="pricetag-outline"
+										></ion-icon>
 									</ng-template>
 								</datatable-column>
-								
+
 								<datatable-column class="col-number" name="Discount" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control (change)="saveChange()" [field]="{ id: 'TotalDiscount', type: 'number', form: g }"> </app-input-control>
@@ -350,9 +367,9 @@
 			</div>
 		</div>
 	</div>
-	<ion-popover #priceListVersionPopover  class="w300" [isOpen]="isOpenPriceListVersionPopover" (didDismiss)="isOpenPriceListVersionPopover = false">
+	<ion-popover #priceListVersionPopover class="w300" [isOpen]="isOpenPriceListVersionPopover" (didDismiss)="isOpenPriceListVersionPopover = false">
 		<ng-template>
-			<ion-content  scroll-y="false">
+			<ion-content scroll-y="false">
 				<ion-list lines="none">
 					<ion-list lines="none">
 						<div class="ion-padding">
@@ -363,11 +380,10 @@
 									<ion-text color="primary">{{currentShowingPriceListVersionItem.CurrentPrice| number: '1.0-0'}}</ion-text>
 								</ion-item>
 								<ion-item *ngFor="let p of currentShowingPriceListVersionItem.PriceVersions">
-									<ion-label>{{p.AppliedDate | date:'dd/MM/yyyy HH:mm'}}
-									</ion-label>
+									<ion-label>{{p.AppliedDate | date:'dd/MM/yyyy HH:mm'}} </ion-label>
 									<ion-text>{{p.Price | number: '1.0-0'}}</ion-text>
 								</ion-item>
-							</ng-container >
+							</ng-container>
 						</div>
 					</ion-list>
 				</ion-list>
