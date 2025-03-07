@@ -664,6 +664,13 @@ export class PurchaseOrderDetailPage extends PageBase {
 
 	ngOnDestroy() {
 		this.dismissPopover();
+		this.copyPopover.dismiss();
+	}
+	isOpenCopyPopover = false;
+	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
+	presentCopyPopover(e) {
+		this.copyPopover.event = e;
+		this.isOpenCopyPopover = !this.isOpenCopyPopover;
 	}
 	@ViewChild('popover') popover;
 	isOpenPopover = false;

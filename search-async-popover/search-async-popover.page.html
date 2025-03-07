@@ -47,7 +47,7 @@
 							<ng-template input-control-template ng-label-tmp let-i="item">
 								<div *ngIf="i?.Id">
 									<span><ion-text color="primary">#{{i.Id}} </ion-text></span><span *ngIf="i._Vendor"> | {{'Vendor' | translate}}: {{i._Vendor.Code}} - {{i._Vendor.Name}}</span>
-									<p *ngIf="i._Requester"><small *ngIf="i.RequiredDate">{{i.RequiredDate | date: 'HH:mm dd/MM/yyyy'}}</small> {{'Requester' | translate}}: {{i._Requester.Code}} - {{i._Requester.FullName}}</p>
+									<span *ngIf="!i._Vendor && i._Requester"><small *ngIf="i.RequiredDate">{{i.RequiredDate | date: 'HH:mm dd/MM/yyyy'}}</small> {{'Requester' | translate}}: {{i._Requester.Code}} - {{i._Requester.FullName}}</span>
 								</div>
 							</ng-template>
 							<ng-template input-control-template ng-option-tmp let-i="item" let-search="searchTerm">
@@ -100,7 +100,7 @@
 							<ng-template input-control-template ng-label-tmp let-i="item">
 								<div *ngIf="i">
 									<ion-text color="primary">#{{i.Id}} - {{i?._BusinessPartnerName}} → {{i._BranchName}}</ion-text>
-									<p *ngIf="i.SourceType">{{i.SourceType}}: {{i.SourceKey}}</p>
+									<small *ngIf="i.SourceType">{{i.SourceType}}: {{i.SourceKey}}</small>
 
 								</div>
 							</ng-template>
