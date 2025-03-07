@@ -15,6 +15,7 @@ import { PURCHASE_RequestService } from '../purchase-request.service';
 @Component({ selector: 'app-purchase-request-detail', templateUrl: './purchase-request-detail.page.html', styleUrls: ['./purchase-request-detail.page.scss'], standalone: false })
 export class PurchaseRequestDetailPage extends PageBase {
 	@ViewChild('importfile') importfile: any;
+	checkingCanEdit = false;
 	statusList = [];
 	statusLineList = [];
 	contentTypeList = [];
@@ -49,7 +50,11 @@ export class PurchaseRequestDetailPage extends PageBase {
 		public staffProvider: HRM_StaffProvider
 	) {
 		super();
+		this.buildFormGroup();
 		this.pageConfig.isDetailPage = true;
+		
+	}
+	buildFormGroup() {
 		this.formGroup = this.formBuilder.group({
 			IDBranch: [this.env.selectedBranch, Validators.required],
 			IDRequester: [''],
@@ -81,8 +86,8 @@ export class PurchaseRequestDetailPage extends PageBase {
 			DeletedLines: [''],
 		});
 	}
-
 	preLoadData(event) {
+		this.checkingCanEdit = this.pageConfig.canEdit;
 		this.contentTypeList = [
 			{ Code: 'Item', Name: 'Items' },
 			{ Code: 'Service', Name: 'Service' },
@@ -102,11 +107,13 @@ export class PurchaseRequestDetailPage extends PageBase {
 	}
 
 	loadedData(event) {
+		this.pageConfig.canEdit = this.checkingCanEdit;
+		this.buildFormGroup();
 		if (!this.item.Id) {
 			this.item.IDRequester = this.env.user.StaffID;
 			this.item._Requester = { Id: this.env.user.StaffID, FullName: this.env.user.FullName };
 		}
-		super.loadedData(event, true);
+		super.loadedData(event);
 		if (this.item?._Vendor) {
 			this._vendorDataSource.selected = [...this._vendorDataSource.selected, ...[this.item?._Vendor]];
 		}

@@ -126,7 +126,7 @@ export class PurchaseQuotationPage extends PageBase {
 			Status: '["Approved"]',
 		};
 		let searchFn = this.buildSelectDataSource((term) => {
-			return this.purchaseRequestProvider.read({ ...queryPR, Term: term });
+			return this.purchaseRequestProvider.search({ ...queryPR, Term: term });
 		}, false);
 
 		if (this.initDatasource.length == 0) {
@@ -201,14 +201,15 @@ export class PurchaseQuotationPage extends PageBase {
 			})
 			.catch((err) => {
 				console.log(err);
-				this.env.showMessage('Cannot create PQ, please try again later', 'danger');
+				if(err.error?.Message)this.env.showMessage(err.error.Message, 'danger');
+				else this.env.showMessage('Cannot create PQ, please try again later', 'danger');
 			});
 	}
 
 	open() {
 		let Ids = this.selectedItems.map(d=>d.Id);
 		this.env
-			.actionConfirm('SendQuotaionRequest', this.selectedItems.length, this.item?.Name, this.pageConfig.pageTitle, () =>
+			.actionConfirm('SendQuotationRequest', this.selectedItems.length, this.item?.Name, this.pageConfig.pageTitle, () =>
 				this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/Open/', { Ids: Ids }).toPromise()
 			)
 			.then((x) => {

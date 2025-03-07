@@ -22,6 +22,7 @@ import { CopyFromPurchaseOrderToReceiptModalPage } from '../copy-from-purchase-o
 })
 export class PurchaseOrderDetailPage extends PageBase {
 	@ViewChild('importfile') importfile: any;
+	checkingCanEdit=false;
 	branchList = [];
 	storerList = [];
 	statusList = [];
@@ -59,6 +60,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 	) {
 		super();
 		this.pageConfig.isDetailPage = true;
+		this.buildFormGroup();
 		if (this.env.user.IDBusinessPartner > 0 && this.env.user.SysRoles.includes('VENDOR')) {
 			this.vendorView = true;
 		}
@@ -94,25 +96,21 @@ export class PurchaseOrderDetailPage extends PageBase {
 			},
 		});
 	}
-	print() {
-		this.pageConfig['purchase-order-note'] = true;
-		this.router.navigate(['/purchase-order-note/' + this.item.Id], { state: { print: true } });
-	}
-	preLoadData(event) {
+	buildFormGroup(){
 		this.formGroup = this.formBuilder.group({
-			IDBranch: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
-			IDStorer: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
-			IDVendor: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }, Validators.required),
+			IDBranch: new FormControl({ value: '', disabled: false }, Validators.required),
+			IDStorer: new FormControl({ value: '', disabled: false }, Validators.required),
+			IDVendor: new FormControl({ value: '', disabled: false }, Validators.required),
 			Id: new FormControl({ value: '', disabled: true }),
-			Code: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
-			Name: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
+			Code: new FormControl({ value: '', disabled: false }),
+			Name: new FormControl({ value: '', disabled: false }),
 			// ForeignName: [''],
-			Remark: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
+			Remark: new FormControl({ value: '', disabled: false }),
 			// ForeignRemark: [''],
 			SourceKey: new FormControl({ value: '', disabled: true }),
 			SourceType: new FormControl({ value: '', disabled: true }),
 			OrderDate: new FormControl({ value: '', disabled: true }),
-			ExpectedReceiptDate: new FormControl({ value: '', disabled: !this.pageConfig.canEdit }),
+			ExpectedReceiptDate: new FormControl({ value: '', disabled: false }),
 			ReceiptedDate: new FormControl({ value: '', disabled: true }),
 			Type: ['Regular'],
 			Status: new FormControl({ value: 'Draft', disabled: true }),
@@ -122,6 +120,13 @@ export class PurchaseOrderDetailPage extends PageBase {
 			TotalDiscount: new FormControl({ value: '', disabled: true }),
 			TotalAfterTax: new FormControl({ value: '', disabled: true }),
 		});
+	}
+	print() {
+		this.pageConfig['purchase-order-note'] = true;
+		this.router.navigate(['/purchase-order-note/' + this.item.Id], { state: { print: true } });
+	}
+	preLoadData(event) {
+		this.checkingCanEdit = this.pageConfig.canEdit;
 		this.branchList = lib.cloneObject(this.env.branchList);
 		this.contactProvider.read({ IsStorer: true, Take: 5000 }).then((resp) => {
 			this.storerList = resp['data'];
@@ -158,6 +163,9 @@ export class PurchaseOrderDetailPage extends PageBase {
 	}
 
 	loadedData(event) {
+		this.pageConfig.canEdit = this.checkingCanEdit;
+		this.buildFormGroup();
+	
 		if (this.item) {
 			this.item.OrderDateText = lib.dateFormat(this.item.OrderDate, 'hh:MM dd/mm/yyyy');
 			if (this.item.OrderLines) this.item.OrderLines.sort((a, b) => (a.Id > b.Id ? 1 : b.Id > a.Id ? -1 : 0));
@@ -167,8 +175,8 @@ export class PurchaseOrderDetailPage extends PageBase {
 			}
 		}
 
-		super.loadedData(event, true);
 		this.setOrderLines();
+		super.loadedData(event);
 		let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved', 'Paid'];
 		let notShowRequestOutgoingPayment = ['Draft', 'Submitted', 'Approved', 'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Canceled'];
 		if (
@@ -192,9 +200,6 @@ export class PurchaseOrderDetailPage extends PageBase {
 				this.addLine(i);
 			});
 		}
-		if (!this.pageConfig.canEdit) this.formGroup.controls.OrderLines.disable();
-		// else
-		//     this.addOrderLine({ IDOrder: this.item.Id, Id: 0 });
 	}
 
 	addLine(line, markAsDirty = false) {
@@ -237,17 +242,17 @@ export class PurchaseOrderDetailPage extends PageBase {
 				disabled: !(this.pageConfig.canEdit || ((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.pageConfig.canEditApprovedOrder)),
 			}),
 			IDItem: [line.IDItem, Validators.required],
-			IDUoM: new FormControl({ value: line.IDUoM, disabled: !this.pageConfig.canEdit }, Validators.required),
+			IDUoM: new FormControl({ value: line.IDUoM, disabled: false }, Validators.required),
 			UoMPrice: new FormControl({ value: line.UoMPrice, disabled: !(this.pageConfig.canEdit && this.pageConfig.canEditPrice) }, Validators.required),
 			SuggestedQuantity: new FormControl({ value: line.SuggestedQuantity, disabled: true }),
-			UoMQuantityExpected: new FormControl({ value: line.UoMQuantityExpected, disabled: !this.pageConfig.canEdit }, Validators.required),
+			UoMQuantityExpected: new FormControl({ value: line.UoMQuantityExpected, disabled: false }, Validators.required),
 			QuantityAdjusted: new FormControl({
 				value: line.QuantityAdjusted,
 				disabled: !((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.pageConfig.canEditApprovedOrder),
 			}),
-			IsPromotionItem: new FormControl({ value: line.IsPromotionItem, disabled: !this.pageConfig.canEdit }),
+			IsPromotionItem: new FormControl({ value: line.IsPromotionItem, disabled: false }),
 			TotalBeforeDiscount: new FormControl({ value: line.TotalBeforeDiscount, disabled: true }),
-			TotalDiscount: new FormControl({ value: line.TotalDiscount, disabled: !this.pageConfig.canEdit }),
+			TotalDiscount: new FormControl({ value: line.TotalDiscount, disabled: false }),
 			TotalAfterDiscount: new FormControl({ value: line.TotalAfterDiscount, disabled: true }),
 			TaxRate: new FormControl({ value: line.TaxRate, disabled: true }),
 			Tax: new FormControl({ value: line.Tax, disabled: true }),

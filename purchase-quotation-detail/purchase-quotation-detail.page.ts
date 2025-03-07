@@ -26,8 +26,8 @@ import { PURCHASE_QuotationService } from '../purchase-quotation.service';
 	standalone: false,
 })
 export class PurchaseQuotationDetailPage extends PageBase {
-
 	@ViewChild('importfile') importfile: any;
+	checkingCanEdit = false;
 	statusList = [];
 	_statusLineList = [];
 	contentTypeList = [];
@@ -63,6 +63,12 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	) {
 		super();
 		this.pageConfig.isDetailPage = true;
+		this.buildFormGroup();
+		if (this.env.user.IDBusinessPartner > 0 && !this.env.user.SysRoles.includes('STAFF') && this.env.user.SysRoles.includes('VENDOR')) {
+			this.vendorView = true;
+		}
+	}
+	buildFormGroup() {
 		this.formGroup = this.formBuilder.group({
 			IDBranch: [this.env.selectedBranch, Validators.required],
 			IDRequester: [''],
@@ -95,12 +101,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			TotalAfterTax: new FormControl({ value: '', disabled: true }),
 			DeletedLines: [''],
 		});
-		if (this.env.user.IDBusinessPartner > 0 && !this.env.user.SysRoles.includes('STAFF') && this.env.user.SysRoles.includes('VENDOR')) {
-			this.vendorView = true;
-		}
 	}
-
 	preLoadData(event) {
+		this.checkingCanEdit = this.pageConfig.canEdit;
 		this.contentTypeList = [
 			{ Code: 'Item', Name: 'Items' },
 			{ Code: 'Service', Name: 'Service' },
@@ -118,7 +121,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	}
 
 	loadedData(event) {
-		if (!['Open','Draft' ,'Unapproved'].includes(this.item.Status)) this.pageConfig.canEdit = false;
+		this.pageConfig.canEdit = this.checkingCanEdit;
+		this.buildFormGroup();
+		if (!['Open', 'Draft', 'Unapproved'].includes(this.item.Status)) this.pageConfig.canEdit = false;
 		if (this.item.Status == 'Confirmed' && this.vendorView) this.pageConfig.canEdit = false;
 		super.loadedData(event);
 		this.setQuotationLines();
@@ -397,7 +402,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	open() {
 		let Ids = [this.item.Id];
 		this.env
-			.actionConfirm('SendQuotaionRequest', this.selectedItems.length, this.item?.Name, this.pageConfig.pageTitle, () =>
+			.actionConfirm('SendQuotationRequest', this.selectedItems.length, this.item?.Name, this.pageConfig.pageTitle, () =>
 				this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/Open/', { Ids: Ids }).toPromise()
 			)
 			.then((x) => {
@@ -519,7 +524,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		}
 		this.saveChange();
 	}
-
 
 	isOpenCopyPopover: boolean = false;
 	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;

@@ -112,7 +112,22 @@ export class PurchaseOrderPage extends PageBase {
 
 	merge() {}
 	split() {}
-
+	submitOrders() {
+		if (this.submitAttempt) {
+			return;
+		}
+		this.submitAttempt = true;
+		this.pageProvider
+			.submitOrders(this.selectedItems, this.env, this.pageConfig)
+			.then((rs: any) => {
+				this.submitAttempt = false;
+				this.refresh();
+			})
+			.catch((err) => {
+				this.submitAttempt = false;
+				console.log(err);
+			});
+	}
 	ngOnDestroy() {
 		this.dismissPopover();
 	}
@@ -205,7 +220,7 @@ export class PurchaseOrderPage extends PageBase {
 		})
 		
 		}
-
+	
 	isOpenCopyPopover = false;
 	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
 	presentCopyPopover(e) {
@@ -409,10 +424,8 @@ export class PurchaseOrderPage extends PageBase {
 					.showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
 					.then((_) => {
 						if (resp.length == 1) {
-							this.nav('/ap-invoice/' + resp[0]);
-						} else {
-							this.nav('/ap-invoice');
-						}
+							this.nav('/ap-invoice/' + resp[0],'forward');
+						} 
 					})
 					.catch((_) => {});
 			})

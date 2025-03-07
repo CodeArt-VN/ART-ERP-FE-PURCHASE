@@ -27,7 +27,8 @@ export class PURCHASE_RequestService extends PURCHASE_RequestProvider {
 					})
 					.catch((err) => {
 						console.log(err);
-						env.showMessage('Cannot create PO, please try again later', 'danger');
+						if(err.error?.Message)env.showMessage(err.error.Message, 'danger');
+						else env.showMessage('Cannot create PO, please try again later', 'danger');
 						reject(err);
 					});
 			} else resolve(null);
@@ -61,7 +62,8 @@ export class PURCHASE_RequestService extends PURCHASE_RequestProvider {
 					})
 					.catch((err) => {
 						console.log(err);
-						env.showMessage('Cannot create PQ, please try again later', 'danger');
+						if(err.error?.Message)env.showMessage(err.error.Message, 'danger');
+						else env.showMessage('Cannot create PQ, please try again later', 'danger');
 						reject(err);
 					});
 			} else resolve(null);

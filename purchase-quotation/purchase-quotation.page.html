@@ -81,13 +81,12 @@
 			title="{{'Send quotation request' | translate}}"
 			(click)="open()"
 			*ngIf="
-	(pageConfig.canSendQuotaionRequest && pageConfig.ShowSendQuotaionRequest) "
+	(pageConfig.canSendQuotationRequest && pageConfig.ShowSendQuotationRequest) "
 		>
 			<ion-icon slot="icon-only" name="lock-open"></ion-icon>
 		</ion-button>
 	</app-toolbar>
 </ion-header>
-
 <ion-content appScrollbarTheme class="header-table">
 	<app-page-title class="ion-padding safe-max-width" [pageConfig]="pageConfig"></app-page-title>
 
