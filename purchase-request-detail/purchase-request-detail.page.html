@@ -68,9 +68,9 @@
 						></app-form-control>
 
 						<app-form-control (change)="saveChange();" [field]="{id: 'Name', type: 'text', label: 'Title', form: formGroup}"></app-form-control>
-
+						
 						<app-form-control
-							[field]="{id: 'IDVendor', label: 'Vendor', type: 'ng-select-bp', form: formGroup, dataSource: _vendorDataSource, bindLabel: 'Name', bindValue: 'Id', clearable: true, appendTo: '#ng-select-header' }"
+							[field]="{id: 'IDVendor', label: 'Vendor', type: 'ng-select-bp', form: formGroup, dataSource: _vendorDataSource, bindLabel: 'Name', bindValue: 'Id', placeholder: 'Type to search...', clearable: true, appendTo: '#ng-select-header' }"
 							(change)="changeVendor($event)"
 						></app-form-control>
 					</ion-col>

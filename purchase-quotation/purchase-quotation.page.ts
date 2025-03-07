@@ -39,6 +39,11 @@ export class PurchaseQuotationPage extends PageBase {
 	}
 
 	preLoadData(event) {
+		if (!this.sort.Id) {
+			this.sort.Id = 'Id';
+			this.sortToggle('Id', true);
+		}
+		
 		Promise.all([this.env.getStatus('PurchaseQuotation')]).then((values) => {
 			this.statusList = values[0];
 			super.preLoadData(event);
