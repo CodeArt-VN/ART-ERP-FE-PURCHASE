@@ -43,7 +43,7 @@ export class PurchaseQuotationPage extends PageBase {
 			this.sort.Id = 'Id';
 			this.sortToggle('Id', true);
 		}
-		
+
 		Promise.all([this.env.getStatus('PurchaseQuotation')]).then((values) => {
 			this.statusList = values[0];
 			super.preLoadData(event);
@@ -206,13 +206,13 @@ export class PurchaseQuotationPage extends PageBase {
 			})
 			.catch((err) => {
 				console.log(err);
-				if(err.error?.Message)this.env.showMessage(err.error.Message, 'danger');
+				if (err.error?.Message) this.env.showMessage(err.error.Message, 'danger');
 				else this.env.showMessage('Cannot create PQ, please try again later', 'danger');
 			});
 	}
 
 	open() {
-		let Ids = this.selectedItems.map(d=>d.Id);
+		let Ids = this.selectedItems.map((d) => d.Id);
 		this.env
 			.actionConfirm('SendQuotationRequest', this.selectedItems.length, this.item?.Name, this.pageConfig.pageTitle, () =>
 				this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/Open/', { Ids: Ids }).toPromise()

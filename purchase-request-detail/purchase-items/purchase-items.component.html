@@ -16,7 +16,7 @@
 
 					<datatable-column class="col-id" name="No." property="#"></datatable-column>
 
-					<datatable-column class="col-name" name="Items" property="value">
+					<datatable-column class="col-name item-name" name="Items" property="value">
 						<ng-template let-g="row" datatable-cell-template>
 							<app-input-control *ngIf="this._contentType != 'Item'" [field]="{ id: 'Name', label: 'Item', form: g }" (change)="submitData(g)"></app-input-control>
 							<app-input-control

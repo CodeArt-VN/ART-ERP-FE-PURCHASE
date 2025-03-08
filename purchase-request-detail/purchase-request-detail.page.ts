@@ -52,7 +52,6 @@ export class PurchaseRequestDetailPage extends PageBase {
 		super();
 		this.buildFormGroup();
 		this.pageConfig.isDetailPage = true;
-		
 	}
 	buildFormGroup() {
 		this.formGroup = this.formBuilder.group({
@@ -225,9 +224,9 @@ export class PurchaseRequestDetailPage extends PageBase {
 	}
 
 	changeVendor(e) {
-		if(e && !this._vendorDataSource.selected.some(s=> s.Id == e.Id))this._vendorDataSource.selected=
-		[...this._vendorDataSource.selected,...	[{Id:e.Id,Name:e.Name,Code:e.Code}]];
-		
+		if (e && !this._vendorDataSource.selected.some((s) => s.Id == e.Id))
+			this._vendorDataSource.selected = [...this._vendorDataSource.selected, ...[{ Id: e.Id, Name: e.Name, Code: e.Code }]];
+
 		let orderLines = this.formGroup.get('OrderLines') as FormArray;
 		if (orderLines.controls.length > 0) {
 			if (e) {

@@ -17,7 +17,7 @@
 				<ion-content scroll-y="false">
 					<ion-list lines="none">
 						<ion-item
-							*ngIf="pageConfig.canCopyToReceipt && pageConfig.ShowCopyToReceipt && selectedItems?.length == 1"	
+							*ngIf="pageConfig.canCopyToReceipt && pageConfig.ShowCopyToReceipt && selectedItems?.length == 1"
 							[button]="true"
 							[detail]="false"
 							(click)="copyPopover.dismiss() ;copyToReceipt()"

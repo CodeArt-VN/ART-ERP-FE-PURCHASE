@@ -198,9 +198,8 @@ export class PurchaseOrderPage extends PageBase {
 	}
 
 	async copyToReceipt() {
-		this.env
-			.showLoading('Please wait for a few moments', this.pageProvider.getAnItem(this.selectedItems[0]?.Id)).then(async (rs: any) => {
-			if(rs){
+		this.env.showLoading('Please wait for a few moments', this.pageProvider.getAnItem(this.selectedItems[0]?.Id)).then(async (rs: any) => {
+			if (rs) {
 				const modal = await this.modalController.create({
 					component: CopyFromPurchaseOrderToReceiptModalPage,
 					componentProps: { _item: rs },
@@ -215,12 +214,9 @@ export class PurchaseOrderPage extends PageBase {
 					});
 				}
 			}
-			
-		
-		})
-		
-		}
-	
+		});
+	}
+
 	isOpenCopyPopover = false;
 	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
 	presentCopyPopover(e) {
@@ -424,8 +420,8 @@ export class PurchaseOrderPage extends PageBase {
 					.showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
 					.then((_) => {
 						if (resp.length == 1) {
-							this.nav('/ap-invoice/' + resp[0],'forward');
-						} 
+							this.nav('/ap-invoice/' + resp[0], 'forward');
+						}
 					})
 					.catch((_) => {});
 			})

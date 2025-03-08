@@ -252,7 +252,7 @@ export class PurchaseItemsComponent extends PageBase {
 			g._Vendor = g.controls._Vendors?.value?.find((d) => d.Id == g.controls.IDVendor.value);
 		} else {
 			this.onChange.emit();
-		} 
+		}
 	}
 
 	calcTotalDiscount() {

@@ -51,5 +51,4 @@ export class PURCHASE_OrderService extends PURCHASE_OrderProvider {
 				});
 		});
 	}
-
 }

@@ -22,7 +22,7 @@ import { CopyFromPurchaseOrderToReceiptModalPage } from '../copy-from-purchase-o
 })
 export class PurchaseOrderDetailPage extends PageBase {
 	@ViewChild('importfile') importfile: any;
-	checkingCanEdit=false;
+	checkingCanEdit = false;
 	branchList = [];
 	storerList = [];
 	statusList = [];
@@ -96,7 +96,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 			},
 		});
 	}
-	buildFormGroup(){
+	buildFormGroup() {
 		this.formGroup = this.formBuilder.group({
 			IDBranch: new FormControl({ value: '', disabled: false }, Validators.required),
 			IDStorer: new FormControl({ value: '', disabled: false }, Validators.required),
@@ -165,7 +165,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 	loadedData(event) {
 		this.pageConfig.canEdit = this.checkingCanEdit;
 		this.buildFormGroup();
-	
+
 		if (this.item) {
 			this.item.OrderDateText = lib.dateFormat(this.item.OrderDate, 'hh:MM dd/mm/yyyy');
 			if (this.item.OrderLines) this.item.OrderLines.sort((a, b) => (a.Id > b.Id ? 1 : b.Id > a.Id ? -1 : 0));

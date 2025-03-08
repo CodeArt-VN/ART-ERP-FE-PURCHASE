@@ -54,7 +54,7 @@ export class PurchaseQuotationModalPage extends PageBase {
 		let list = [...this.itemInVendors];
 		list.forEach((x) => {
 			let index = this.itemInVendors.indexOf(x);
-			if(x.IDVendor) x._Vendors = [x._Vendors.find((d) => d.Id == x.IDVendor)];
+			if (x.IDVendor) x._Vendors = [x._Vendors.find((d) => d.Id == x.IDVendor)];
 			this.itemInVendors.splice(
 				index + 1,
 				0,

@@ -1,6 +1,10 @@
 <ion-header>
 	<app-toolbar [page]="this">
-		<ion-button title="{{'Send quotation request' | translate}}" (click)="open()" *ngIf=" (pageConfig.canSendQuotationRequest && pageConfig.ShowSendQuotationRequest)">
+		<ion-button
+			title="{{'Send quotation request' | translate}}"
+			(click)="sendQuotationRequest()"
+			*ngIf=" (pageConfig.canSendQuotationRequest && pageConfig.ShowSendQuotationRequest)"
+		>
 			<ion-icon slot="icon-only" name="lock-open"></ion-icon>
 		</ion-button>
 		<ion-button
@@ -11,7 +15,7 @@
 		>
 			<ion-icon slot="icon-only" name="copy-outline"></ion-icon>
 		</ion-button>
-		<ion-popover #copyPopover [isOpen]="isOpenCopyPopover" (didDismiss)="isOpenCopyPopover = false">
+		<ion-popover #copyPopover [isOpen]="isOpenCopyPopover" (didDismiss)="isOpenCopyPopover = false" [dismissOnSelect]="true">
 			<ng-template>
 				<ion-content scroll-y="false">
 					<ion-list lines="none">
@@ -76,17 +80,16 @@
 							[field]="{id: 'Status', label: 'Status', type: 'ng-select-status', dataSource: statusList, bindLabel: 'Name', bindValue: 'Code', form: formGroup}"
 						></app-form-control>
 
-						<app-form-control [field]="{id: 'TotalAfterTax', label: 'Total', type: 'span-text', form: formGroup}">
-							<ng-template input-control-template>
-								<b>{{calcTotalAfterTax() | number: '1.0-0'}}</b>
-							</ng-template>
-						</app-form-control>
-
 						<app-form-control [field]="{id: 'RequiredDate', label: 'Required date', type: 'datetime-local',form: formGroup}" (change)="changeRequiredDate($event)">
 						</app-form-control>
 
 						<app-form-control [field]="{id: 'ValidUntilDate', label: 'Valid until date', type: 'datetime-local',form: formGroup}" (change)="saveChange()">
-							<!-- (change) = "changeRequiredDate($event)" -->
+						</app-form-control>
+
+						<app-form-control [field]="{id: 'TotalAfterTax', label: 'Total', type: 'span-text', form: formGroup}">
+							<ng-template input-control-template>
+								<b>{{calcTotalAfterTax() | number: '1.0-0'}}</b>
+							</ng-template>
 						</app-form-control>
 					</ion-col>
 				</ion-row>
@@ -122,7 +125,7 @@
 
 								<datatable-column class="col-id" name="No." property="#"></datatable-column>
 
-								<datatable-column class="col-name" name="Items" property="value">
+								<datatable-column class="col-name item-name" name="Items" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control
 											[field]="{
@@ -149,7 +152,8 @@
 											[field]="{
 												id: 'IDVendor',
 												label: 'Vendor',
-												type: 'ng-select',
+												placeholder: 'Type to search...',
+												type: 'ng-select-item',
 												form: g,
 												dataSource: g.controls._Vendors.value,
 												bindLabel: 'Name',
@@ -184,20 +188,24 @@
 									</ng-template>
 								</datatable-column>
 
-								<datatable-column class="col-number" name="Quantity" property="value">
+								<datatable-column class="col-number" name="Required Qty" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control (change)="saveChange()" [field]="{ id: 'QuantityRequired', type: 'number', form: g }"></app-input-control>
 									</ng-template>
 								</datatable-column>
 
-								<datatable-column class="col-number" name="Remaining open" property="value">
+								<datatable-column class="col-number" name="Remaining open" property="value" *ngIf="!vendorView">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control [field]="{ id: 'QuantityRemainingOpen', type: 'span-number', form: g }"></app-input-control>
 									</ng-template>
 								</datatable-column>
-								<datatable-column class="col-number" name="Quantity" property="value">
+								<datatable-column class="col-number" name="Quoted Qty" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control (change)="saveChange()" [field]="{ id: 'Quantity', type: 'number', form: g }"></app-input-control>
+									</ng-template>
+								</datatable-column>
+								<datatable-column class="col-icon" property="value" *ngIf="pageConfig.canViewPriceListVersion">
 									<ng-template datatable-header-template>
-										<span>{{'Quantity'|| translate}}</span>
 										<ion-icon
 											(click)="toggleAllQuantity()"
 											[color]="item._IsShippedAll? 'danger': 'success'"
@@ -205,7 +213,6 @@
 										></ion-icon>
 									</ng-template>
 									<ng-template let-g="row" datatable-cell-template>
-										<app-input-control (change)="saveChange()" [field]="{ id: 'Quantity', type: 'number', form: g }"></app-input-control>
 										<ion-icon
 											*ngIf="g.controls.QuantityRequired.value != 0 "
 											(click)="toggleQuantity(g)"
@@ -271,7 +278,7 @@
 						</div>
 					</ng-container>
 				</form>
-				<div class="ion-padding" *ngIf="item.SourceType !='FromPurchaseRequest'">
+				<div class="ion-padding" *ngIf="item.SourceType !='FromPurchaseRequest' && pageConfig.canEdit && !vendorView">
 					<ion-button fill="clear" size="small" (click)="addLine({}, true)">
 						<ion-icon slot="start" name="add-circle-outline"></ion-icon>
 						{{ 'Add product' | translate }}

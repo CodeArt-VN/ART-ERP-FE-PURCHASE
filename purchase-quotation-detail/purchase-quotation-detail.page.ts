@@ -86,9 +86,11 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			Status: new FormControl({ value: 'Open', disabled: true }, Validators.required),
 			RequiredDate: ['', Validators.required],
 			ValidUntilDate: ['', Validators.required],
-			PostingDate: ['', Validators.required],
-			DueDate: ['', Validators.required],
-			DocumentDate: ['', Validators.required],
+
+			PostingDate: [''],
+			DueDate: [''],
+			DocumentDate: [''],
+
 			IsDisabled: new FormControl({ value: '', disabled: true }),
 			IsDeleted: new FormControl({ value: '', disabled: true }),
 			CreatedBy: new FormControl({ value: '', disabled: true }),
@@ -252,7 +254,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	addLine(line, markAsDirty = false) {
 		let groups = <FormArray>this.formGroup.controls.QuotationLines;
 		let selectedItem = line._Item;
-		line.Status = line.Status || 'Open';
+		line.Status = line.Status || 'Draft';
 		let group = this.formBuilder.group({
 			_IDItemDataSource: this.buildSelectDataSource((term) => {
 				return this.itemProvider.search({
@@ -277,14 +279,14 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			Name: [line.Name],
 			Remark: [line.Remark],
 			RequiredDate: new FormControl({ value: line.RequiredDate, disabled: this.item?.SourceType != null }), //,Validators.required
-			Price: [line.Price, Validators.required],
+			Price: [line.Price, this.vendorView ? Validators.required : null],
 			UoMName: [line.UoMName],
 			Quantity: new FormControl(
 				line.Quantity,
-				this.item.ContentType === 'Item' ? Validators.required : null // Conditional validator
+				this.item.ContentType === 'Item' && this.vendorView ? Validators.required : null // Conditional validator
 			),
 			QuantityRemainingOpen: new FormControl({ value: line.QuantityRemainingOpen, disabled: true }),
-			QuantityRequired: new FormControl({ value: line.QuantityRequired, disabled: this.item?.SourceType != null }),
+			QuantityRequired: new FormControl({ value: line.QuantityRequired, disabled: this.item?.SourceType != null }, Validators.required),
 			UoMSwap: [line.UoMSwap],
 			UoMSwapAlter: [line.UoMSwapAlter],
 			IDTax: [line.IDTax], //,Validators.required
@@ -399,7 +401,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			});
 		}
 	}
-	open() {
+	sendQuotationRequest() {
 		let Ids = [this.item.Id];
 		this.env
 			.actionConfirm('SendQuotationRequest', this.selectedItems.length, this.item?.Name, this.pageConfig.pageTitle, () =>
