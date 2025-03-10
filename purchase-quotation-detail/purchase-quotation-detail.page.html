@@ -297,7 +297,7 @@
 					</ion-button>
 					<ion-button *ngIf="item.Id != 0 && formGroup.controls.IDBusinessPartner.value != null" fill="clear" size="small" (click)="openAllProductFromVendorPopever()">
 						<ion-icon slot="start" name="add-circle-outline"></ion-icon>
-						{{ 'Add all product from vendor' | translate }}
+						{{ 'Add all products from vendor' | translate }}
 					</ion-button>
 				</div>
 				<div class="ion-padding" style="display: flex; justify-content: flex-end" *ngIf="pageConfig.ShowConfirm && pageConfig.canConfirm && vendorView">

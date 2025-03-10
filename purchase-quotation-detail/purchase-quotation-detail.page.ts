@@ -557,7 +557,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	openAllProductFromVendorPopever() {
 		this.env
 			.showPrompt({
-				code: 'Bạn có muốn thêm tất cả sản phẩm từ nhà cung cấp {value} không?',
+				code: 'Do you want to add all products from vendor {value}?',
 				value: this._vendorDataSource.selected.find((d) => d.Id == this.formGroup.controls.IDBusinessPartner.value).Name,
 			})
 			.then((_) => {
