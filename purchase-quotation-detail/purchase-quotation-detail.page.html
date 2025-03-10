@@ -115,7 +115,7 @@
 								<datatable-empty-message subMessage="Please click add new to start...">
 									<ng-template datatable-empty-message-template>
 										<div>
-											<ion-button size="small" (click)="addLine({}, true)">
+											<ion-button *ngIf="formGroup.controls.IDBusinessPartner.value != null" size="small" (click)="addLine({}, true)">
 												<ion-icon slot="start" name="add-circle-outline"></ion-icon>
 												{{ 'Add product' | translate }}
 											</ion-button>
@@ -128,6 +128,7 @@
 								<datatable-column class="col-name item-name" name="Items" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control
+											*ngIf="item.ContentType=='Item'"
 											[field]="{
 												id: 'IDItem',
 												label: 'Item',
@@ -141,6 +142,17 @@
 										appendTo: '#ng-select-header',
 											}"
 											(change)="IDItemChange($event, g)"
+										></app-input-control>
+
+										<app-input-control
+											*ngIf="item.ContentType=='Service'"
+											[field]="{
+											id: 'Name',
+											label: 'Name',
+											type: 'text',
+											form: g,
+										}"
+											(change)="saveChange(g)"
 										></app-input-control>
 									</ng-template>
 								</datatable-column>
@@ -204,7 +216,7 @@
 										<app-input-control (change)="saveChange()" [field]="{ id: 'Quantity', type: 'number', form: g }"></app-input-control>
 									</ng-template>
 								</datatable-column>
-								<datatable-column class="col-icon" property="value" *ngIf="pageConfig.canViewPriceListVersion">
+								<datatable-column class="col-icon" property="value" *ngIf="_isShowtoggleAllQuantity">
 									<ng-template datatable-header-template>
 										<ion-icon
 											(click)="toggleAllQuantity()"
@@ -214,7 +226,7 @@
 									</ng-template>
 									<ng-template let-g="row" datatable-cell-template>
 										<ion-icon
-											*ngIf="g.controls.QuantityRequired.value != 0 "
+											*ngIf="g.controls.QuantityRequired.value != 0 && !g.controls.Quantity.disabled"
 											(click)="toggleQuantity(g)"
 											[color]="g.controls.Quantity.value == g.controls.QuantityRequired.value ? 'danger' : 'primary'"
 											class="min-btn"
@@ -278,10 +290,14 @@
 						</div>
 					</ng-container>
 				</form>
-				<div class="ion-padding" *ngIf="item.SourceType !='FromPurchaseRequest' && pageConfig.canEdit && !vendorView">
+				<div class="ion-padding" *ngIf="item.SourceType !='FromPurchaseRequest' && pageConfig.canEdit && !vendorView && formGroup.controls.IDBusinessPartner.value != null">
 					<ion-button fill="clear" size="small" (click)="addLine({}, true)">
 						<ion-icon slot="start" name="add-circle-outline"></ion-icon>
 						{{ 'Add product' | translate }}
+					</ion-button>
+					<ion-button *ngIf="item.Id != 0 && formGroup.controls.IDBusinessPartner.value != null" fill="clear" size="small" (click)="openAllProductFromVendorPopever()">
+						<ion-icon slot="start" name="add-circle-outline"></ion-icon>
+						{{ 'Add all product from vendor' | translate }}
 					</ion-button>
 				</div>
 				<div class="ion-padding" style="display: flex; justify-content: flex-end" *ngIf="pageConfig.ShowConfirm && pageConfig.canConfirm && vendorView">
@@ -376,5 +392,29 @@
 			</ion-content>
 		</ng-template>
 	</ion-popover>
+
+	<ion-popover #addAllProductFromVendorPopover class="w300" [isOpen]="_isOpenAddAllProductFromVendor" (didDismiss)="_isOpenAddAllProductFromVendor = false">
+		<ng-template>
+			<ion-toolbar>
+				<ion-title> {{'Enter quantity'| translate}}</ion-title>
+				<ion-buttons slot="end">
+					<ion-button (click)="addAllProductFromVendor(false)">
+						<ion-icon slot="icon-only" name="close"></ion-icon>
+					</ion-button>
+				</ion-buttons>
+			</ion-toolbar>
+			<ion-content class="ion-padding" scroll-y="false">
+				<app-form-control [field]="{id: 'Quantity',label: 'Quantity', type: 'number', form: formGroupQuantityProduct}"></app-form-control>
+			</ion-content>
+			<ion-toolbar>
+				<ion-buttons slot="end">
+					<ion-button fill="solid" (click)="addAllProductFromVendor(true)">
+						<ion-text>{{'Save' | translate}}</ion-text>
+					</ion-button>
+				</ion-buttons>
+			</ion-toolbar>
+		</ng-template>
+	</ion-popover>
+
 	<app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>
 </ion-content>

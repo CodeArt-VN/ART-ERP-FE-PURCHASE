@@ -35,6 +35,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	markAsPristine = false;
 	_currentVendor;
 	_isVendorSearch = false;
+	_isShowtoggleAllQuantity = true;
 	_vendorDataSource = this.buildSelectDataSource((term) => {
 		return this.contactProvider.search({ SkipAddress: true, IsVendor: true, SortBy: ['Id_desc'], Take: 20, Skip: 0, Term: term });
 	});
@@ -137,7 +138,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			this.formGroup.controls.DocumentDate.disable();
 			this.formGroup.controls.PostingDate.disable();
 			this.formGroup.controls.DueDate.disable();
-			let enableValid = ['Submitted', 'Approved', 'Closed'];
+			let enableValid = ['Submitted', 'Approved', 'Closed', 'Canceled', 'Confirmed'];
 			if (!enableValid.includes(this.item.Status)) {
 				this.formGroup.controls.ValidUntilDate.enable();
 			}
@@ -148,7 +149,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		}
 		this._vendorDataSource.initSearch();
 		if (this.vendorView && this.item.Status == 'Open') this.pageConfig.ShowConfirm = true;
-		else this.pageConfig.ShowCanConfirm = false;
+		else this.pageConfig.ShowConfirm = false;
 
 		// Quyền canQuote có thể báo giá (edit price, quantity,TotalDiscount)
 		if (['Open', 'Unapproved'].includes(this.item.Status) && this.pageConfig.canQuote && !this.pageConfig.canEdit) {
@@ -161,6 +162,15 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		}
 
 		if (this.item?.Id == 0) this.formGroup.controls.ContentType.markAsDirty();
+		this._currentContentType = this.item.ContentType;
+		let groups = <FormArray>this.formGroup.controls.QuotationLines;
+		groups.controls.forEach((group) => {
+			let g = <FormGroup>group;
+			if (g.controls.Quantity.disabled) this._isShowtoggleAllQuantity = false;
+			return;
+		});
+		
+		console.log('IDVendor: ',this.formGroup.controls.IDBusinessPartner.value)
 	}
 
 	async saveChange() {
@@ -198,28 +208,16 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	}
 
 	changeVendor(e) {
-		let orderLines = this.formGroup.get('OrderLines') as FormArray;
-		if (orderLines?.controls.length > 0) {
+		let quotationLines = this.formGroup.get('QuotationLines') as FormArray;
+		if (quotationLines?.controls.length > 0) {
 			if (e) {
 				this.env
 					.showPrompt('Tất cả hàng hoá trong danh sách khác với nhà cung cấp được chọn sẽ bị xoá. Bạn có muốn tiếp tục ? ', null, 'Thông báo')
 					.then(() => {
-						let DeletedLines = orderLines
+						let DeletedLines = quotationLines
 							.getRawValue()
 							.filter((f) => f.Id && f.IDVendor != e.Id && !f._Vendors?.map((v) => v.Id)?.includes(e.Id))
 							.map((o) => o.Id);
-
-						orderLines.controls
-							.filter((f) =>
-								f
-									.get('_Vendors')
-									.value.map((v) => v.Id)
-									.includes(e.Id)
-							)
-							.forEach((o) => {
-								o.get('IDVendor').setValue(e.Id);
-								o.get('IDVendor').markAsDirty();
-							});
 						this.formGroup.get('DeletedLines').setValue(DeletedLines);
 						this.formGroup.get('DeletedLines').markAsDirty();
 
@@ -233,7 +231,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				this._currentVendor = e;
 				this.saveChange();
 			}
-			console.log(this.formGroup.get('IDVendor').value);
 		} else {
 			this._currentVendor = e;
 			this.saveChange();
@@ -268,19 +265,17 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				});
 			}),
 			_IDUoMDataSource: [selectedItem ? selectedItem.UoMs : []],
-			IDItem: new FormControl({ value: line.IDItem || 0, disabled: this.item?.SourceType != null }), //Validators.required
-			IDItemUoM: new FormControl(
-				{ value: line.IDItemUoM, disabled: this.item?.SourceType != null },
-				[this.item?.contentType === 'Item' ? Validators.required : null].filter(Boolean)
-			),
+			IDItem: new FormControl({ value: line.IDItem, disabled: this.item?.SourceType != null }, this.item?.ContentType === 'Item' ? [Validators.required] : []), //Validators.required
+			IDItemUoM: new FormControl({ value: line.IDItemUoM, disabled: this.item?.SourceType != null }, this.item?.ContentType === 'Item' ? [Validators.required] : []),
 			Id: [line.Id],
 			Status: [line.Status],
 			Sort: [line.Sort],
-			Name: [line.Name],
+			Name: [line.Name, this.item?.ContentType == 'Service' ? Validators.required : null],
 			Remark: [line.Remark],
 			RequiredDate: new FormControl({ value: line.RequiredDate, disabled: this.item?.SourceType != null }), //,Validators.required
 			Price: [line.Price, this.vendorView ? Validators.required : null],
 			UoMName: [line.UoMName],
+			IDVendor:[line.IDVendor || ''],
 			Quantity: new FormControl(
 				line.Quantity,
 				this.item.ContentType === 'Item' && this.vendorView ? Validators.required : null // Conditional validator
@@ -428,11 +423,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				if (e.UoMs?.length > 0) {
 					group.controls.IDItemUoM.setValue(e.PurchasingUoM);
 					group.controls.IDItemUoM.markAsDirty();
-					var baseUoM = e.UoMs.find((d) => d.IsBaseUoM);
-					if (baseUoM) {
-						group.controls.IDBaseUoM.setValue(baseUoM.Id);
-						group.controls.IDItemUoM.markAsDirty();
-					}
 				}
 				group.controls.TaxRate.setValue(e.PurchaseTaxInPercent);
 				group.controls.TaxRate.markAsDirty();
@@ -449,6 +439,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			} else {
 				this.env.showMessage('The item has not been set tax');
 			}
+		} else {
+			group.get('IDItemUoM').setValue(null);
+			group.get('IDItemUoM').markAsDirty();
 		}
 	}
 	IDUoMChange(group) {
@@ -489,6 +482,38 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			group.controls.IDBaseUoM?.markAsDirty();
 		}
 	}
+
+	_currentContentType;
+	changeContentType(e) {
+		console.log(e);
+		let quotationLines = this.formGroup.get('QuotationLines') as FormArray;
+		if (quotationLines.controls.length > 0) {
+			this.env
+				.showPrompt('Tất cả hàng hoá trong danh sách sẽ bị xoá khi bạn chọn nhà cung cấp khác. Bạn chắc chắn chứ? ', null, 'Thông báo')
+				.then(() => {
+					let DeletedLines = quotationLines
+						.getRawValue()
+						.filter((f) => f.Id)
+						.map((o) => o.Id);
+					this.formGroup.get('DeletedLines').setValue(DeletedLines);
+					this.formGroup.get('DeletedLines').markAsDirty();
+					quotationLines.clear();
+					this.item.OrderLines = [];
+					console.log(quotationLines);
+					console.log(this.item.OrderLines);
+					this.saveChange();
+					this._currentContentType = e.Code;
+					return;
+				})
+				.catch(() => {
+					this.formGroup.get('ContentType').setValue(this._currentContentType);
+				});
+		} else {
+			this._currentContentType = e.Code;
+			this.saveChange();
+		}
+	}
+
 	savedChange(savedItem = null, form = this.formGroup) {
 		super.savedChange(savedItem, form);
 		this.item = savedItem;
@@ -525,6 +550,47 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			this.calcTotalAfterTax();
 		}
 		this.saveChange();
+	}
+
+	_isOpenAddAllProductFromVendor = false;
+	formGroupQuantityProduct;
+	openAllProductFromVendorPopever() {
+		this.env
+			.showPrompt({
+				code: 'Bạn có muốn thêm tất cả sản phẩm từ nhà cung cấp {value} không?',
+				value: this._vendorDataSource.selected.find((d) => d.Id == this.formGroup.controls.IDBusinessPartner.value).Name,
+			})
+			.then((_) => {
+				this.formGroupQuantityProduct = this.formBuilder.group({
+					Quantity: ['', Validators.required],
+				});
+				this._isOpenAddAllProductFromVendor = true;
+			})
+			.catch((_) => {});
+	}
+	addAllProductFromVendor(check) {
+		if (check) {
+			let postDTO = {
+				Id: this.formGroup.controls.Id.value,
+				IDVendor: this.formGroup.controls.IDBusinessPartner.value,
+				QuantityRequired: this.formGroupQuantityProduct.controls.Quantity.value,
+				RequiredDate: this.formGroup.controls.RequiredDate.value,
+			};
+			this.env
+				.showLoading('Please wait for a few moments', this.pageProvider.commonService.connect('POST', 'PURCHASE/Quotation/AddAllProductFromVendor', postDTO).toPromise())
+				.then((rs) => {
+					if (rs) {
+						this.refresh();
+					} else {
+						this.env.showMessage('Failed', 'danger');
+					}
+				})
+				.catch((err) => {
+					console.log(err);
+					this.env.showMessage('Failed', 'danger');
+				});
+		}
+		this._isOpenAddAllProductFromVendor = false;
 	}
 
 	isOpenCopyPopover: boolean = false;
