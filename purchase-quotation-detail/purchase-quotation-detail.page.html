@@ -226,7 +226,7 @@
 									</ng-template>
 									<ng-template let-g="row" datatable-cell-template>
 										<ion-icon
-											*ngIf="g.controls.QuantityRequired.value != 0 && !g.controls.QuantityRequired.disabled"
+											*ngIf="g.controls.QuantityRequired.value != 0 && !g.controls.Quantity.disabled"
 											(click)="toggleQuantity(g)"
 											[color]="g.controls.Quantity.value == g.controls.QuantityRequired.value ? 'danger' : 'primary'"
 											class="min-btn"

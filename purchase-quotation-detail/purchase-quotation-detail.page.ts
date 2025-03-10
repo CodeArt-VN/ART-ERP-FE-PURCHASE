@@ -166,7 +166,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		let groups = <FormArray>this.formGroup.controls.QuotationLines;
 		groups.controls.forEach((group) => {
 			let g = <FormGroup>group;
-			if (g.disabled) this._isShowtoggleAllQuantity = false;
+			if (g.controls.Quantity.disabled) this._isShowtoggleAllQuantity = false;
 			return;
 		});
 		
