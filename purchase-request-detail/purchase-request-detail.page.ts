@@ -308,6 +308,86 @@ export class PurchaseRequestDetailPage extends PageBase {
 		this.segmentView = ev.detail.value;
 	}
 
+	onClickImport() {
+		this.importfile.nativeElement.value = '';
+		this.importfile.nativeElement.click();
+	}
+	async export() {
+		if (this.submitAttempt) return;
+		let queryDetail = {
+			IDPurchaseRequest: this.formGroup.get('Id').value,
+		}
+		this.submitAttempt = true;
+		this.env
+			.showLoading('Please wait for a few moments', this.purchaseRequestDetailProvider.export(queryDetail))
+			.then((response: any) => {
+				this.downloadURLContent(response);
+				this.submitAttempt = false;
+			})
+			.catch((err) => {
+				this.submitAttempt = false;
+			});
+	}
+	async import(event) {
+		if (this.submitAttempt) {
+			this.env.showMessage('erp.app.pages.sale.sale-order.message.importing', 'primary');
+			return;
+		}
+		this.submitAttempt = true;
+		this.env.publishEvent({
+			Code: 'app:ShowAppMessage',
+			IsShow: true,
+			Id: 'FileImport',
+			Icon: 'flash',
+			IsBlink: true,
+			Color: 'danger',
+			Message: 'đang import',
+		});
+		const formData: FormData = new FormData();
+		formData.append('fileKey', event.target.files[0], event.target.files[0].name);
+		this.env
+			.showLoading(
+				'Please wait for a few moments',
+				this.commonService.connect('UPLOAD', ApiSetting.apiDomain('PURCHASE/Request/ImportDetailFile/' + this.formGroup.get('Id').value), formData).toPromise()
+			)
+			.then((resp: any) => {
+				this.submitAttempt = false;
+				this.env.publishEvent({ Code: 'app:ShowAppMessage', IsShow: false, Id: 'FileImport' });
+				this.refresh();
+				if (resp.ErrorList && resp.ErrorList.length) {
+					let message = '';
+					for (let i = 0; i < resp.ErrorList.length && i <= 5; i++)
+						if (i == 5) message += '<br> Còn nữa...';
+						else {
+							const e = resp.ErrorList[i];
+							message += '<br> ' + e.Id + '. Tại dòng ' + e.Line + ': ' + e.Message;
+						}
+					this.env
+						.showPrompt(
+							{
+								code: 'Có {{value}} lỗi khi import: {{value1}}',
+								value: { value: resp.ErrorList.length, value1: message },
+							},
+							'Bạn có muốn xem lại các mục bị lỗi?',
+							'Có lỗi import dữ liệu'
+						)
+						.then((_) => {
+							this.downloadURLContent(resp.FileUrl);
+						})
+						.catch((e) => {});
+				} else {
+					this.env.showMessage('Import completed!', 'success');
+				}
+				// this.download(data);
+			})
+			.catch((err) => {
+				this.submitAttempt = false;
+				this.env.publishEvent({ Code: 'app:ShowAppMessage', IsShow: false, Id: 'FileImport' });
+				this.refresh();
+				this.env.showMessage('erp.app.pages.sale.sale-order.message.import-error', 'danger');
+			});
+	}
+
 	copyToPO() {
 		let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
 		let vendorList = [];
@@ -383,4 +463,5 @@ export class PurchaseRequestDetailPage extends PageBase {
 		this.copyPopover.event = e;
 		this.isOpenCopyPopover = !this.isOpenCopyPopover;
 	}
+	
 }

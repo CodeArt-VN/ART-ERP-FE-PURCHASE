@@ -67,7 +67,7 @@
 
 			<datatable-column class="col-qty" name="Quantity" property="Quantity">
 				<ng-template let-i="row" datatable-cell-template>
-					<span *ngIf="i.Quantity">{{i.Quantity | number: '1.0-0'}}</span>
+					<span *ngIf="i.QuantityRemainingOpen">{{i.QuantityRemainingOpen||0 | number: '1.0-0'}}</span>
 					<small *ngIf="i.UoMName ">{{i.UoMName}}</small>
 				</ng-template>
 			</datatable-column>
