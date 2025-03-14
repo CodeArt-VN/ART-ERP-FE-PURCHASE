@@ -7,14 +7,11 @@ import {
 	BRA_BranchProvider,
 	CRM_ContactProvider,
 	HRM_StaffProvider,
-	PURCHASE_QuotationProvider,
-	PURCHASE_RequestDetailProvider,
-	PURCHASE_RequestProvider,
+	PURCHASE_QuotationDetailProvider,
 	WMS_ItemProvider,
 } from 'src/app/services/static/services.service';
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
-import { lib } from 'src/app/services/static/global-functions';
 import { CopyFromPurchaseQuotationToPurchaseOrder } from '../copy-from-purchase-quotation-to-purchase-order-modal/copy-from-purchase-quotation-to-purchase-order-modal.page';
 import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
 import { PURCHASE_QuotationService } from '../purchase-quotation.service';
@@ -46,7 +43,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 
 	constructor(
 		public pageProvider: PURCHASE_QuotationService,
-		public purchaseRequestDetailProvider: PURCHASE_RequestDetailProvider,
+		public purchaseQuotationDetailProvider: PURCHASE_QuotationDetailProvider,
 		public contactProvider: CRM_ContactProvider,
 		public branchProvider: BRA_BranchProvider,
 		public itemProvider: WMS_ItemProvider,
@@ -84,7 +81,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			Remark: [''],
 			ForeignRemark: [''],
 			ContentType: ['Item', Validators.required],
-			Status: new FormControl({ value: 'Open', disabled: true }, Validators.required),
+			Status: new FormControl({ value: 'Draft', disabled: true }, Validators.required),
 			RequiredDate: ['', Validators.required],
 			ValidUntilDate: ['', Validators.required],
 
@@ -169,8 +166,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			if (g.controls.Quantity.disabled) this._isShowtoggleAllQuantity = false;
 			return;
 		});
-		
-		console.log('IDVendor: ',this.formGroup.controls.IDBusinessPartner.value)
+
+		console.log('IDVendor: ', this.formGroup.controls.IDBusinessPartner.value);
 	}
 
 	async saveChange() {
@@ -275,7 +272,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			RequiredDate: new FormControl({ value: line.RequiredDate, disabled: this.item?.SourceType != null }), //,Validators.required
 			Price: [line.Price, this.vendorView ? Validators.required : null],
 			UoMName: [line.UoMName],
-			IDVendor:[line.IDVendor || ''],
+			IDVendor: [line.IDVendor || ''],
 			Quantity: new FormControl(
 				line.Quantity,
 				this.item.ContentType === 'Item' && this.vendorView ? Validators.required : null // Conditional validator
@@ -633,5 +630,85 @@ export class PurchaseQuotationDetailPage extends PageBase {
 					});
 			}
 		}
+	}
+
+	onClickImport() {
+		this.importfile.nativeElement.value = '';
+		this.importfile.nativeElement.click();
+	}
+	async export() {
+		if (this.submitAttempt) return;
+		let queryDetail = {
+			IDPurchaseQuotation: this.formGroup.get('Id').value,
+		};
+		this.submitAttempt = true;
+		this.env
+			.showLoading('Please wait for a few moments', this.purchaseQuotationDetailProvider.export(queryDetail))
+			.then((response: any) => {
+				this.downloadURLContent(response);
+				this.submitAttempt = false;
+			})
+			.catch((err) => {
+				this.submitAttempt = false;
+			});
+	}
+	async import(event) {
+		if (this.submitAttempt) {
+			this.env.showMessage('erp.app.pages.sale.sale-order.message.importing', 'primary');
+			return;
+		}
+		this.submitAttempt = true;
+		this.env.publishEvent({
+			Code: 'app:ShowAppMessage',
+			IsShow: true,
+			Id: 'FileImport',
+			Icon: 'flash',
+			IsBlink: true,
+			Color: 'danger',
+			Message: 'đang import',
+		});
+		const formData: FormData = new FormData();
+		formData.append('fileKey', event.target.files[0], event.target.files[0].name);
+		this.env
+			.showLoading(
+				'Please wait for a few moments',
+				this.commonService.connect('UPLOAD', 'PURCHASE/Quotation/ImportDetailFile/' + this.formGroup.get('Id').value, formData).toPromise()
+			)
+			.then((resp: any) => {
+				this.submitAttempt = false;
+				this.env.publishEvent({ Code: 'app:ShowAppMessage', IsShow: false, Id: 'FileImport' });
+				this.refresh();
+				if (resp.ErrorList && resp.ErrorList.length) {
+					let message = '';
+					for (let i = 0; i < resp.ErrorList.length && i <= 5; i++)
+						if (i == 5) message += '<br> Còn nữa...';
+						else {
+							const e = resp.ErrorList[i];
+							message += '<br> ' + e.Id + '. Tại dòng ' + e.Line + ': ' + e.Message;
+						}
+					this.env
+						.showPrompt(
+							{
+								code: 'Có {{value}} lỗi khi import: {{value1}}',
+								value: { value: resp.ErrorList.length, value1: message },
+							},
+							'Bạn có muốn xem lại các mục bị lỗi?',
+							'Có lỗi import dữ liệu'
+						)
+						.then((_) => {
+							this.downloadURLContent(resp.FileUrl);
+						})
+						.catch((e) => {});
+				} else {
+					this.env.showMessage('Import completed!', 'success');
+				}
+				// this.download(data);
+			})
+			.catch((err) => {
+				this.submitAttempt = false;
+				this.env.publishEvent({ Code: 'app:ShowAppMessage', IsShow: false, Id: 'FileImport' });
+				this.refresh();
+				this.env.showMessage('erp.app.pages.sale.sale-order.message.import-error', 'danger');
+			});
 	}
 }

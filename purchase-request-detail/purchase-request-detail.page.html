@@ -105,11 +105,28 @@
 				<ion-segment scrollable="true" (ionChange)="segmentChanged($event)" [value]="segmentView">
 					<ion-segment-button value="s1">
 						<ion-label>{{'Product list' | translate}}</ion-label>
+			
 					</ion-segment-button>
 					<ion-segment-button value="s2">
 						<ion-label>{{'Other information' | translate}}</ion-label>
 					</ion-segment-button>
+				
 				</ion-segment>
+				<ion-buttons slot="end" *ngIf="segmentView=='s1'">
+
+					<ion-button class="ion-hide-sm-down" *ngIf="pageConfig.canExport" (click)="export()" title="{{'Export' | translate}}">
+						<ion-icon slot="icon-only" name="cloud-download-outline"></ion-icon>
+					</ion-button>
+					<ion-button
+						class="ion-hide-sm-down"
+						*ngIf="pageConfig.canImport && formGroup.get('Status').value == 'Draft'"
+						(click)="onClickImport()"
+						title="{{'Import' | translate}}"
+					>
+						<ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
+						<input class="hide-all" #importfile type="file" accept=".xlsx" (change)="import($event)" />
+					</ion-button>
+					</ion-buttons>
 			</ion-toolbar>
 			<div *ngIf="segmentView == 's1'">
 				<app-purchase-items
