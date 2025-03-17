@@ -3,7 +3,7 @@ import { NavController, LoadingController, AlertController, ModalController, Pop
 import { PageBase } from 'src/app/page-base';
 import { ActivatedRoute } from '@angular/router';
 import { EnvService } from 'src/app/services/core/env.service';
-import { BRA_BranchProvider, CRM_ContactProvider, HRM_StaffProvider, PURCHASE_RequestDetailProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
+import { BRA_BranchProvider, CRM_ContactProvider, HRM_StaffProvider, PURCHASE_RequestDetailProvider, SYS_ConfigProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
 import { lib } from 'src/app/services/static/global-functions';
@@ -37,6 +37,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 		public contactProvider: CRM_ContactProvider,
 		public branchProvider: BRA_BranchProvider,
 		public itemProvider: WMS_ItemProvider,
+		public sysConfigProvider: SYS_ConfigProvider,
 		public popoverCtrl: PopoverController,
 		public env: EnvService,
 		public navCtrl: NavController,
@@ -92,17 +93,26 @@ export class PurchaseRequestDetailPage extends PageBase {
 			{ Code: 'Service', Name: 'Service' },
 		];
 		this.branchList = [...this.env.branchList];
-
-		Promise.all([this.env.getStatus('PurchaseRequest'), this.contactProvider.read({ IsVendor: true, Take: 20 }), this.env.getStatus('PurchaseQuotationLine')]).then(
-			(values: any) => {
-				if (values[0]) this.statusList = values[0];
-				if (values[1] && values[1].data) {
-					this._vendorDataSource.selected.push(...values[1].data);
-				}
-				if (values[2]) this.statusLineList = values[2];
-				super.preLoadData(event);
+		let sysConfigQuery = ['PRUsedApprovalModule'];
+		Promise.all([
+			this.env.getStatus('PurchaseRequest'),
+			this.contactProvider.read({ IsVendor: true, Take: 20 }),
+			this.env.getStatus('PurchaseQuotationLine'),
+			this.sysConfigProvider.read({ Code_in: sysConfigQuery, IDBranch: this.env.selectedBranch }),
+		]).then((values: any) => {
+			if (values[0]) this.statusList = values[0];
+			if (values[1] && values[1].data) {
+				this._vendorDataSource.selected.push(...values[1].data);
 			}
-		);
+			if (values[2]) this.statusLineList = values[2];
+			values[3]['data'].forEach((e) => {
+				if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
+					e.Value = e._InheritedConfig.Value;
+				}
+				this.pageConfig[e.Code] = JSON.parse(e.Value);
+			});
+			super.preLoadData(event);
+		});
 	}
 
 	loadedData(event) {
@@ -111,6 +121,9 @@ export class PurchaseRequestDetailPage extends PageBase {
 		if (!this.item.Id) {
 			this.item.IDRequester = this.env.user.StaffID;
 			this.item._Requester = { Id: this.env.user.StaffID, FullName: this.env.user.FullName };
+		}
+		if (this.pageConfig['PRUsedApprovalModule']) {
+			this.pageConfig['canApprove'] = false;
 		}
 		super.loadedData(event);
 		if (this.item?._Vendor) {
@@ -316,7 +329,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 		if (this.submitAttempt) return;
 		let queryDetail = {
 			IDPurchaseRequest: this.formGroup.get('Id').value,
-		}
+		};
 		this.submitAttempt = true;
 		this.env
 			.showLoading('Please wait for a few moments', this.purchaseRequestDetailProvider.export(queryDetail))
@@ -463,5 +476,4 @@ export class PurchaseRequestDetailPage extends PageBase {
 		this.copyPopover.event = e;
 		this.isOpenCopyPopover = !this.isOpenCopyPopover;
 	}
-	
 }

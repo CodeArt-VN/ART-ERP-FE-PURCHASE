@@ -56,10 +56,11 @@ export class PurchaseRequestPage extends PageBase {
 			i._requestBranchName = this.env.branchList.find((d) => d.Id == i.IDRequestBranch)?.Name;
 			i._requesterName = i._Requester?.FullName;
 		});
-		super.loadedData(event);
 		if (this.pageConfig['PRUsedApprovalModule']) {
 			this.pageConfig['canApprove'] = false;
 		}
+		super.loadedData(event);
+	
 	}
 
 	sendRequestQuotationToVendor() {
