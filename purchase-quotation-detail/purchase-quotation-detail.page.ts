@@ -8,6 +8,7 @@ import {
 	CRM_ContactProvider,
 	HRM_StaffProvider,
 	PURCHASE_QuotationDetailProvider,
+	SYS_ConfigProvider,
 	WMS_ItemProvider,
 } from 'src/app/services/static/services.service';
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
@@ -48,6 +49,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		public branchProvider: BRA_BranchProvider,
 		public itemProvider: WMS_ItemProvider,
 		public popoverCtrl: PopoverController,
+		public sysConfigProvider: SYS_ConfigProvider,
 		public env: EnvService,
 		public navCtrl: NavController,
 		public route: ActivatedRoute,
@@ -108,13 +110,24 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			{ Code: 'Item', Name: 'Items' },
 			{ Code: 'Service', Name: 'Service' },
 		];
-		Promise.all([this.env.getStatus('PurchaseQuotation'), this.contactProvider.read({ IsVendor: true, Take: 20 }), this.env.getStatus('PurchaseQuotationLine')]).then(
+		let sysConfigQuery = ['PQUsedApprovalModule'];
+		Promise.all([this.env.getStatus('PurchaseQuotation'), 
+			this.contactProvider.read({ IsVendor: true, Take: 20 }), 
+			this.env.getStatus('PurchaseQuotationLine'),
+			this.sysConfigProvider.read({ Code_in: sysConfigQuery, IDBranch: this.env.selectedBranch })
+		]).then(
 			(values: any) => {
 				if (values[0]) this.statusList = values[0];
 				if (values[1] && values[1].data) {
 					this._vendorDataSource.selected.push(...values[1].data);
 				}
 				if (values[2]) this._statusLineList = values[2];
+				values[3]['data'].forEach((e) => {
+					if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
+						e.Value = e._InheritedConfig.Value;
+					}
+					this.pageConfig[e.Code] = JSON.parse(e.Value);
+				});
 				super.preLoadData(event);
 			}
 		);
@@ -125,6 +138,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		this.buildFormGroup();
 		if (!['Open', 'Draft', 'Unapproved'].includes(this.item.Status)) this.pageConfig.canEdit = false;
 		if (this.item.Status == 'Confirmed' && this.vendorView) this.pageConfig.canEdit = false;
+		if (this.pageConfig['PQUsedApprovalModule']) {
+			this.pageConfig['canApprove'] = false;
+		}
 		super.loadedData(event);
 		this.setQuotationLines();
 
@@ -166,8 +182,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			if (g.controls.Quantity.disabled) this._isShowtoggleAllQuantity = false;
 			return;
 		});
-
-		console.log('IDVendor: ', this.formGroup.controls.IDBusinessPartner.value);
+		
 	}
 
 	async saveChange() {

@@ -44,8 +44,15 @@ export class PurchaseQuotationPage extends PageBase {
 			this.sortToggle('Id', true);
 		}
 
-		Promise.all([this.env.getStatus('PurchaseQuotation')]).then((values) => {
+		let sysConfigQuery = ['PQUsedApprovalModule'];
+		Promise.all([this.env.getStatus('PurchaseQuotation'),this.sysConfigProvider.read({ Code_in: sysConfigQuery, IDBranch: this.env.selectedBranch })]).then((values) => {
 			this.statusList = values[0];
+			values[1]['data'].forEach((e) => {
+				if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
+					e.Value = e._InheritedConfig.Value;
+				}
+				this.pageConfig[e.Code] = JSON.parse(e.Value);
+			});
 			super.preLoadData(event);
 		});
 	}
@@ -55,7 +62,9 @@ export class PurchaseQuotationPage extends PageBase {
 			i._Status = this.statusList.find((d) => d.Code == i.Status);
 		});
 		super.loadedData(event);
-		console.log(this.items);
+		if (this.pageConfig['PQUsedApprovalModule']) {
+			this.pageConfig['canApprove'] = false;
+		}
 	}
 
 	updatePriceList() {
