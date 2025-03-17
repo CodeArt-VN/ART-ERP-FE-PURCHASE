@@ -8,7 +8,7 @@
 	||(pageConfig.canCopyToAPInvoice && pageConfig.ShowCopyToAPInvoice)"
 			>
 				<ion-button class="clickable" tollbarSelected title="{{'Copy' | translate}}" (click)="presentCopyPopover($event)">
-					<ion-icon name="copy-outline" color="success" slot="icon-only"></ion-icon>
+					<ion-icon name="copy-outline" color="primary" slot="icon-only"></ion-icon>
 				</ion-button>
 				<span class="split">|</span>
 			</ng-container>
@@ -22,32 +22,32 @@
 								[button]="true"
 								[detail]="false"
 								(click)="copyPopover.dismiss() ;copyToReceipt()"
-								title="{{'Goods receipt' | translate}}"
+								title="{{'Copy to goods receipt' | translate}}"
 							>
 								<ion-icon name="clipboard-list" color="success" slot="start"></ion-icon>
-								<ion-label> {{'Goods receipt' | translate}}</ion-label>
+								<ion-label> {{'Copy to goods receipt' | translate}}</ion-label>
 							</ion-item>
 
 							<ion-item
-								title="{{'Tạo hóa đơn' | translate}}"
+								title="{{'Copy to A/P invoice' | translate}}"
 								*ngIf="pageConfig.ShowCopyToAPInvoice&& pageConfig.canCopyToAPInvoice"
 								[button]="true"
 								[detail]="false"
 								(click)="copyPopover.dismiss() ;createInvoice()"
 							>
 								<ion-icon name="receipt-outline" color="success" slot="start"></ion-icon>
-								<ion-label>{{'Tạo hóa đơn' | translate}}</ion-label>
+								<ion-label>{{'Copy to A/P invoice' | translate}}</ion-label>
 							</ion-item>
 
 							<ion-item
-								title="{{'Create outgoing payment' | translate}}"
+								title="{{'Copy to outgoing payment' | translate}}"
 								*ngIf="pageConfig.ShowRequestOutgoingPayment&& pageConfig.canRequestOutgoingPayment"
 								[button]="true"
 								[detail]="false"
 								(click)="copyPopover.dismiss() ;presentPopover()"
 							>
 								<ion-icon name="money-check" color="success" slot="start"></ion-icon>
-								<ion-label>{{'Create outgoing payment' | translate}}</ion-label>
+								<ion-label>{{'Copy to outgoing payment' | translate}}</ion-label>
 							</ion-item>
 						</ion-list>
 					</ion-content>
