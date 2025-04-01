@@ -236,7 +236,7 @@
 									</ng-template>
 								</datatable-column>
 
-								<datatable-column class="col-icon" name="" property="value" *ngIf="_canEdit">
+								<datatable-column class="col-icon" name="" property="value" *ngIf="pageConfig.canEdit">
 									<ng-template let-idx="idx" datatable-cell-template>
 										<ion-icon color="danger" class="min-btn clickable" name="trash-outline" (click)="removeLine(idx)"></ion-icon>
 									</ng-template>
