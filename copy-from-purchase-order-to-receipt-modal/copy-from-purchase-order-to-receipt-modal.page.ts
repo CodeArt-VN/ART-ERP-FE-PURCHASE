@@ -166,6 +166,5 @@ export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 			.then((result: any) => {
 				this.modalController.dismiss(result);
 			})
-			.catch((err) => this.env.showMessage(err, 'danger'));
 	}
 }

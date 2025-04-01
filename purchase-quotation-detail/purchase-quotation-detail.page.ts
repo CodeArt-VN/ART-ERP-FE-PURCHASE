@@ -111,26 +111,25 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			{ Code: 'Service', Name: 'Service' },
 		];
 		let sysConfigQuery = ['PQUsedApprovalModule'];
-		Promise.all([this.env.getStatus('PurchaseQuotation'), 
-			this.contactProvider.read({ IsVendor: true, Take: 20 }), 
+		Promise.all([
+			this.env.getStatus('PurchaseQuotation'),
+			this.contactProvider.read({ IsVendor: true, Take: 20 }),
 			this.env.getStatus('PurchaseQuotationLine'),
-			this.sysConfigProvider.read({ Code_in: sysConfigQuery, IDBranch: this.env.selectedBranch })
-		]).then(
-			(values: any) => {
-				if (values[0]) this.statusList = values[0];
-				if (values[1] && values[1].data) {
-					this._vendorDataSource.selected.push(...values[1].data);
-				}
-				if (values[2]) this._statusLineList = values[2];
-				values[3]['data'].forEach((e) => {
-					if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
-						e.Value = e._InheritedConfig.Value;
-					}
-					this.pageConfig[e.Code] = JSON.parse(e.Value);
-				});
-				super.preLoadData(event);
+			this.sysConfigProvider.read({ Code_in: sysConfigQuery, IDBranch: this.env.selectedBranch }),
+		]).then((values: any) => {
+			if (values[0]) this.statusList = values[0];
+			if (values[1] && values[1].data) {
+				this._vendorDataSource.selected.push(...values[1].data);
 			}
-		);
+			if (values[2]) this._statusLineList = values[2];
+			values[3]['data'].forEach((e) => {
+				if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
+					e.Value = e._InheritedConfig.Value;
+				}
+				this.pageConfig[e.Code] = JSON.parse(e.Value);
+			});
+			super.preLoadData(event);
+		});
 	}
 
 	loadedData(event) {
@@ -182,7 +181,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			if (g.controls.Quantity.disabled) this._isShowtoggleAllQuantity = false;
 			return;
 		});
-		
 	}
 
 	async saveChange() {
@@ -368,20 +366,15 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	}
 
 	copyCopyToPurchaseOrder() {
-		this.pageProvider
-			.copyCopyToPurchaseOrder(this.item, CopyFromPurchaseQuotationToPurchaseOrder, this.modalController)
-			.then((data: any) => {
-				if (data) {
-					this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
-						this.nav('/purchase-order/' + data.Id);
-					});
-					this.env.publishEvent({ Code: this.pageConfig.pageName });
-					this.refresh();
-				}
-			})
-			.catch((err) => {
-				this.env.showMessage(err, 'danger');
-			});
+		this.pageProvider.copyCopyToPurchaseOrder(this.item, CopyFromPurchaseQuotationToPurchaseOrder, this.modalController).then((data: any) => {
+			if (data) {
+				this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
+					this.nav('/purchase-order/' + data.Id);
+				});
+				this.env.publishEvent({ Code: this.pageConfig.pageName });
+				this.refresh();
+			}
+		});
 	}
 	confirm() {
 		this.formGroup.updateValueAndValidity();
@@ -401,9 +394,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 						this.env.showMessage('Confirmed', 'success');
 						this.env.publishEvent({ Code: this.pageConfig.pageName });
 						this.refresh();
-					})
-					.catch((x) => {
-						//this.env.showMessage('Failed', 'danger');
 					});
 			});
 		}
@@ -418,9 +408,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				this.env.showMessage('Reopened', 'success');
 				this.env.publishEvent({ Code: this.pageConfig.pageName });
 				this.refresh();
-			})
-			.catch((x) => {
-				//this.env.showMessage('Failed', 'danger');
 			});
 	}
 	updatePriceList() {
@@ -596,10 +583,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 					} else {
 						this.env.showMessage('Failed', 'danger');
 					}
-				})
-				.catch((err) => {
-					console.log(err);
-					this.env.showMessage('Failed', 'danger');
 				});
 		}
 		this._isOpenAddAllProductFromVendor = false;
@@ -635,10 +618,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 							i.PriceListVersion = x;
 							this.currentShowingPriceListVersionItem = i.PriceListVersion;
 						}
-					})
-					.catch((err) => {
-						console.log(err);
-						this.env.showMessage(err, 'danger');
 					})
 					.finally(() => {
 						this.popoverSpinner = false;

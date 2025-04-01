@@ -103,16 +103,10 @@ export class PurchaseQuotationPage extends PageBase {
 								this.refresh();
 							}
 						})
-						.catch((err) => {
-							this.env.showMessage(err, 'danger');
-						})
 						.finally(() => {
 							this.submitAttempt = false;
 						});
 				}
-			})
-			.catch((err) => {
-				this.env.showMessage(err, 'danger');
 			})
 			.finally(() => {
 				this.submitAttempt = false;
@@ -213,11 +207,6 @@ export class PurchaseQuotationPage extends PageBase {
 						}
 					});
 			})
-			.catch((err) => {
-				console.log(err);
-				if (err.error?.Message) this.env.showMessage(err.error.Message, 'danger');
-				else this.env.showMessage('Cannot create PQ, please try again later', 'danger');
-			});
 	}
 
 	open() {
@@ -231,8 +220,5 @@ export class PurchaseQuotationPage extends PageBase {
 				this.env.publishEvent({ Code: this.pageConfig.pageName });
 				this.refresh();
 			})
-			.catch((x) => {
-				//this.env.showMessage('Failed', 'danger');
-			});
 	}
 }

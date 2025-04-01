@@ -3,7 +3,14 @@ import { NavController, LoadingController, AlertController, ModalController, Pop
 import { PageBase } from 'src/app/page-base';
 import { ActivatedRoute } from '@angular/router';
 import { EnvService } from 'src/app/services/core/env.service';
-import { BRA_BranchProvider, CRM_ContactProvider, HRM_StaffProvider, PURCHASE_RequestDetailProvider, SYS_ConfigProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
+import {
+	BRA_BranchProvider,
+	CRM_ContactProvider,
+	HRM_StaffProvider,
+	PURCHASE_RequestDetailProvider,
+	SYS_ConfigProvider,
+	WMS_ItemProvider,
+} from 'src/app/services/static/services.service';
 import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
 import { lib } from 'src/app/services/static/global-functions';
@@ -422,10 +429,6 @@ export class PurchaseRequestDetailPage extends PageBase {
 					this.refresh();
 					this.env.publishEvent({ Code: this.pageConfig.pageName });
 				}
-			})
-			.catch((err) => {
-				console.log(err);
-				this.env.showMessage('Cannot create PO, please try again later', 'danger');
 			});
 	}
 	sendRequestQuotationToVendor() {
@@ -440,10 +443,6 @@ export class PurchaseRequestDetailPage extends PageBase {
 						Code: this.pageConfig.pageName,
 					});
 				}
-			})
-			.catch((err) => {
-				console.log(err);
-				this.env.showMessage('Cannot create PQ, please try again later', 'danger');
 			});
 		// let vendorList = [];
 		// this.formGroup.get('OrderLines').value.forEach((o) => {

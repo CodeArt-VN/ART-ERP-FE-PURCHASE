@@ -162,9 +162,6 @@ export class PurchaseOrderPage extends PageBase {
 					});
 					console.log(rs);
 				})
-				.catch((err) => {
-					this.env.showMessage(err?.error?.Message ?? err, 'danger');
-				})
 				.finally(() => {
 					this.submitAttempt = false;
 				});
@@ -249,9 +246,6 @@ export class PurchaseOrderPage extends PageBase {
 						this.env.showMessage(err, 'danger');
 					});
 			})
-			.catch((err) => {
-				this.env.showMessage(err, 'danger');
-			});
 	}
 
 	async openPurchaseQuotationPopover(ev: any) {
@@ -342,10 +336,6 @@ export class PurchaseOrderPage extends PageBase {
 						this.env.publishEvent({ Code: this.pageConfig.pageName });
 					}
 				})
-				.catch((err) => {
-					console.log(err);
-					this.env.showMessage('Cannot create PO, please try again later', 'danger');
-				});
 		});
 	}
 
@@ -425,6 +415,5 @@ export class PurchaseOrderPage extends PageBase {
 					})
 					.catch((_) => {});
 			})
-			.catch((err) => this.env.showMessage(err));
 	}
 }
