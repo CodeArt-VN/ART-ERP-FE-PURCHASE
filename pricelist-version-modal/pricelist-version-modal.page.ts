@@ -50,7 +50,7 @@ export class PriceListVersionModalPage extends PageBase {
 			})
 			.catch((err) => {
 				this.loadedData();
-				this.env.showMessage(err, 'danger');
+				// this.env.showMessage(err, 'danger');
 			});
 	}
 
@@ -119,10 +119,6 @@ export class PriceListVersionModalPage extends PageBase {
 			.then((result: any) => {
 				this.modal.dismiss(result);
 			})
-			.catch((err) => {
-				console.log(err);
-				this.env.showMessage('Failed', 'danger');
-			});
 	}
 
 	selectItem(item: any) {
