@@ -175,8 +175,8 @@ export class PurchaseOrderDetailPage extends PageBase {
 			}
 		}
 
-		this.setOrderLines();
 		super.loadedData(event);
+		this.setOrderLines();
 		let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved', 'Paid'];
 		let notShowRequestOutgoingPayment = ['Draft', 'Submitted', 'Approved', 'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Canceled'];
 		if (
@@ -194,12 +194,23 @@ export class PurchaseOrderDetailPage extends PageBase {
 	}
 
 	setOrderLines() {
-		this.formGroup.controls.OrderLines = new FormArray([]);
+		let groups = this.formGroup.controls.OrderLines as FormArray;
+		groups.clear();
 		if (this.item.OrderLines?.length) {
 			this.item.OrderLines.forEach((i) => {
 				this.addLine(i);
 			});
 		}
+		if(!this.pageConfig.canEdit) {
+			this.formGroup.controls.OrderLines.disable();
+		}
+		if(this.pageConfig.canEditApprovedOrder && (this.item.Status == 'Approved' || this.item.Status == 'Ordered')) {
+			groups.controls.forEach(g=>{
+				g.get('QuantityAdjusted').enable();
+				g.get('Remark').enable();
+			})
+		}
+
 	}
 
 	addLine(line, markAsDirty = false) {
