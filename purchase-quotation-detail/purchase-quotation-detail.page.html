@@ -107,7 +107,6 @@
 					</ion-segment-button>
 				</ion-segment>
 				<ion-buttons slot="end" *ngIf="segmentView=='s1'">
-
 					<ion-button class="ion-hide-sm-down" *ngIf="pageConfig.canExport" (click)="export()" title="{{'Export' | translate}}">
 						<ion-icon slot="icon-only" name="cloud-download-outline"></ion-icon>
 					</ion-button>
@@ -120,7 +119,7 @@
 						<ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
 						<input class="hide-all" #importfile type="file" accept=".xlsx" (change)="import($event)" />
 					</ion-button>
-					</ion-buttons>
+				</ion-buttons>
 			</ion-toolbar>
 			<div *ngIf="segmentView == 's1'">
 				<form [formGroup]="formGroup">
@@ -137,7 +136,17 @@
 										</div>
 									</ng-template>
 								</datatable-empty-message>
-
+								<datatable-column [checkbox]="true" property="value" *ngIf="pageConfig.canEdit">
+									<ng-template datatable-header-template>
+										<input class="c-checkbox" type="checkbox" (change)="toggleSelectAll()" [checked]="isAllSelected" />
+									</ng-template>
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control
+											(change)="changeSelection(g)"
+											[field]="{ id: 'IsChecked', label: 'Checked', type: 'checkbox', form: g }"
+										></app-input-control>
+									</ng-template>
+								</datatable-column>
 								<datatable-column class="col-id" name="No." property="#"></datatable-column>
 
 								<datatable-column class="col-name item-name" name="Items" property="value">
@@ -297,6 +306,10 @@
 								</datatable-column>
 
 								<datatable-column class="col-icon" name="" property="value" *ngIf="pageConfig.canEdit">
+									<ng-template datatable-header-template>
+			
+										<ion-icon color="danger" class="min-btn clickable" title="{{ 'SELECTED_ITEMS' | translate: { COUNT: selectedOrderLines.controls?.length } }}" name="trash-outline" (click)="removeSelectedItems()"></ion-icon>
+									</ng-template>
 									<ng-template let-idx="idx" datatable-cell-template>
 										<ion-icon color="danger" class="min-btn clickable" name="trash-outline" (click)="removeLine(idx)"></ion-icon>
 									</ng-template>
