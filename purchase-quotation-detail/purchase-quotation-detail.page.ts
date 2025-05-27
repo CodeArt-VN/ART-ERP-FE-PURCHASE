@@ -134,6 +134,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 
 	loadedData(event) {
 		this.pageConfig.canEdit = this.checkingCanEdit;
+		this.isAllChecked = true;
 		this.buildFormGroup();
 		if (!['Open', 'Draft', 'Unapproved'].includes(this.item.Status)) this.pageConfig.canEdit = false;
 		if (this.item.Status == 'Confirmed' && this.vendorView) this.pageConfig.canEdit = false;
@@ -142,6 +143,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		}
 		super.loadedData(event);
 		this.setQuotationLines();
+		this.toggleSelectAll();
 
 		if (this.item.SourceType == 'FromPurchaseRequest') {
 			this.formGroup.controls.ContentType.disable();
@@ -261,7 +263,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	addLine(line, markAsDirty = false) {
 		let groups = <FormArray>this.formGroup.controls.QuotationLines;
 		let selectedItem = line._Item;
-		line.Status = line.Status || 'Draft';
+		line.Status = line.Status || 'Open';
 		let group = this.formBuilder.group({
 			_IDItemDataSource: this.buildSelectDataSource((term) => {
 				return this.itemProvider.search({
@@ -312,6 +314,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			CreatedDate: [line.CreatedDate],
 			DeletedLines: [],
 			_Status: [this._statusLineList.find((d) => d.Code == line.Status)],
+			_Vendors:[],
+			IsChecked:  [false],
+
 		});
 		groups.push(group);
 		if (selectedItem) group.get('_IDItemDataSource').value.selected.push(selectedItem);
@@ -324,7 +329,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
 
 	removeLine(index) {
 		let groups = <FormArray>this.formGroup.controls.QuotationLines;
-		if (groups.controls[index].get('Id').value) {
+		let group = groups.controls[index];
+		if (group.get('Id').value) {
 			this.env
 				.showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
 				.then((_) => {
@@ -332,10 +338,10 @@ export class PurchaseQuotationDetailPage extends PageBase {
 					Ids.push(groups.controls[index].get('Id').value);
 					// this.removeItem.emit(Ids);
 					if (Ids && Ids.length > 0) {
-						// this.formGroup.get('DeletedLines').setValue(Ids);
-						// this.formGroup.get('DeletedLines').markAsDirty();
-						this.item.DeletedLines = Ids;
-						this.pageProvider.save(this.item).then((s) => {
+						this.formGroup.get('DeletedLines').setValue(Ids);
+						this.formGroup.get('DeletedLines').markAsDirty();
+						//this.item.DeletedLines = Ids;
+						this.saveChange().then((_) => {
 							Ids.forEach((id) => {
 								let index = groups.controls.findIndex((x) => x.get('Id').value == id);
 								if (index >= 0) groups.removeAt(index);
@@ -462,23 +468,19 @@ export class PurchaseQuotationDetailPage extends PageBase {
 					} else {
 						priceBeforeTax = p.Price;
 					}
-					let baseUOM = UoMs.find((d) => d.IsBaseUoM);
-					if (baseUOM) {
-						group.controls.IDBaseUoM.setValue(baseUOM.Id);
-						group.controls.IDBaseUoM.markAsDirty();
-					}
-					group.controls.UoMPrice.setValue(priceBeforeTax);
-					group.controls.UoMPrice.markAsDirty();
+					//let baseUOM = UoMs.find((d) => d.IsBaseUoM);
+					
+					group.controls.Price.setValue(priceBeforeTax);
+					group.controls.Price.markAsDirty();
 
 					// this.submitData(group);
 					return;
 				}
 			}
 		} else {
-			group.controls.UoMPrice?.setValue(null);
-			group.controls.UoMPrice?.markAsDirty();
-			group.controls.IDBaseUoM?.setValue(null);
-			group.controls.IDBaseUoM?.markAsDirty();
+			group.controls.Price?.setValue(null);
+			group.controls.Price?.markAsDirty();
+	
 		}
 	}
 
@@ -705,4 +707,71 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				this.env.showMessage('erp.app.pages.sale.sale-order.message.import-error', 'danger');
 			});
 	}
+
+	changeSelection(i, e = null) {
+		if (i.get('IsChecked').value) {
+			this.selectedOrderLines.push(i);
+		} else {
+			let index = this.selectedOrderLines.getRawValue().findIndex((d) => d.Id == i.get('Id').value);
+			this.selectedOrderLines.removeAt(index);
+		}
+		i.get('IsChecked').markAsPristine();
+	}
+
+	isAllChecked = false;
+	selectedOrderLines = new FormArray([]);
+	toggleSelectAll() {
+		this.isAllChecked = !this.isAllChecked;
+		if (!this.pageConfig.canEdit) return;
+		let groups = <FormArray>this.formGroup.controls.QuotationLines;
+		if (!this.isAllChecked) {
+			this.selectedOrderLines = new FormArray([]);
+		}
+		groups.controls.forEach((i) => {
+			i.get('IsChecked').setValue(this.isAllChecked);
+			i.get('IsChecked').markAsPristine();
+
+			if (this.isAllChecked) this.selectedOrderLines.push(i);
+		});
+	}
+	removeSelectedItems() {
+		let groups = <FormArray>this.formGroup.controls.QuotationLines;
+		if(this.selectedOrderLines.controls.some(g=> g.get('Id').value)){
+			this.env
+				.showPrompt({ code: 'ACTION_DELETE_MESSAGE', value: { value: this.selectedOrderLines.length } }, null, {
+					code: 'ACTION_DELETE_MESSAGE',
+					value: { value: this.selectedOrderLines.length },
+				})
+				.then((_) => {
+					let Ids = this.selectedOrderLines.controls.map((fg) => fg.get('Id').value);
+					// this.removeItem.emit(Ids);
+					if (Ids && Ids.length > 0) {
+						this.formGroup.get('DeletedLines').setValue(Ids);
+						this.formGroup.get('DeletedLines').markAsDirty();
+						//this.item.DeletedLines = Ids;
+						this.saveChange().then((_) => {
+							Ids.forEach((id) => {
+								let index = groups.controls.findIndex((x) => x.get('Id').value == id);
+								if (index >= 0) groups.removeAt(index);
+							});
+						});
+					}
+					this.selectedOrderLines = new FormArray([]);
+
+				})
+				.catch((_) => {});
+		}
+		else if(this.selectedOrderLines.controls.length>0){
+			this.selectedOrderLines.controls.map((fg) => fg.get('Id').value).forEach((id) => {
+					let index = groups.controls.findIndex((x) => x.get('Id').value == id);
+					if (index >= 0) groups.removeAt(index);
+			});
+			this.selectedOrderLines = new FormArray([]);
+
+		}
+		else{
+			this.env.showMessage('Please select at least one item to remove', 'warning');
+		}
+	}
+
 }
