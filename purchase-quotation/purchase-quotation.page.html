@@ -51,7 +51,7 @@
 
 		<ion-popover #addNewPopover [isOpen]="isOpenAddNewPopover" (didDismiss)="isOpenAddNewPopover = false">
 			<ng-template>
-				<ion-content scroll-y="false">
+				<ion-content  appScrollbarTheme scroll-y="false" scroll-x="true">
 					<ion-list lines="none">
 						<ion-item [button]="true" [detail]="false" (click)="addNewPopover.dismiss() ;add() " title="{{'Add' | translate}}">
 							<!-- && selectedItems?.length  == 1 -->
@@ -86,7 +86,7 @@
 		</ion-button>
 	</app-toolbar>
 </ion-header>
-<ion-content appScrollbarTheme class="header-table">
+<ion-content appScrollbarTheme  scroll-x="true"class="header-table">
 	<app-page-title class="ion-padding safe-max-width" [pageConfig]="pageConfig"></app-page-title>
 
 	<div class="safe-max-width">

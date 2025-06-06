@@ -112,7 +112,7 @@
 					</ion-button>
 					<ion-button
 						class="ion-hide-sm-down"
-						*ngIf="pageConfig.canImport && formGroup.get('Status').value == 'Draft'"
+						*ngIf="pageConfig.canImport && ((pageConfig.canQuote && (item.Status == 'Open' || item.Status == 'Unapproved')) || pageConfig.canEdit)"
 						(click)="onClickImport()"
 						title="{{'Import' | translate}}"
 					>
