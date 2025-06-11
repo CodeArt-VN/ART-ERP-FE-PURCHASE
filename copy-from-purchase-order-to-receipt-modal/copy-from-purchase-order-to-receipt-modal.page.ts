@@ -65,7 +65,6 @@ export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 						this.item.IDWarehouse = JSON.parse(e.Value);
 					});
 				}
-			this.formGroup.get('IDWarehouse').setValue(this.item.IDWarehouse);
 			this.loadedData(event);
 		});
 		} else this.loadedData(event);
@@ -83,8 +82,8 @@ export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 		this.listIDASN = [...new Set(this.listIDASN)];
 		this._IDItemDataSource.selected = [...this.item._Items];
 		this._IDItemDataSource.initSearch();
-		console.log(this.item);
-		console.log(this.formArray);
+		this.formGroup.get('IDWarehouse').setValue(this.item.IDWarehouse);
+
 	}
 	changeWarehouse() {}
 	addRow(row: any) {
