@@ -93,7 +93,7 @@
 
 						<app-form-control
 							(change)="saveOrder()"
-							[field]="{branchConfig: {showingType: 'Warehouse', selectedBranch: this.env.selectedBranch}, id: 'IDBranch', label: 'Warehouse', type: 'ng-select-branch', dataSource: branchList, bindLabel: 'Name', bindValue: 'Id', placeholder: 'Search', form: formGroup}"
+							[field]="{branchConfig: {showingType: 'Warehouse', selectedBranch: this.env.selectedBranch}, id: 'IDWarehouse', label: 'Warehouse', type: 'ng-select-branch', dataSource: branchList, bindLabel: 'Name', bindValue: 'Id', placeholder: 'Search', form: formGroup}"
 						>
 						</app-form-control>
 					</ion-col>
@@ -289,14 +289,13 @@
 									</ion-list-header>
 								</ion-col>
 								<ion-col size="12" size-sm size-xl="4">
-									<div class="c-control">
-										<label class="c-label" for="Code">{{'PO Code (from Vendor)' | translate}}</label>
-										<input class="c-input" (change)="saveOrder();" id="Code" formControlName="Code" type="text" />
-									</div>
-									<div class="c-control">
-										<label class="c-label" for="Name">{{'Name' | translate}}</label>
-										<input class="c-input" (change)="saveOrder();" id="Name" formControlName="Name" type="text" />
-									</div>
+									<app-form-control
+										(change)="saveOrder();"
+										[field]="{ id: 'Code', type: 'text', label: 'PO Code (from Vendor)',form: formGroup }"
+									></app-form-control>
+
+									<app-form-control (change)="saveOrder();" [field]="{ id: 'Name', type: 'text', label: 'Name',form: formGroup }"></app-form-control>
+
 									<div class="c-control">
 										<label class="c-label" for="Status"
 											>{{'Status' | translate}}
@@ -315,12 +314,60 @@
 										[field]="{ id: 'PaymentStatus', type: 'ng-select', label: 'Payment status', dataSource: paymentStatusList, bindValue: 'Code', bindLabel: 'Name', form: formGroup }"
 									></app-form-control>
 
+									<!-- <app-form-control
+										*ngIf="formGroup.get('SourceType').value && formGroup.get('SourceKey').value "
+										[field]="{id: 'SourceKey', type: 'text',
+										label: formGroup.get('SourceType').value =='FromPurchaseRequest'?'Purchase request': 'Source'
+									, form: formGroup}"
+									>
+										<small label class="danger"
+											><ng-container *ngIf="formGroup.get('SourceType').value =='FromPurchaseRequest'">
+												<a
+													[ngClass]="{ 'no-check-dirty': noCheckDirty }"
+													class="clickable"
+													(click)="nav('/purchase-request/' + formGroup.get('SourceKey').value)"
+													(mousedown)="$event.stopPropagation()"
+													>#{{formGroup.get('SourceKey').value }} <ion-icon name="open-outline"></ion-icon
+												></a>
+											</ng-container>
+										</small>
+									</app-form-control> -->
+
+									<app-form-control [field]="{id: 'CreatedBy', type: 'text', label: 'Created by', form: formGroup }"></app-form-control>
+									<app-form-control [field]="{id: 'CreatedDate', type: 'span-datetime', label: 'Created date', form: formGroup }"></app-form-control>
+									<app-form-control [field]="{id: 'ModifiedBy', type: 'text', label: 'Last modified by', form: formGroup }"></app-form-control>
+									<app-form-control [field]="{id: 'ModifiedDate', type: 'span-datetime', label: 'Last modified date', form: formGroup }"></app-form-control>
+								</ion-col>
+								<ion-col size="12" size-sm size-xl="4">
+									<app-form-control
+										[field]="{id: 'IDBranch', type: 'branch-breadcrumbs', label: 'Branch', form: formGroup, dataSource: env.branchList }"
+									></app-form-control>
+
+									<app-form-control
+										(change)="saveOrder();"
+										[field]="{id: 'OrderDate', label: 'Order created date', type: 'datetime-local',form: formGroup}"
+										(change)="changeDate($event)"
+									>
+									</app-form-control>
+									<app-form-control
+										(change)="saveOrder();"
+										[field]="{id: 'ExpectedReceiptDate', label: 'Expected receipt date' , type: 'datetime-local',form: formGroup}"
+										(change)="changeDate($event)"
+									>
+									</app-form-control>
+									<app-form-control
+										(change)="saveOrder();"
+										[field]="{id: 'ReceiptedDate', label: 'Receipt date' , type: 'datetime-local',form: formGroup}"
+										(change)="changeDate($event)"
+									>
+									</app-form-control>
+
 									<app-form-control
 										*ngIf="formGroup.get('SourceType').value && formGroup.get('SourceKey').value "
 										[field]="{id: 'SourceKey', type : 'text', label: 
-                   item.SourceType == 'FromPurchaseRequest'?'Purchase request' : 
-                   item.SourceType =='FromPurchaseQuotation'?'Purchase quotation' : 'Source'
-                  , form : formGroup}"
+										item.SourceType == 'FromPurchaseRequest'?'Purchase request' : 
+										item.SourceType =='FromPurchaseQuotation'?'Purchase quotation' : 'Source'
+										, form : formGroup}"
 									>
 										<small label class="danger" *ngIf="formGroup.get('SourceType').value">
 											<a
@@ -335,48 +382,7 @@
 											></a>
 										</small>
 									</app-form-control>
-								</ion-col>
-								<ion-col size="12" size-sm size-xl="4">
-									<div class="c-control">
-										<label class="c-label" for="OrderDate"
-											>{{'Order created date' | translate}}
-											<span
-												*ngIf="!formGroup.controls.OrderDate.valid && !formGroup.controls.OrderDate.pending && (formGroup.controls.OrderDate.dirty || submitAttempt)"
-												ion-text
-												color="danger"
-												>(*)</span
-											>
-										</label>
-										<input class="c-input" (change)="saveOrder();" id="OrderDate" formControlName="OrderDate" type="datetime-local" />
-									</div>
-									<div class="c-control">
-										<label class="c-label" for="ExpectedReceiptDate"
-											>{{'Expected receipt date' | translate}}
-											<span
-												*ngIf="!formGroup.controls.ExpectedReceiptDate.valid && !formGroup.controls.ExpectedReceiptDate.pending && (formGroup.controls.ExpectedReceiptDate.dirty || submitAttempt)"
-												ion-text
-												color="danger"
-												>(*)</span
-											>
-										</label>
-										<input (change)="saveOrder();" formControlName="ExpectedReceiptDate" class="c-input" id="ExpectedReceiptDate" type="datetime-local" />
-									</div>
-									<div class="c-control">
-										<label class="c-label" for="ReceiptedDate"
-											>{{'Receipt date' | translate}}
-											<span
-												*ngIf="!formGroup.controls.ReceiptedDate.valid && !formGroup.controls.ReceiptedDate.pending && (formGroup.controls.ReceiptedDate.dirty || submitAttempt)"
-												ion-text
-												color="danger"
-												>(*)</span
-											>
-										</label>
-										<input (change)="saveOrder();" formControlName="ReceiptedDate" class="c-input" id="ReceiptedDate" type="datetime-local" />
-									</div>
-									<div class="c-control">
-										<label class="c-label">{{'Remark' | translate}}</label>
-										<textarea (change)="saveOrder();" class="c-input" id="Remark" formControlName="Remark" type="textarea"></textarea>
-									</div>
+									<app-form-control [field]="{id: 'Remark', type: 'textarea', label: 'Remark', form: formGroup }" (change)="saveChange()"></app-form-control>
 								</ion-col>
 							</ion-row>
 						</form>

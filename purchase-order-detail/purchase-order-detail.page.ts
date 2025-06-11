@@ -98,7 +98,8 @@ export class PurchaseOrderDetailPage extends PageBase {
 	}
 	buildFormGroup() {
 		this.formGroup = this.formBuilder.group({
-			IDBranch: new FormControl({ value: '', disabled: false }, Validators.required),
+			IDBranch:[this.env.selectedBranch],
+			IDWarehouse: [''] ,
 			IDStorer: new FormControl({ value: '', disabled: false }, Validators.required),
 			IDVendor: new FormControl({ value: '', disabled: false }, Validators.required),
 			Id: new FormControl({ value: '', disabled: true }),
@@ -119,6 +120,10 @@ export class PurchaseOrderDetailPage extends PageBase {
 			OrderLines: this.formBuilder.array([]),
 			TotalDiscount: new FormControl({ value: '', disabled: true }),
 			TotalAfterTax: new FormControl({ value: '', disabled: true }),
+			CreatedBy: new FormControl({ value: '', disabled: true }),
+			CreatedDate: new FormControl({ value: '', disabled: true }),
+			ModifiedBy: new FormControl({ value: '', disabled: true }),
+			ModifiedDate: new FormControl({ value: '', disabled: true }),
 		});
 	}
 	print() {
@@ -185,7 +190,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 		) {
 			this.pageConfig.ShowRequestOutgoingPayment = false;
 		}
-
+		if(!this.item?.Id) this.formGroup.controls.IDBranch.markAsDirty();
 		if (this.item?._Vendor) {
 			this._vendorDataSource.selected = [...this._vendorDataSource.selected, this.item?._Vendor];
 			this._currentBusinessPartner = this.item._Vendor;
@@ -680,7 +685,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 
 	ngOnDestroy() {
 		this.dismissPopover();
-		this.copyPopover.dismiss();
+		if(this.isOpenCopyPopover)this.isOpenCopyPopover = !this.isOpenCopyPopover;
 	}
 	isOpenCopyPopover = false;
 	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
