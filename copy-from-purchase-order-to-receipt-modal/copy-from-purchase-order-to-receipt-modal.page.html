@@ -2,6 +2,19 @@
 	<ion-toolbar>
 		<ion-title> {{'Copy to goods receipt'| translate}}</ion-title>
 		<ion-buttons slot="end">
+			<section class="table">
+				<div class="header-control col-name cell" style="min-width: 200px">
+					<span  style="min-width: 100px">{{'Warehouse' | translate}} &nbsp;</span>
+					<app-input-control
+						style="min-width: 200px"
+						(change)="changeWarehouse()"
+						[field]="{branchConfig: {showingType: 'Warehouse', selectedBranch: this.env.selectedBranch}, id: 'IDWarehouse', label: 'Warehouse', type: 'ng-select-branch', dataSource: branchList, bindLabel: 'Name', bindValue: 'Id', placeholder: 'Search', form: formGroup}"
+					>
+					</app-input-control>
+				</div>
+			</section>
+		</ion-buttons>
+		<ion-buttons slot="end">
 			<ion-button (click)="closeModal()">
 				<ion-icon name="close"></ion-icon>
 			</ion-button>

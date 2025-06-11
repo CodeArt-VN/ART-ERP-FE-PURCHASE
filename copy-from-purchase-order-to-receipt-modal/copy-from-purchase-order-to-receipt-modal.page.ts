@@ -3,7 +3,7 @@ import { NavController, ModalController, NavParams, LoadingController, AlertCont
 import { PageBase } from 'src/app/page-base';
 import { ActivatedRoute } from '@angular/router';
 import { EnvService } from 'src/app/services/core/env.service';
-import { PURCHASE_OrderProvider, SALE_OrderProvider, WMS_ItemProvider, WMS_ReceiptProvider } from 'src/app/services/static/services.service';
+import { PURCHASE_OrderProvider, SALE_OrderProvider, SYS_ConfigProvider, WMS_ItemProvider, WMS_ReceiptProvider } from 'src/app/services/static/services.service';
 import { FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { lib } from 'src/app/services/static/global-functions';
 
@@ -18,6 +18,7 @@ export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 		this.item = { ...value };
 	}
 	formArray;
+	branchList;
 	showButtonSave = false;
 	listIDASN = [];
 	_IDItemDataSource = this.buildSelectDataSource((term) => {
@@ -35,6 +36,7 @@ export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 		public env: EnvService,
 		public navCtrl: NavController,
 		public route: ActivatedRoute,
+		public sysConfigProvider: SYS_ConfigProvider,
 
 		public modalController: ModalController,
 		public alertCtrl: AlertController,
@@ -44,11 +46,29 @@ export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 		public loadingController: LoadingController
 	) {
 		super();
+		this.formGroup = this.formBuilder.group({
+			IDWarehouse: [this.item?.IDWarehouse, Validators.required],
+		});
 		this.formArray = this.formBuilder.array([]);
 	}
 
 	preLoadData(event) {
-		this.loadedData(event);
+		this.branchList = [...this.env.branchList];
+		if (!this.item.IDWarehouse) {
+			let sysConfigQuery = ['IDWarehouse'];
+			this.sysConfigProvider.read({ Code_in: sysConfigQuery, IDBranch: this.env.selectedBranch }).then((res: any) => {
+				if (res && res['data']) {
+					res['data'].forEach((e) => {
+						if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
+							e.Value = e._InheritedConfig.Value;
+						}
+						this.item.IDWarehouse = JSON.parse(e.Value);
+					});
+				}
+			this.formGroup.get('IDWarehouse').setValue(this.item.IDWarehouse);
+			this.loadedData(event);
+		});
+		} else this.loadedData(event);
 	}
 
 	loadedData(event) {
@@ -66,7 +86,7 @@ export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 		console.log(this.item);
 		console.log(this.formArray);
 	}
-
+	changeWarehouse() {}
 	addRow(row: any) {
 		let selectedItem = this.item._Items.find((d) => d.Id == row.IDItem);
 		let _qtyReceipted = row._Receipts.reduce((accumulator, receipt) => {
@@ -125,6 +145,10 @@ export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 	}
 
 	submitForm() {
+		if (!this.formGroup.valid) {
+			this.env.showMessage('Please fill in all required fields.', 'danger');
+			return;
+		}
 		let OrderLines = this.formArray
 			.getRawValue()
 			.filter((d) => d.QuantityImport > 0)
@@ -152,7 +176,8 @@ export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 			expectedReceiptDatethis = orderDate.toISOString();
 		}
 		let data = {
-			IDBranch: this.item.IDBranch,
+			//IDBranch: this.item.IDBranch,
+			IDBranch: this.formGroup.get('IDWarehouse').value,
 			IDVendor: this.item._Vendor.Id,
 			IDStorer: this.item._Storer.Id,
 			IDPurchaseOrder: this.item.Id,
@@ -161,10 +186,8 @@ export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 			POCode: this.item.Code,
 			Lines: OrderLines,
 		};
-		this.env
-			.showLoading('Please wait for a few moments', this.receiptProvider.commonService.connect('POST', 'WMS/Receipt', data).toPromise())
-			.then((result: any) => {
-				this.modalController.dismiss(result);
-			})
+		this.env.showLoading('Please wait for a few moments', this.receiptProvider.commonService.connect('POST', 'WMS/Receipt', data).toPromise()).then((result: any) => {
+			this.modalController.dismiss(result);
+		});
 	}
 }
