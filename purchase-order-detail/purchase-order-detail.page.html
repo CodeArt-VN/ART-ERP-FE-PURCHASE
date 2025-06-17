@@ -93,7 +93,7 @@
 
 						<app-form-control
 							(change)="saveOrder()"
-							[field]="{branchConfig: {showingType: 'Warehouse', selectedBranch: this.env.selectedBranch}, id: 'IDWarehouse', label: 'Warehouse', type: 'ng-select-branch', dataSource: branchList, bindLabel: 'Name', bindValue: 'Id', placeholder: 'Search', form: formGroup}"
+							[field]="{branchConfig: {showingType: 'Warehouse', showingMode:'showAll'}, id: 'IDWarehouse', label: 'Warehouse', type: 'ng-select-branch', dataSource: branchList, bindLabel: 'Name', bindValue: 'Id', placeholder: 'Search', form: formGroup}"
 						>
 						</app-form-control>
 					</ion-col>
