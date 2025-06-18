@@ -1,43 +1,54 @@
 <ion-header>
 	<app-toolbar [page]="this">
-		<ion-button
-			tollbarSelected
-			title="{{'Copy' | translate}}"
-			(click)="presentCopyPopover($event)"
-			*ngIf="
+		<ng-container tollbarSelected>
+			<ion-button
+				title="{{'Copy' | translate}}"
+				(click)="presentCopyPopover($event)"
+				*ngIf="
 			(pageConfig.canCopyToPriceListVersion && pageConfig.ShowCopyToPriceListVersion) 
 			||(pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder)"
-		>
-			<ion-icon slot="icon-only" name="copy-outline"></ion-icon>
-		</ion-button>
-		<ion-popover #copyPopover [isOpen]="isOpenCopyPopover" (didDismiss)="isOpenCopyPopover = false" [dismissOnSelect]="true">
-			<ng-template>
-				<ion-content scroll-y="false">
-					<ion-list lines="none">
-						<ion-item
-							title="{{'Copy to price list' | translate}}"
-							*ngIf="pageConfig.canCopyToPriceListVersion && pageConfig.ShowCopyToPriceListVersion"
-							[button]="true"
-							[detail]="false"
-							(click)="updatePriceList()"
-						>
-							<ion-icon slot="start" name="pricetags-outline"></ion-icon>
-							<ion-label> {{'Copy to price list' | translate}}</ion-label>
-						</ion-item>
-						<ion-item
-							title="{{'Copy to purchase order' | translate}}"
-							*ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder && selectedItems?.length ==1"
-							[button]="true"
-							[detail]="false"
-							(click)="copyCopyToPurchaseOrder()"
-						>
-							<ion-icon slot="start" name="clipboard-list"></ion-icon>
-							<ion-label>{{'Copy to purchase order' | translate}}</ion-label>
-						</ion-item>
-					</ion-list>
-				</ion-content>
-			</ng-template>
-		</ion-popover>
+			>
+				<ion-icon slot="icon-only" name="copy-outline"></ion-icon>
+			</ion-button>
+			<ion-popover #copyPopover [isOpen]="isOpenCopyPopover" (didDismiss)="isOpenCopyPopover = false" [dismissOnSelect]="true">
+				<ng-template>
+					<ion-content scroll-y="false">
+						<ion-list lines="none">
+							<ion-item
+								title="{{'Copy to price list' | translate}}"
+								*ngIf="pageConfig.canCopyToPriceListVersion && pageConfig.ShowCopyToPriceListVersion"
+								[button]="true"
+								[detail]="false"
+								(click)="updatePriceList()"
+							>
+								<ion-icon slot="start" name="pricetags-outline"></ion-icon>
+								<ion-label> {{'Copy to price list' | translate}}</ion-label>
+							</ion-item>
+							<ion-item
+								title="{{'Copy to purchase order' | translate}}"
+								*ngIf="pageConfig.canCopyToPurchaseOrder && pageConfig.ShowCopyToPurchaseOrder && selectedItems?.length ==1"
+								[button]="true"
+								[detail]="false"
+								(click)="copyCopyToPurchaseOrder()"
+							>
+								<ion-icon slot="start" name="clipboard-list"></ion-icon>
+								<ion-label>{{'Copy to purchase order' | translate}}</ion-label>
+							</ion-item>
+						</ion-list>
+					</ion-content>
+				</ng-template>
+			</ion-popover>
+			<ion-button
+				tollbarSelected
+				class="clickable"
+				title="{{'Send quotation request' | translate}}"
+				(click)="open()"
+				*ngIf="
+	(pageConfig.canSendQuotationRequest && pageConfig.ShowSendQuotationRequest) "
+			>
+				<ion-icon slot="icon-only" name="lock-open"></ion-icon>
+			</ion-button>
+		</ng-container>
 
 		<ion-button
 			class="clickable"
@@ -51,7 +62,7 @@
 
 		<ion-popover #addNewPopover [isOpen]="isOpenAddNewPopover" (didDismiss)="isOpenAddNewPopover = false">
 			<ng-template>
-				<ion-content  appScrollbarTheme scroll-y="false" scroll-x="true">
+				<ion-content appScrollbarTheme scroll-y="false" scroll-x="true">
 					<ion-list lines="none">
 						<ion-item [button]="true" [detail]="false" (click)="addNewPopover.dismiss() ;add() " title="{{'Add' | translate}}">
 							<!-- && selectedItems?.length  == 1 -->
@@ -73,20 +84,9 @@
 				</ion-content>
 			</ng-template>
 		</ion-popover>
-
-		<ion-button
-			tollbarSelected
-			class="clickable"
-			title="{{'Send quotation request' | translate}}"
-			(click)="open()"
-			*ngIf="
-	(pageConfig.canSendQuotationRequest && pageConfig.ShowSendQuotationRequest) "
-		>
-			<ion-icon slot="icon-only" name="lock-open"></ion-icon>
-		</ion-button>
 	</app-toolbar>
 </ion-header>
-<ion-content appScrollbarTheme  scroll-x="true"class="header-table">
+<ion-content appScrollbarTheme scroll-x="true" class="header-table">
 	<app-page-title class="ion-padding safe-max-width" [pageConfig]="pageConfig"></app-page-title>
 
 	<div class="safe-max-width">
