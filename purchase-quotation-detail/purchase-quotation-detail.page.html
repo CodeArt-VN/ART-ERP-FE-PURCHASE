@@ -229,6 +229,12 @@
 										<app-input-control (change)="saveChange()" [field]="{ id: 'QuantityRequired', type: 'number', form: g }"></app-input-control>
 									</ng-template>
 								</datatable-column>
+								
+								<datatable-column class="col-number" name="Minimum order Qty" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control (change)="saveChange()" [field]="{ id: 'MinimumOrderQty', type: 'number', form: g }"></app-input-control>
+									</ng-template>
+								</datatable-column>
 
 								<datatable-column class="col-number" name="Remaining open" property="value" *ngIf="!vendorView">
 									<ng-template let-g="row" datatable-cell-template>
