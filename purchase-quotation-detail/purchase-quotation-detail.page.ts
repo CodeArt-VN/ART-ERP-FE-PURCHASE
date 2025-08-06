@@ -16,6 +16,7 @@ import { CommonService } from 'src/app/services/core/common.service';
 import { CopyFromPurchaseQuotationToPurchaseOrder } from '../copy-from-purchase-quotation-to-purchase-order-modal/copy-from-purchase-quotation-to-purchase-order-modal.page';
 import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
 import { PURCHASE_QuotationService } from '../purchase-quotation.service';
+import { ItemPlanningDataModalPage } from '../item-planning-data-modal/item-planning-data-modal.page';
 
 @Component({
 	selector: 'app-purchase-quotation-detail',
@@ -420,6 +421,11 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	updatePriceList() {
 		this.pageProvider.updatePriceList([this.item.Id], PriceListVersionModalPage, this.modalController, this.env);
 	}
+
+	updateMinimumOrderQty() {
+		this.pageProvider.updateItemPlanningData([this.item.Id], ItemPlanningDataModalPage, this.modalController, this.env);
+	}
+
 	IDItemChange(e, group) {
 		if (e) {
 			if (e.PurchaseTaxInPercent != -99) {
