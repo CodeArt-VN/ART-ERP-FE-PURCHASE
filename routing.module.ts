@@ -11,6 +11,9 @@ export const PURCHASERoutes: Routes = [
     { path: 'purchase-order/:id', loadChildren: () => import('./purchase-order-detail/purchase-order-detail.module').then(m => m.PurchaseOrderDetailPageModule), canActivate: [AuthGuard] },
     { path: 'purchase-order-note', loadChildren: () => import('./purchase-order-note/purchase-order-note.module').then(m => m.PurchaseOrderNotePageModule), canActivate: [AuthGuard] },
     { path: 'purchase-order-note/:id', loadChildren: () => import('./purchase-order-note/purchase-order-note.module').then(m => m.PurchaseOrderNotePageModule), canActivate: [AuthGuard] },
+    
+    { path: 'item-planning-data', loadChildren: () => import('./item-planning-data/item-planning-data.module').then(m => m.ItemPlanningDataPageModule), canActivate: [AuthGuard]},
+    { path: 'item-planning-data/:id', loadChildren: () => import('./item-planning-data-detail/item-planning-data-detail.module').then(m => m.ItemPlanningDataDetailPageModule), canActivate: [AuthGuard]},
   
 ];
 ``
