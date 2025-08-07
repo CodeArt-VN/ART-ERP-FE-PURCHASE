@@ -1,0 +1,61 @@
+<ion-header>
+	<app-toolbar [page]="this"> </app-toolbar>
+</ion-header>
+
+<ion-content appScrollbarTheme class="header-table">
+	<div class="table-contain">
+		<app-data-table
+			class="box-shadow responsive"
+			[rows]="items"
+			[trackBy]="'Id'"
+			[(selectedRows)]="selectedItems"
+			[showSpinner]="pageConfig.showSpinner"
+			[showFilter]="pageConfig.isShowSearch"
+			[(query)]="query"
+			(dataInfinite)="loadData($event)"
+			(filter)="onDatatableFilter($event)"
+			(sort)="onSort($event)"
+			(selectedRowsChange)="showCommandBySelectedRows($event)"
+		>
+			<datatable-empty-message subMessage="Please click add new to start..." [showImg]="false" minHeight="125px">
+				<ng-template datatable-empty-message-template>
+					<ion-button (click)="addPlanningVendor()" size="small" fill="outline" *ngIf="pageConfig.canEdit">
+						<ion-icon slot="start" name="add-outline"></ion-icon>
+						{{ 'Add planning vendor' | translate }}
+					</ion-button>
+				</ng-template>
+			</datatable-empty-message>
+			<datatable-column [checkbox]="true" name=""></datatable-column>
+			<datatable-column class="col-id" name="Id" property="Id" [navLink]="pageConfig.pageName">
+				<ng-template let-i="row" datatable-cell-template>
+					<span (click)="showPlanningVendorModal(i)">{{i?.Id}}</span>
+				</ng-template>
+			</datatable-column>
+			<datatable-column class="col-id" name="IDVendor" property="IDVendor" [navLink]="pageConfig.pageName"></datatable-column>
+			<datatable-column class="col-name flex-break" name="Vendor name" property="Id">
+				<ng-template let-i="row" datatable-cell-template>
+					<div *ngIf="i?._Vendor">{{i._Vendor.Name}}</div>
+				</ng-template>
+			</datatable-column>
+			<datatable-column class="col-code" name="Order interval" property="OrderInterval"></datatable-column>
+			<datatable-column class="col-code" name="Order multiple" property="OrderMultiple"></datatable-column>
+			<datatable-column class="col-code" name="Order multiple" property="OrderMultiple"></datatable-column>
+			<datatable-column class="col-code" name="MOQ" property="MinimumOrderQty"></datatable-column>
+			<datatable-column class="col-code" name="Lead time" property="LeadTime"></datatable-column>
+			<datatable-column class="col-code" name="Tolerance days" property="ToleranceDays"></datatable-column>
+			<datatable-column class="col-name" name="Branch" property="IDBranch"></datatable-column>
+			<ng-template let-i="row" datatable-cell-template>
+				<app-branch-breadcrumbs
+					[maxItems]="3"
+					[itemsBeforeCollapse]="0"
+					[itemsAfterCollapse]="2"
+					[Id]="i.IDBranch"
+					[Items]="env.branchList"
+					[ngClass]="{'no-check-dirty': noCheckDirty}"
+					class="c-input disable breadcrumbs"
+				>
+				</app-branch-breadcrumbs>
+			</ng-template>
+		</app-data-table>
+	</div>
+</ion-content>
