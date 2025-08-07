@@ -12,6 +12,7 @@ import { CopyFromPurchaseQuotationToPurchaseOrder } from '../copy-from-purchase-
 import { PURCHASE_RequestService } from '../purchase-request.service';
 import { PurchaseQuotationModalPage } from '../purchase-request-detail/purchase-quotation-modal/purchase-quotation-modal.page';
 import { SearchAsyncPopoverPage } from '../search-async-popover/search-async-popover.page';
+import { ItemPlanningDataModalPage } from '../item-planning-data-modal/item-planning-data-modal.page';
 @Component({
 	selector: 'app-purchase-quotation',
 	templateUrl: 'purchase-quotation.page.html',
@@ -74,6 +75,25 @@ export class PurchaseQuotationPage extends PageBase {
 			.updatePriceList(
 				this.selectedItems.map((d) => d.Id),
 				PriceListVersionModalPage,
+				this.modalController,
+				this.env
+			)
+			.then(() => {
+				this.submitAttempt = false;
+			})
+			.catch((err) => {
+				this.submitAttempt = false;
+			});
+	}
+
+	
+	updateMinimumOrderQty() {
+		if (this.submitAttempt) return;
+		this.submitAttempt = true;
+		this.pageProvider
+			.updateItemPlanningData(
+				this.selectedItems.map((d) => d.Id),
+				ItemPlanningDataModalPage,
 				this.modalController,
 				this.env
 			)

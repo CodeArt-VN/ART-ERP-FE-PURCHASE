@@ -16,6 +16,7 @@ import { CommonService } from 'src/app/services/core/common.service';
 import { CopyFromPurchaseQuotationToPurchaseOrder } from '../copy-from-purchase-quotation-to-purchase-order-modal/copy-from-purchase-quotation-to-purchase-order-modal.page';
 import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
 import { PURCHASE_QuotationService } from '../purchase-quotation.service';
+import { ItemPlanningDataModalPage } from '../item-planning-data-modal/item-planning-data-modal.page';
 
 @Component({
 	selector: 'app-purchase-quotation-detail',
@@ -169,6 +170,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		if (['Open', 'Unapproved'].includes(this.item.Status) && this.pageConfig.canQuote && !this.pageConfig.canEdit) {
 			let groups = this.formGroup.controls.QuotationLines as FormArray;
 			groups.controls.forEach((c) => {
+				c.get('MinimumOrderQty').enable();
 				c.get('Price').enable();
 				c.get('Quantity').enable();
 				c.get('TotalDiscount').enable();
@@ -292,6 +294,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				line.Quantity,
 				this.item.ContentType === 'Item' && this.vendorView ? Validators.required : null // Conditional validator
 			),
+			MinimumOrderQty: [line.MinimumOrderQty ?? 0],
 			QuantityRemainingOpen: new FormControl({ value: line.QuantityRemainingOpen, disabled: true }),
 			QuantityRequired: new FormControl({ value: line.QuantityRequired, disabled: this.item?.SourceType != null }, Validators.required),
 			UoMSwap: [line.UoMSwap],
@@ -314,9 +317,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			CreatedDate: [line.CreatedDate],
 			DeletedLines: [],
 			_Status: [this._statusLineList.find((d) => d.Code == line.Status)],
-			_Vendors:[],
-			IsChecked:  [false],
-
+			_Vendors: [],
+			IsChecked: [false],
 		});
 		groups.push(group);
 		if (selectedItem) group.get('_IDItemDataSource').value.selected.push(selectedItem);
@@ -419,6 +421,11 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	updatePriceList() {
 		this.pageProvider.updatePriceList([this.item.Id], PriceListVersionModalPage, this.modalController, this.env);
 	}
+
+	updateMinimumOrderQty() {
+		this.pageProvider.updateItemPlanningData([this.item.Id], ItemPlanningDataModalPage, this.modalController, this.env);
+	}
+
 	IDItemChange(e, group) {
 		if (e) {
 			if (e.PurchaseTaxInPercent != -99) {
@@ -469,7 +476,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 						priceBeforeTax = p.Price;
 					}
 					//let baseUOM = UoMs.find((d) => d.IsBaseUoM);
-					
+
 					group.controls.Price.setValue(priceBeforeTax);
 					group.controls.Price.markAsDirty();
 
@@ -480,7 +487,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		} else {
 			group.controls.Price?.setValue(null);
 			group.controls.Price?.markAsDirty();
-	
 		}
 	}
 
@@ -736,7 +742,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	}
 	removeSelectedItems() {
 		let groups = <FormArray>this.formGroup.controls.QuotationLines;
-		if(this.selectedOrderLines.controls.some(g=> g.get('Id').value)){
+		if (this.selectedOrderLines.controls.some((g) => g.get('Id').value)) {
 			this.env
 				.showPrompt({ code: 'ACTION_DELETE_MESSAGE', value: { value: this.selectedOrderLines.length } }, null, {
 					code: 'ACTION_DELETE_MESSAGE',
@@ -757,21 +763,18 @@ export class PurchaseQuotationDetailPage extends PageBase {
 						});
 					}
 					this.selectedOrderLines = new FormArray([]);
-
 				})
 				.catch((_) => {});
-		}
-		else if(this.selectedOrderLines.controls.length>0){
-			this.selectedOrderLines.controls.map((fg) => fg.get('Id').value).forEach((id) => {
+		} else if (this.selectedOrderLines.controls.length > 0) {
+			this.selectedOrderLines.controls
+				.map((fg) => fg.get('Id').value)
+				.forEach((id) => {
 					let index = groups.controls.findIndex((x) => x.get('Id').value == id);
 					if (index >= 0) groups.removeAt(index);
-			});
+				});
 			this.selectedOrderLines = new FormArray([]);
-
-		}
-		else{
+		} else {
 			this.env.showMessage('Please select at least one item to remove', 'warning');
 		}
 	}
-
 }

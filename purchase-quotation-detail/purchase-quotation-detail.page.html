@@ -40,6 +40,17 @@
 							<ion-icon slot="start" name="clipboard-list"></ion-icon>
 							<ion-label>{{'Copy to purchase order' | translate}}</ion-label>
 						</ion-item>
+							<!-- *ngIf="pageConfig.canCopyToPriceListVersion && pageConfig.ShowCopyToPriceListVersion" -->
+
+						<ion-item
+							title="{{'Copy to item planning data' | translate}}"
+							[button]="true"
+							[detail]="false"
+							(click)="updateMinimumOrderQty()"
+						>
+							<ion-icon slot="start" name="clipboard-list"></ion-icon>
+							<ion-label> {{'Copy to item planning data' | translate}}</ion-label>
+						</ion-item>
 					</ion-list>
 				</ion-content>
 			</ng-template>
@@ -227,6 +238,12 @@
 								<datatable-column class="col-number" name="Required Qty" property="value">
 									<ng-template let-g="row" datatable-cell-template>
 										<app-input-control (change)="saveChange()" [field]="{ id: 'QuantityRequired', type: 'number', form: g }"></app-input-control>
+									</ng-template>
+								</datatable-column>
+								
+								<datatable-column class="col-number" name="Minimum order Qty" property="value">
+									<ng-template let-g="row" datatable-cell-template>
+										<app-input-control (change)="saveChange()" [field]="{ id: 'MinimumOrderQty', type: 'number', form: g }"></app-input-control>
 									</ng-template>
 								</datatable-column>
 
