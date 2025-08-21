@@ -92,8 +92,8 @@ export class PurchaseItemsComponent extends PageBase {
 		line.Status = line.Status ?? 'Open';
 		let group = this.formBuilder.group({
 			_IDItemDataSource: this.buildSelectDataSource((term) => {
-				return this.itemProvider.search({
-					IsVendorSearch: this._IDVendor ? true : false,
+				return this.pageProvider.commonService.connect('GET', 'PURCHASE/Request/ItemSearch/',{
+					// IsVendorSearch: this._IDVendor ? true : false,
 					IDVendor: this._IDVendor,
 					IDPO: line.IDOrder,
 					SortBy: ['Id_desc'],

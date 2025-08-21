@@ -267,11 +267,13 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		let selectedItem = line._Item;
 		line.Status = line.Status || 'Open';
 		let group = this.formBuilder.group({
+			
+	// _IDItemDataSource : this.buildSelectDataSource((term) => {
+	// 	return this.pageProvider.commonService.connect('GET', 'P/BillOfMaterials/ItemSearch/',{ Take: 20, Skip: 0, Term: term });
+	// }),
 			_IDItemDataSource: this.buildSelectDataSource((term) => {
-				return this.itemProvider.search({
-					IsVendorSearch: this.item.IDBusinessPartner ? true : false,
+				return  this.pageProvider.commonService.connect('GET', 'PURCHASE/Quotation/ItemSearch/',{
 					IDVendor: this.item.IDBusinessPartner,
-					IDPO: line.IDOrder,
 					SortBy: ['Id_desc'],
 					Take: 20,
 					Skip: 0,
@@ -294,7 +296,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				line.Quantity,
 				this.item.ContentType === 'Item' && this.vendorView ? Validators.required : null // Conditional validator
 			),
-			MinimumOrderQty: [line.MinimumOrderQty ?? 0],
+			MinimumOrderQty: [line?.MinimumOrderQty],
 			QuantityRemainingOpen: new FormControl({ value: line.QuantityRemainingOpen, disabled: true }),
 			QuantityRequired: new FormControl({ value: line.QuantityRequired, disabled: this.item?.SourceType != null }, Validators.required),
 			UoMSwap: [line.UoMSwap],

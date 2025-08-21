@@ -248,7 +248,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 			this._vendorDataSource.selected = [...this._vendorDataSource.selected, ...[{ Id: e.Id, Name: e.Name, Code: e.Code }]];
 
 		let orderLines = this.formGroup.get('OrderLines') as FormArray;
-		if (orderLines.controls.length > 0) {
+		if (orderLines.controls.some(s=> s.value.Id)) {
 			if (e) {
 				this.env
 					.showPrompt('Tất cả hàng hoá trong danh sách khác với nhà cung cấp được chọn sẽ bị xoá. Bạn có muốn tiếp tục ? ', null, 'Thông báo')
@@ -260,10 +260,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 
 						orderLines.controls
 							.filter((f) =>
-								f
-									.get('_Vendors')
-									.value.map((v) => v.Id)
-									.includes(e.Id)
+								f .get('_Vendors').value.map((v) => v.Id).includes(e.Id)
 							)
 							.forEach((o) => {
 								o.get('IDVendor').setValue(e.Id);
