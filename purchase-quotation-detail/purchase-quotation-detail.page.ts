@@ -184,6 +184,10 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		groups.controls.forEach((group) => {
 			let g = <FormGroup>group;
 			if (g.controls.Quantity.disabled) this._isShowtoggleAllQuantity = false;
+			if (g.controls.IsDiscontinued.value) {
+				group.get('Price').clearValidators();
+				group.get('Price').disable();
+			}
 			return;
 		});
 	}
@@ -289,8 +293,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			Name: [line.Name, this.item?.ContentType == 'Service' ? Validators.required : null],
 			Remark: [line.Remark],
 			RequiredDate: new FormControl({ value: line.RequiredDate, disabled: this.item?.SourceType != null }), //,Validators.required
-			Price: [line.Price, this.vendorView ? Validators.required : null],
-			IsDiscontinued: [line.Id ? line.Price == null ? true : false : false],
+			Price: [line.Price, this.vendorView ? (line.Price == null ? null : Validators.required) : null],
+			IsDiscontinued: [line.Price == null ? true : false],
 			UoMName: [line.UoMName],
 			IDVendor: [line.IDVendor || ''],
 			Quantity: new FormControl(
@@ -339,7 +343,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			group.get('Price').disable();
 			group.get('Price').markAsDirty();
 		} else {
-			group.get('Price').setValidators([Validators.required]);	
+			group.get('Price').setValidators([Validators.required]);
 			group.get('Price').enable();
 		}
 		this.saveChange();
