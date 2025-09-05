@@ -15,6 +15,7 @@ import { ActivatedRoute } from '@angular/router';
 	standalone: false,
 })
 export class PurchaseOrderNotePage extends PageBase {
+	statusList = [];
 	constructor(
 		public pageProvider: PURCHASE_OrderProvider,
 		public modalController: ModalController,
@@ -54,10 +55,12 @@ export class PurchaseOrderNotePage extends PageBase {
 					IDBranch: this.env.selectedBranch,
 				})
 				.toPromise(),
+			this.env.getStatus('PurchaseOrder'),
 		]).then((values: any) => {
 			this.pageConfig.PONConvertToLargerUoM = JSON.parse(values[0]['Value']);
 			this.pageConfig.PONShowPackingUoM = JSON.parse(values[1]['Value']);
 			this.pageConfig.PONShowEACaseOnly = JSON.parse(values[2]['Value']);
+			this.statusList = values[3];
 			super.preLoadData(event);
 		});
 	}
@@ -103,7 +106,7 @@ export class PurchaseOrderNotePage extends PageBase {
 							const o = this.sheets[si];
 							o.OrderDateText = lib.dateFormat(o.OrderDate, 'dd/mm/yy hh:MM');
 							o.ExpectedReceiptDateText = lib.dateFormat(o.ExpectedReceiptDate, 'dd/mm/yy hh:MM');
-							o.StatusText = lib.getAttrib(o.Status, this.env.statusList, 'Name', 'NA', 'Code');
+							o.StatusText = lib.getAttrib(o.Status, this.statusList, 'Name', 'NA', 'Code');
 
 							QRCode.toDataURL(
 								'PO:' + o.Id,

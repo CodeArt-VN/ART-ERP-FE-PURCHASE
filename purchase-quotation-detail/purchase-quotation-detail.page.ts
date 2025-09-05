@@ -662,15 +662,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			return;
 		}
 		this.submitAttempt = true;
-		this.env.publishEvent({
-			Code: 'app:ShowAppMessage',
-			IsShow: true,
-			Id: 'FileImport',
-			Icon: 'flash',
-			IsBlink: true,
-			Color: 'danger',
-			Message: 'đang import',
-		});
 		const formData: FormData = new FormData();
 		formData.append('fileKey', event.target.files[0], event.target.files[0].name);
 		this.env
@@ -680,7 +671,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			)
 			.then((resp: any) => {
 				this.submitAttempt = false;
-				this.env.publishEvent({ Code: 'app:ShowAppMessage', IsShow: false, Id: 'FileImport' });
 				this.refresh();
 				if (resp.ErrorList && resp.ErrorList.length) {
 					let message = '';
@@ -710,7 +700,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			})
 			.catch((err) => {
 				this.submitAttempt = false;
-				this.env.publishEvent({ Code: 'app:ShowAppMessage', IsShow: false, Id: 'FileImport' });
 				this.refresh();
 				this.env.showMessage('erp.app.pages.sale.sale-order.message.import-error', 'danger');
 			});
