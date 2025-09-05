@@ -174,6 +174,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				c.get('Price').enable();
 				c.get('Quantity').enable();
 				c.get('TotalDiscount').enable();
+				c.get('IsDiscontinued').enable();
 			});
 		}
 
