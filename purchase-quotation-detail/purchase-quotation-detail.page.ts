@@ -174,6 +174,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 				c.get('Price').enable();
 				c.get('Quantity').enable();
 				c.get('TotalDiscount').enable();
+				c.get('IsDiscontinued').enable();
 			});
 		}
 
@@ -183,6 +184,10 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		groups.controls.forEach((group) => {
 			let g = <FormGroup>group;
 			if (g.controls.Quantity.disabled) this._isShowtoggleAllQuantity = false;
+			if (g.controls.IsDiscontinued.value) {
+				group.get('Price').clearValidators();
+				group.get('Price').disable();
+			}
 			return;
 		});
 	}
@@ -267,12 +272,11 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		let selectedItem = line._Item;
 		line.Status = line.Status || 'Open';
 		let group = this.formBuilder.group({
-			
-	// _IDItemDataSource : this.buildSelectDataSource((term) => {
-	// 	return this.pageProvider.commonService.connect('GET', 'P/BillOfMaterials/ItemSearch/',{ Take: 20, Skip: 0, Term: term });
-	// }),
+			// _IDItemDataSource : this.buildSelectDataSource((term) => {
+			// 	return this.pageProvider.commonService.connect('GET', 'P/BillOfMaterials/ItemSearch/',{ Take: 20, Skip: 0, Term: term });
+			// }),
 			_IDItemDataSource: this.buildSelectDataSource((term) => {
-				return  this.pageProvider.commonService.connect('GET', 'PURCHASE/Quotation/ItemSearch/',{
+				return this.pageProvider.commonService.connect('GET', 'PURCHASE/Quotation/ItemSearch/', {
 					IDVendor: this.item.IDBusinessPartner,
 					SortBy: ['Id_desc'],
 					Take: 20,
@@ -289,7 +293,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			Name: [line.Name, this.item?.ContentType == 'Service' ? Validators.required : null],
 			Remark: [line.Remark],
 			RequiredDate: new FormControl({ value: line.RequiredDate, disabled: this.item?.SourceType != null }), //,Validators.required
-			Price: [line.Price, this.vendorView ? Validators.required : null],
+			Price: [line.Price, this.vendorView ? (line.Price == null ? null : Validators.required) : null],
+			IsDiscontinued: [line.Price == null ? true : false],
 			UoMName: [line.UoMName],
 			IDVendor: [line.IDVendor || ''],
 			Quantity: new FormControl(
@@ -329,6 +334,19 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		if (markAsDirty) {
 			group.get('Status').markAsDirty();
 		}
+	}
+
+	changeIsDiscontinued(group) {
+		if (group.get('IsDiscontinued').value) {
+			group.get('Price').setValue(null);
+			group.get('Price').clearValidators();
+			group.get('Price').disable();
+			group.get('Price').markAsDirty();
+		} else {
+			group.get('Price').setValidators([Validators.required]);
+			group.get('Price').enable();
+		}
+		this.saveChange();
 	}
 
 	removeLine(index) {
