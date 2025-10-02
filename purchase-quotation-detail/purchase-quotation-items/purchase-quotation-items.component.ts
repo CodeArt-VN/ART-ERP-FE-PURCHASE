@@ -83,7 +83,6 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 			RequiredDate: [''],
 			OrderLines: this.formBuilder.array([]),
 		});
-		this.pageConfig.canViewPriceListVersion = true;
 	}
 
 	loadData() {
