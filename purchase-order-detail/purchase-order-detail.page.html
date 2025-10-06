@@ -139,7 +139,16 @@
 				</ion-segment>
 			</ion-toolbar>
 			<div *ngIf="segmentView == 's1'">
-				<form [formGroup]="formGroup">
+				<app-purchase-order-items
+				[_item]="item"
+				[page]="this"
+				[orderLines]="item.OrderLines"
+				(renderFormArray)="renderFormArray($event)"
+				(onChange)="saveOrder()"
+				(removeItem)="removeLine($event)"
+				(onShowSaleOrder)="showSaleOrderPickerModal()">
+				</app-purchase-order-items>
+				<!-- <form [formGroup]="formGroup">
 					<ng-container formArrayName="OrderLines">
 						<div class="table-contain">
 							<app-data-table [rows]="formGroup.get('OrderLines')['controls']" [showSpinner]="pageConfig.showSpinner">
@@ -276,7 +285,7 @@
 							</ion-button>
 						</ion-buttons>
 					</div>
-				</div>
+				</div> -->
 			</div>
 			<div *ngIf="segmentView == 's2'">
 				<div class="ion-padding">

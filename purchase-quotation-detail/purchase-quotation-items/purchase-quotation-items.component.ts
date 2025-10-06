@@ -437,7 +437,7 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 		this.env
 			.showPrompt({
 				code: 'Do you want to add all products from vendor {value}?',
-				value: this._vendorDataSource.selected.find((d) => d.Id == this.formGroup.controls.IDBusinessPartner.value),
+				value: this._vendorDataSource.selected.find((d) => d.Id == this.formGroup.controls.IDBusinessPartner.value)?.Name,
 			})
 			.then((_) => {
 				this.formGroupQuantityProduct = this.formBuilder.group({

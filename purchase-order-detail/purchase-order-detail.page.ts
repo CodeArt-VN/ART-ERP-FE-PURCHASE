@@ -166,6 +166,9 @@ export class PurchaseOrderDetailPage extends PageBase {
 			super.preLoadData(event);
 		});
 	}
+	renderFormArray(formArray: FormArray) {
+		this.formGroup.controls.OrderLines = formArray as any;
+	}
 
 	loadedData(event) {
 		this.pageConfig.canEdit = this.checkingCanEdit;
@@ -181,7 +184,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 		}
 
 		super.loadedData(event);
-		this.setOrderLines();
+		//this.setOrderLines();
 		let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved', 'Paid'];
 		let notShowRequestOutgoingPayment = ['Draft', 'Submitted', 'Approved', 'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Canceled'];
 		if (
