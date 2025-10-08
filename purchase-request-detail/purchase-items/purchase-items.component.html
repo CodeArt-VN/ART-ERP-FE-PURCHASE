@@ -2,7 +2,7 @@
 	<form [formGroup]="formGroup">
 		<ng-container formArrayName="OrderLines">
 			<div class="table-contain">
-				<app-data-table [rows]="formGroup.get('OrderLines')['controls']" [showSpinner]="pageConfig.showSpinner">
+				<app-data-table [rows]="formGroup.get('OrderLines')['controls']" [showSpinner]="page.pageConfig.showSpinner">
 					<datatable-empty-message subMessage="Please click add new to start...">
 						<ng-template datatable-empty-message-template>
 							<div>
@@ -98,19 +98,19 @@
 						</ng-template>
 					</datatable-column>
 
-					<datatable-column class="col-money" name="Unit price" property="value" *ngIf="pageConfig.canViewPrice">
+					<datatable-column class="col-money" name="Unit price" property="value" *ngIf="page.pageConfig.canViewPrice">
 						<ng-template let-g="row" datatable-cell-template>
 							<app-input-control (change)="submitData(g)" [field]="{ id: 'UoMPrice', type: 'number', form: g }"> </app-input-control>
 						</ng-template>
 					</datatable-column>
 
-					<datatable-column class="col-number" name="VAT" property="value" *ngIf="pageConfig.canViewPrice">
+					<datatable-column class="col-number" name="VAT" property="value" *ngIf="page.pageConfig.canViewPrice">
 						<ng-template let-g="row" datatable-cell-template>
 							<app-input-control [field]="{ id: 'TaxRate', type: 'number', form: g }"></app-input-control>
 						</ng-template>
 					</datatable-column>
 
-					<datatable-column class="col-number" name="Total after tax" property="value" *ngIf="pageConfig.canViewPrice">
+					<datatable-column class="col-number" name="Total after tax" property="value" *ngIf="page.pageConfig.canViewPrice">
 						<ng-template let-g="row" datatable-cell-template>
 							<span class="c-input disable">{{
 								g.controls.Quantity.value * (g.controls.UoMPrice.value - (g.controls.TotalDiscount.value || 0)) * (1 + g.controls.TaxRate.value / 100)

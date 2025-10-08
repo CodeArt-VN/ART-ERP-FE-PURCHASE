@@ -15,8 +15,6 @@ import { PROD_ItemInVendorProvider, WMS_ItemProvider } from 'src/app/services/st
 })
 export class PurchaseOrderItemsComponent extends PageBase {
 	@Input() page: any;
-	@Input() _IDPurchaseOrder: any;
-
 	@Input() set _item(value: any) {
 		this.item = value;
 	}
@@ -97,16 +95,16 @@ export class PurchaseOrderItemsComponent extends PageBase {
 			Id: [line.Id],
 			Remark: new FormControl({
 				value: line.Remark,
-				disabled: !(this.pageConfig.canEdit || ((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.pageConfig.canEditApprovedOrder)),
+				disabled: !(this.page.pageConfig.canEdit || ((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.page.pageConfig.canEditApprovedOrder)),
 			}),
 			IDItem: [line.IDItem, Validators.required],
 			IDUoM: new FormControl({ value: line.IDUoM, disabled: false }, Validators.required),
-			UoMPrice: new FormControl({ value: line.UoMPrice, disabled: !(this.pageConfig.canEdit && this.pageConfig.canEditPrice) }, Validators.required),
+			UoMPrice: new FormControl({ value: line.UoMPrice, disabled: !(this.page.pageConfig.canEdit && this.page.pageConfig.canEditPrice) }, Validators.required),
 			SuggestedQuantity: new FormControl({ value: line.SuggestedQuantity, disabled: true }),
 			UoMQuantityExpected: new FormControl({ value: line.UoMQuantityExpected, disabled: false }, Validators.required),
 			QuantityAdjusted: new FormControl({
 				value: line.QuantityAdjusted,
-				disabled: !((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.pageConfig.canEditApprovedOrder),
+				disabled: !((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.page.pageConfig.canEditApprovedOrder),
 			}),
 			IsPromotionItem: new FormControl({ value: line.IsPromotionItem, disabled: false }),
 			TotalBeforeDiscount: new FormControl({ value: line.TotalBeforeDiscount, disabled: true }),

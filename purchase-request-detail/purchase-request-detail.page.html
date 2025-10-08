@@ -130,17 +130,16 @@
 			</ion-toolbar>
 			<div *ngIf="segmentView == 's1'">
 				<app-purchase-items
-					(renderFormArray)="renderFormArray($event)"
+					[page]="this" 
 					[contentType]="_currentContentType"
 					[IDPurchaseRequest]="formGroup.get('Id').value"
-					[canEdit]="pageConfig.canEdit"
-					(onChange)="saveChange()"
 					[IDVendor]="formGroup.get('IDVendor').value"
 					[status]="formGroup.get('Status').value"
 					[statusLineList]="statusLineList"
 					[orderLines]="item.OrderLines"
+					(renderFormArray)="renderFormArray($event)"
 					(removeItem)="removeItem($event)"
-					(onRefresh)="refresh()"
+					(onChange)="saveChange()"
 				>
 				</app-purchase-items>
 			</div>

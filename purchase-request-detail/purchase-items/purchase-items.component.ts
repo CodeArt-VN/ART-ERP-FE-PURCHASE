@@ -16,6 +16,8 @@ export class PurchaseItemsComponent extends PageBase {
 	_showStatus = false;
 	_status = '';
 	_statusLineList = [];
+
+	@Input() page: any;
 	@Input() set contentType(value) {
 		this._contentType = value;
 	}
@@ -46,8 +48,6 @@ export class PurchaseItemsComponent extends PageBase {
 	}
 
 	@Output() onChange = new EventEmitter<any>();
-	@Output() onRefresh = new EventEmitter<any>();
-
 	@Output() renderFormArray = new EventEmitter<any>();
 	@Output() removeItem = new EventEmitter<any>();
 
@@ -80,8 +80,7 @@ export class PurchaseItemsComponent extends PageBase {
 		this.items?.forEach((i) => {
 			this.addLine(i);
 		});
-		if (!this._canEdit) this.formGroup.disable();
-		console.log(this.formGroup.controls.OrderLines);
+		if (!this.page.pageConfig.canEdit) this.formGroup.disable();
 
 		this.renderFormArray.emit(this.formGroup.controls.OrderLines);
 	}

@@ -7,8 +7,8 @@
                     <ng-template datatable-empty-message-template>
                         <div>
                             <ion-button
-                                *ngIf="_IDPurchaseOrder && page.pageConfig.canEdit && formGroup.get('OrderLines')['controls']?.length == 0"
-                                size="small" (click)="addLine({}, true)">
+                                *ngIf="page.pageConfig.canEdit && formGroup.get('OrderLines')['controls']?.length == 0"
+                                size="small" (click)="addLine({IDOrder: this.item.Id, Id: 0 }, true)">
                                 <ion-icon slot="start" name="add-circle-outline"></ion-icon>
                                 {{ 'Add product' | translate }}
                             </ion-button>
@@ -56,7 +56,7 @@
                             [field]="{id: 'SuggestedQuantity', type : 'number', form : g, }"></app-input-control>
                     </ng-template>
                 </datatable-column>
-                <datatable-column class="col-qty text-right" name="SL đặt" property="value">
+                <datatable-column class="col-qty text-right" name="Order quantity" property="value">
                     <ng-template let-g="row" datatable-cell-template>
                         <app-input-control (change)="submitData(g)"
                             [field]="{ id: 'UoMQuantityExpected', type: 'number', form: g }"></app-input-control>
@@ -97,16 +97,26 @@
                         <app-input-control [field]="{ id: 'TaxRate', type: 'number', form: g }"></app-input-control>
                     </ng-template>
                 </datatable-column>
-
                 <datatable-column class="col-number" name="Total after tax" property="value">
                     <ng-template let-g="row" datatable-cell-template>
-                        <span class="c-input disable">{{(g.controls.IsPromotionItem.value? 0 :
-                            (((g.controls.UoMQuantityExpected.value + g.controls.QuantityAdjusted.value) *
-                            g.controls.UoMPrice.value - g.controls.TotalDiscount.value)) *
-                            ((1+g.controls.TaxRate.value/100))) | number: '1.0-0'}}</span>
+                        <span class="c-input disable">
+                            {{
+                                (g.get('IsPromotionItem').value ? 0 :
+                                    (
+                                        (
+                                            (g.get('UoMQuantityExpected').value || 0) +
+                                            (g.get('QuantityAdjusted').value || 0)
+                                        ) *
+                                        (g.get('UoMPrice').value || 0) -
+                                        (g.get('TotalDiscount').value || 0)
+                                    ) *
+                                    (1 + (g.get('TaxRate').value || 0) / 100)
+                                ) | number: '1.0-0'
+                            }}
+                        </span>
                     </ng-template>
                 </datatable-column>
-
+               
                 <datatable-column class="col-remark" name="Remark" property="value">
                     <ng-template let-g="row" datatable-cell-template>
                         <app-input-control (change)="submitData(g)" [field]="{id: 'Remark', type: 'text', form: g}">
@@ -133,7 +143,7 @@
 
 <div class="ion-padding" *ngIf="page.pageConfig.canEdit">
     <ion-button *ngIf="formGroup.get('OrderLines')['controls']?.length > 0" fill="clear" size="small"
-        (click)="addLine({}, true)">
+        (click)="addLine({IDOrder: this.item.Id, Id: 0 }, true)">
         <ion-icon slot="start" name="add-circle-outline"></ion-icon>
         {{ 'Add product' | translate }}
     </ion-button>
