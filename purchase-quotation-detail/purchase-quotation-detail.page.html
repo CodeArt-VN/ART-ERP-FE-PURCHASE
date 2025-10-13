@@ -121,14 +121,18 @@
 						[page]="this" 
 						[IDPurchaseQuotation]="formGroup.get('Id')?.value"
 						[contentType]="formGroup.get('ContentType')?.value"
-						[IDVendor]="formGroup.get('IDBusinessPartner')?.value" [statusLineList]="_statusLineList"
+						[IDVendor]="formGroup.get('IDBusinessPartner')?.value" 
+						[statusLineList]="_statusLineList"
 						[orderLines]="item.QuotationLines" 
 						[vendorView]="vendorView"
-						[isShowtoggleAllQuantity]="_isShowtoggleAllQuantity" [vendorDataSource]="_vendorDataSource"
+						[isShowtoggleAllQuantity]="_isShowtoggleAllQuantity" 
+						[vendorDataSource]="_vendorDataSource"
 						[requiredDate]="formGroup.get('RequiredDate')?.value"
 						[sourceType]="formGroup.get('SourceType')?.value"
-						(renderFormArray)="renderQuotationFormArray($event)" (onChange)="saveChange()"
-						(onRefresh)="refresh()" (removeItem)="removeQuotationItem($event)">
+						(renderFormArray)="renderQuotationFormArray($event)" 
+						(onChange)="saveChange()"
+						(onRefresh)="refresh()" 
+						(removeItem)="removeQuotationItem($event)">
 					</app-purchase-quotation-items>
 				</form>
 			</div>

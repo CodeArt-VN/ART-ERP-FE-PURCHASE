@@ -80,6 +80,9 @@ export class PurchaseItemsComponent extends PageBase {
 		this.items?.forEach((i) => {
 			this.addLine(i);
 		});
+		if(this.page.pageConfig.canEditPurchaseRequest != undefined) {
+			this.page.pageConfig.canEdit = this.page.pageConfig.canEditPurchaseRequest;
+		}
 		if (!this.page.pageConfig.canEdit) this.formGroup.disable();
 
 		this.renderFormArray.emit(this.formGroup.controls.OrderLines);

@@ -153,7 +153,7 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 			CreatedDate: [line.CreatedDate],
 			DeletedLines: [],
 			_Status: [this._statusLineList.find((d) => d.Code == line.Status)],
-			_Vendors: [],
+			_Vendors: [selectedItem ? selectedItem._Vendors : []], 
 			IsChecked: [false],
 		});
 
