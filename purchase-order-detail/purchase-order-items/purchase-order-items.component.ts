@@ -285,6 +285,9 @@ export class PurchaseOrderItemsComponent extends PageBase {
 	}
 
 	updateFormPermissions() {
+		if(this.page.pageConfig.canEditPurchaseOrder != undefined) {
+			this.page.pageConfig.canEdit = this.page.pageConfig.canEditPurchaseOrder;
+		}
 		const groups = this.formGroup.controls.OrderLines as FormArray;
 		if (!this.page.pageConfig?.canEdit) {
 			this.formGroup.disable();
