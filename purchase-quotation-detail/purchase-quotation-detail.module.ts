@@ -7,6 +7,7 @@ import { ShareModule } from 'src/app/share.module';
 import { PurchaseQuotationDetailPage } from './purchase-quotation-detail.page';
 import { CopyFromPurchaseQuotationToPurchaseOrder } from '../copy-from-purchase-quotation-to-purchase-order-modal/copy-from-purchase-quotation-to-purchase-order-modal.page';
 import { ItemPlanningDataModalPage } from '../item-planning-data-modal/item-planning-data-modal.page';
+import { PurchaseQuotationItemsComponentPageModule } from './purchase-quotation-items/purchase-quotation-items.component.module';
 
 const routes: Routes = [
 	{
@@ -16,7 +17,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-	imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule, ShareModule, RouterModule.forChild(routes)],
+	imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule, ShareModule, PurchaseQuotationItemsComponentPageModule, RouterModule.forChild(routes)],
 	declarations: [PurchaseQuotationDetailPage, CopyFromPurchaseQuotationToPurchaseOrder,ItemPlanningDataModalPage],
 	exports: [],
 })

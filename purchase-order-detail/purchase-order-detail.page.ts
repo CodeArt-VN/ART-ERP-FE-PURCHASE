@@ -98,8 +98,8 @@ export class PurchaseOrderDetailPage extends PageBase {
 	}
 	buildFormGroup() {
 		this.formGroup = this.formBuilder.group({
-			IDBranch:[this.env.selectedBranch],
-			IDWarehouse: [''] ,
+			IDBranch: [this.env.selectedBranch],
+			IDWarehouse: [''],
 			IDStorer: new FormControl({ value: '', disabled: false }, Validators.required),
 			IDVendor: new FormControl({ value: '', disabled: false }, Validators.required),
 			Id: new FormControl({ value: '', disabled: true }),
@@ -166,6 +166,9 @@ export class PurchaseOrderDetailPage extends PageBase {
 			super.preLoadData(event);
 		});
 	}
+	renderFormArray(formArray: FormArray) {
+		this.formGroup.controls.OrderLines = formArray as any;
+	}
 
 	loadedData(event) {
 		this.pageConfig.canEdit = this.checkingCanEdit;
@@ -181,7 +184,6 @@ export class PurchaseOrderDetailPage extends PageBase {
 		}
 
 		super.loadedData(event);
-		this.setOrderLines();
 		let notShowRequestOutgoingPaymentPaymentStatus = ['Unapproved', 'Paid'];
 		let notShowRequestOutgoingPayment = ['Draft', 'Submitted', 'Approved', 'PORequestQuotation', 'Confirmed', 'Shipping', 'PartiallyReceived', 'Received', 'Canceled'];
 		if (
@@ -190,7 +192,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 		) {
 			this.pageConfig.ShowRequestOutgoingPayment = false;
 		}
-		if(!this.item?.Id) this.formGroup.controls.IDBranch.markAsDirty();
+		if (!this.item?.Id) this.formGroup.controls.IDBranch.markAsDirty();
 		if (this.item?._Vendor) {
 			this._vendorDataSource.selected = [...this._vendorDataSource.selected, this.item?._Vendor];
 			this._currentBusinessPartner = this.item._Vendor;
@@ -198,110 +200,20 @@ export class PurchaseOrderDetailPage extends PageBase {
 		this._vendorDataSource.initSearch();
 	}
 
-	setOrderLines() {
-		let groups = this.formGroup.controls.OrderLines as FormArray;
-		groups.clear();
-		if (this.item.OrderLines?.length) {
-			this.item.OrderLines.forEach((i) => {
-				this.addLine(i);
-			});
-		}
-		if(!this.pageConfig.canEdit) {
-			this.formGroup.controls.OrderLines.disable();
-		}
-		if(this.pageConfig.canEditApprovedOrder && (this.item.Status == 'Approved' || this.item.Status == 'Ordered')) {
-			groups.controls.forEach(g=>{
-				g.get('QuantityAdjusted').enable();
-				g.get('Remark').enable();
-			})
-		}
-
-	}
-
-	addLine(line, markAsDirty = false) {
-		let groups = <FormArray>this.formGroup.controls.OrderLines;
-		let preLoadItems = this.item._Items;
-		let selectedItem = preLoadItems?.find((d) => d.Id == line.IDItem);
-
-		let group = this.formBuilder.group({
-			_IDItemDataSource: [
-				{
-					searchProvider: this.itemProvider,
-					loading: false,
-					input$: new Subject<string>(),
-					selected: preLoadItems,
-					items$: null,
-					initSearch() {
-						this.loading = false;
-						this.items$ = concat(
-							of(this.selected),
-							this.input$.pipe(
-								distinctUntilChanged(),
-								tap(() => (this.loading = true)),
-								switchMap((term) =>
-									this.searchProvider.search({ ARSearch: true, IDPO: line.IDOrder, SortBy: ['Id_desc'], Take: 20, Skip: 0, Term: term }).pipe(
-										catchError(() => of([])), // empty list on error
-										tap(() => (this.loading = false))
-									)
-								)
-							)
-						);
-					},
-				},
-			],
-			_IDUoMDataSource: [selectedItem ? selectedItem.UoMs : ''],
-
-			IDOrder: [line.IDOrder],
-			Id: [line.Id],
-			Remark: new FormControl({
-				value: line.Remark,
-				disabled: !(this.pageConfig.canEdit || ((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.pageConfig.canEditApprovedOrder)),
-			}),
-			IDItem: [line.IDItem, Validators.required],
-			IDUoM: new FormControl({ value: line.IDUoM, disabled: false }, Validators.required),
-			UoMPrice: new FormControl({ value: line.UoMPrice, disabled: !(this.pageConfig.canEdit && this.pageConfig.canEditPrice) }, Validators.required),
-			SuggestedQuantity: new FormControl({ value: line.SuggestedQuantity, disabled: true }),
-			UoMQuantityExpected: new FormControl({ value: line.UoMQuantityExpected, disabled: false }, Validators.required),
-			QuantityAdjusted: new FormControl({
-				value: line.QuantityAdjusted,
-				disabled: !((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.pageConfig.canEditApprovedOrder),
-			}),
-			IsPromotionItem: new FormControl({ value: line.IsPromotionItem, disabled: false }),
-			TotalBeforeDiscount: new FormControl({ value: line.TotalBeforeDiscount, disabled: true }),
-			TotalDiscount: new FormControl({ value: line.TotalDiscount, disabled: false }),
-			TotalAfterDiscount: new FormControl({ value: line.TotalAfterDiscount, disabled: true }),
-			TaxRate: new FormControl({ value: line.TaxRate, disabled: true }),
-			Tax: new FormControl({ value: line.Tax, disabled: true }),
-			TotalAfterTax: new FormControl({ value: line.TotalAfterTax, disabled: true }),
+	removeOrderItem(Ids: number[]) {
+		if (!Ids || !Ids.length) return;
+		this.purchaseOrderDetailProvider.delete(Ids.map((id) => ({ Id: id }))).then((resp) => {
+			const groups = this.formGroup.get('OrderLines') as FormArray;
+			for (let i = groups.length - 1; i >= 0; i--) {
+				const id = groups.at(i).get('Id')?.value;
+				if (Ids.includes(id)) {
+					groups.removeAt(i);
+				}
+			}
+			this.env.publishEvent({ Code: this.pageConfig.pageName });
+			this.env.showMessage('Deleted!', 'success');
 		});
-		groups.push(group);
-
-		group.get('_IDItemDataSource').value?.initSearch();
-
-		if (markAsDirty) {
-			group.get('IDOrder').markAsDirty();
-		}
-	}
-
-	addNewLine() {
-		let newLine: any = { IDOrder: this.item.Id, Id: 0 };
-		this.addLine(newLine, true);
-	}
-
-	removeLine(index) {
-		this.env
-			.showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
-			.then((_) => {
-				let groups = <FormArray>this.formGroup.controls.OrderLines;
-				let Ids = [];
-				Ids.push({ Id: groups.controls[index]['controls'].Id.value });
-				this.purchaseOrderDetailProvider.delete(Ids).then((resp) => {
-					groups.removeAt(index);
-					this.env.publishEvent({ Code: this.pageConfig.pageName });
-					this.env.showMessage('Deleted!', 'success');
-				});
-			})
-			.catch((_) => {});
+		this.calcTotalAfterTax();
 	}
 
 	saveOrder() {
@@ -319,12 +231,22 @@ export class PurchaseOrderDetailPage extends PageBase {
 			.map((x) => x.TotalDiscount)
 			.reduce((a, b) => +a + +b, 0);
 	}
+	
 	calcTotalAfterTax() {
-		return this.formGroup.controls.OrderLines.getRawValue()
-			.map((x) => (x.UoMPrice * (x.UoMQuantityExpected + x.QuantityAdjusted) - x.TotalDiscount) * (1 + x.TaxRate / 100))
-			.reduce((a, b) => +a + +b, 0);
-	}
+		const orderLines = this.formGroup.controls.OrderLines?.getRawValue() ?? [];
+		if (!Array.isArray(orderLines) || orderLines.length === 0) return 0;
 
+		return orderLines
+			.map((x) => {
+				const price = +x.UoMPrice || 0;
+				const qtyExpected = +x.UoMQuantityExpected || 0;
+				const qtyAdjusted = +x.QuantityAdjusted || 0;
+				const discount = +x.TotalDiscount || 0;
+				const taxRate = +x.TaxRate || 0;
+				return (price * (qtyExpected + qtyAdjusted) - discount) * (1 + taxRate / 100);
+			})
+			.reduce((a, b) => a + b, 0);
+	}
 	savedChange(savedItem = null, form = this.formGroup) {
 		super.savedChange(savedItem, form);
 		this.item = savedItem;
@@ -338,66 +260,6 @@ export class PurchaseOrderDetailPage extends PageBase {
 		if (this.segmentView == 's3') {
 			this.getPaymentHistory();
 		}
-	}
-
-	IDItemChange(e, group) {
-		if (e) {
-			if (e.PurchaseTaxInPercent && e.PurchaseTaxInPercent != -99) {
-				group.controls._IDUoMDataSource.setValue(e.UoMs);
-
-				group.controls.IDUoM.setValue(e.PurchasingUoM);
-				group.controls.IDUoM.markAsDirty();
-
-				group.controls.TaxRate.setValue(e.PurchaseTaxInPercent);
-				group.controls.TaxRate.markAsDirty();
-
-				this.IDUoMChange(group);
-				return;
-			}
-
-			if (e.PurchaseTaxInPercent != -99) this.env.showMessage('The item has not been set tax');
-		}
-
-		group.controls.TaxRate.setValue(null);
-		group.controls.TaxRate.markAsDirty();
-
-		group.controls.IDUoM.setValue(null);
-		group.controls.IDUoM.markAsDirty();
-
-		group.controls.UoMPrice.setValue(null);
-		group.controls.UoMPrice.markAsDirty();
-	}
-
-	IDUoMChange(group) {
-		let idUoM = group.controls.IDUoM.value;
-
-		if (idUoM) {
-			let UoMs = group.controls._IDUoMDataSource.value;
-			let u = UoMs.find((d) => d.Id == idUoM);
-			if (u && u.PriceList) {
-				let p = u.PriceList.find((d) => d.Type == 'PriceListForVendor');
-				let taxRate = group.controls.TaxRate.value;
-				if (p && taxRate != null) {
-					let priceBeforeTax = null;
-
-					if (taxRate < 0) taxRate = 0; //(-1 || -2) In case goods are not taxed
-
-					if (p.IsTaxIncluded) {
-						priceBeforeTax = p.Price / (1 + taxRate / 100);
-					} else {
-						priceBeforeTax = p.Price;
-					}
-
-					group.controls.UoMPrice.setValue(priceBeforeTax);
-					group.controls.UoMPrice.markAsDirty();
-
-					this.saveOrder();
-					return;
-				}
-			}
-		}
-		group.controls.UoMPrice.setValue(null);
-		group.controls.UoMPrice.markAsDirty();
 	}
 
 	importClick() {
@@ -685,7 +547,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 
 	ngOnDestroy() {
 		this.dismissPopover();
-		if(this.isOpenCopyPopover)this.isOpenCopyPopover = !this.isOpenCopyPopover;
+		if (this.isOpenCopyPopover) this.isOpenCopyPopover = !this.isOpenCopyPopover;
 	}
 	isOpenCopyPopover = false;
 	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;

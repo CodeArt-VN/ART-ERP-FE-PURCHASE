@@ -1,0 +1,155 @@
+<form [formGroup]="formGroup">
+    <ng-container formArrayName="OrderLines">
+        <div class="table-contain">
+            <app-data-table [rows]="formGroup.get('OrderLines')['controls']"
+                [showSpinner]="page.pageConfig?.showSpinner">
+                <datatable-empty-message subMessage="Please click add new to start...">
+                    <ng-template datatable-empty-message-template>
+                        <div>
+                            <ion-button
+                                *ngIf="page.pageConfig.canEdit && formGroup.get('OrderLines')['controls']?.length == 0"
+                                size="small" (click)="addLine({IDOrder: this.item.Id, Id: 0 }, true)">
+                                <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                                {{ 'Add product' | translate }}
+                            </ion-button>
+                        </div>
+                    </ng-template>
+                </datatable-empty-message>
+                <datatable-column [checkbox]="true" property="value" *ngIf="page.pageConfig.canEdit">
+                    <ng-template datatable-header-template>
+                        <input class="c-checkbox" type="checkbox" (change)="toggleSelectAll()"
+                            [checked]="isAllSelected" />
+                    </ng-template>
+                    <ng-template let-g="row" datatable-cell-template>
+                        <app-input-control (change)="changeSelection(g)"
+                            [field]="{ id: 'IsChecked', label: 'Checked', type: 'checkbox', form: g }"></app-input-control>
+                    </ng-template>
+                </datatable-column>
+                <datatable-column class="col-id" name="No." property="#"></datatable-column>
+
+                <datatable-column class="col-name item-name" name="Item" property="value">
+                    <ng-template let-g="row" datatable-cell-template>
+                        <app-input-control
+                            [field]="{id: 'IDItem', label: 'Item', type : 'ng-select-item', form : g,  dataSource: g.controls._IDItemDataSource.value,  bindLabel: 'Name',  bindValue: 'Id', clearable: true,  placeholder: 'Type to search...'}"
+                            (change)="IDItemChange($event, g)"></app-input-control>
+
+                    </ng-template>
+                </datatable-column>
+                <datatable-column class="col-code" name="Unit" property="value">
+                    <ng-template let-g="row" datatable-cell-template>
+                        <app-input-control [field]="{
+                            id: 'IDUoM',
+                            type: 'ng-select',
+                            form: g,
+                            dataSource: g.get('_IDUoMDataSource').value,
+                            bindLabel: 'Name',
+                            bindValue: 'Id',
+                            appendTo: '#ng-select-table'
+                        }" (change)="IDUoMChange(g)">
+                        </app-input-control>
+                    </ng-template>
+                </datatable-column>
+                <datatable-column *ngIf="pageConfig.POShowSuggestedQuantity && item.Type == 'FromPurchaseSuggestion'"
+                    class="col-date" name="Đề nghị" property="value">
+                    <ng-template let-g="row" datatable-cell-template>
+                        <app-input-control (change)="submitData(g)"
+                            [field]="{id: 'SuggestedQuantity', type : 'number', form : g, }"></app-input-control>
+                    </ng-template>
+                </datatable-column>
+                <datatable-column class="col-qty text-right" name="Order quantity" property="value">
+                    <ng-template let-g="row" datatable-cell-template>
+                        <app-input-control (change)="submitData(g)"
+                            [field]="{ id: 'UoMQuantityExpected', type: 'number', form: g }"></app-input-control>
+                    </ng-template>
+                </datatable-column>
+
+                <datatable-column *ngIf="pageConfig.POShowAdjustedQuantity" class="col-qty" name="SL đ.chỉnh"
+                    property="value">
+                    <ng-template let-g="row" datatable-cell-template>
+                        <app-input-control (change)="submitData(g)"
+                            [field]="{ id: 'QuantityAdjusted', type: 'number', form: g }"></app-input-control>
+                    </ng-template>
+                </datatable-column>
+
+                <datatable-column class="col-discount" name="Discount" property="value">
+                    <ng-template let-g="row" datatable-cell-template>
+                        <app-input-control (change)="submitData(g)"
+                            [field]="{ id: 'TotalDiscount', type: 'number', form: g }"></app-input-control>
+                    </ng-template>
+                </datatable-column>
+
+                <datatable-column [checkbox]="true" name="Promotion goods" property="value">
+                    <ng-template let-g="row" datatable-cell-template>
+                        <app-input-control (change)="submitData(g)"
+                            [field]="{ id: 'IsPromotionItem', type: 'checkbox', form: g }"> </app-input-control>
+                    </ng-template>
+                </datatable-column>
+
+                <datatable-column class="col-money" name="Unit price" property="value">
+                    <ng-template let-g="row" datatable-cell-template>
+                        <app-input-control (change)="submitData(g)" [field]="{id: 'UoMPrice', type: 'number', form: g}">
+                        </app-input-control>
+                    </ng-template>
+                </datatable-column>
+
+                <datatable-column class="col-number" name="VAT" property="value">
+                    <ng-template let-g="row" datatable-cell-template>
+                        <app-input-control [field]="{ id: 'TaxRate', type: 'number', form: g }"></app-input-control>
+                    </ng-template>
+                </datatable-column>
+                <datatable-column class="col-number" name="Total after tax" property="value">
+                    <ng-template let-g="row" datatable-cell-template>
+                        <span class="c-input disable">
+                            {{
+                                (g.get('IsPromotionItem').value ? 0 :
+                                    (
+                                        (
+                                            (g.get('UoMQuantityExpected').value || 0) +
+                                            (g.get('QuantityAdjusted').value || 0)
+                                        ) *
+                                        (g.get('UoMPrice').value || 0) -
+                                        (g.get('TotalDiscount').value || 0)
+                                    ) *
+                                    (1 + (g.get('TaxRate').value || 0) / 100)
+                                ) | number: '1.0-0'
+                            }}
+                        </span>
+                    </ng-template>
+                </datatable-column>
+               
+                <datatable-column class="col-remark" name="Remark" property="value">
+                    <ng-template let-g="row" datatable-cell-template>
+                        <app-input-control (change)="submitData(g)" [field]="{id: 'Remark', type: 'text', form: g}">
+                        </app-input-control>
+                    </ng-template>
+                </datatable-column>
+
+                <datatable-column class="col-icon" name="" property="value" *ngIf="page.pageConfig.canEdit">
+                    <ng-template datatable-header-template>
+
+                        <ion-icon color="danger" class="min-btn clickable"
+                            title="{{ 'SELECTED_ITEMS' | translate: { COUNT: selectedOrderLines.controls?.length } }}"
+                            name="trash-outline" (click)="removeSelectedItems()"></ion-icon>
+                    </ng-template>
+                    <ng-template let-idx="idx" datatable-cell-template>
+                        <ion-icon color="danger" class="min-btn clickable" name="trash-outline"
+                            (click)="removeLine(idx)" title="Remove line"></ion-icon>
+                    </ng-template>
+                </datatable-column>
+            </app-data-table>
+        </div>
+    </ng-container>
+</form>
+
+<div class="ion-padding" *ngIf="page.pageConfig.canEdit">
+    <ion-button *ngIf="formGroup.get('OrderLines')['controls']?.length > 0" fill="clear" size="small"
+        (click)="addLine({IDOrder: this.item.Id, Id: 0 }, true)">
+        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+        {{ 'Add product' | translate }}
+    </ion-button>
+
+    <ion-button fill="clear" size="small" (click)="showSaleOrderPickerModal()">
+        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+        {{ 'Add items from SO' | translate }}
+    </ion-button>
+</div>

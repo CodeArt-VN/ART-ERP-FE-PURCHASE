@@ -133,6 +133,10 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		});
 	}
 
+	renderQuotationFormArray(formArray: FormArray) {
+		this.formGroup.controls.QuotationLines = formArray as any;
+	}
+
 	loadedData(event) {
 		this.pageConfig.canEdit = this.checkingCanEdit;
 		this.isAllChecked = true;
@@ -143,7 +147,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			this.pageConfig['canApprove'] = false;
 		}
 		super.loadedData(event);
-		this.setQuotationLines();
 		this.toggleSelectAll();
 
 		if (this.item.SourceType == 'FromPurchaseRequest') {
@@ -166,30 +169,8 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		if (this.vendorView && this.item.Status == 'Open') this.pageConfig.ShowConfirm = true;
 		else this.pageConfig.ShowConfirm = false;
 
-		// Quyền canQuote có thể báo giá (edit price, quantity,TotalDiscount)
-		if (['Open', 'Unapproved'].includes(this.item.Status) && this.pageConfig.canQuote && !this.pageConfig.canEdit) {
-			let groups = this.formGroup.controls.QuotationLines as FormArray;
-			groups.controls.forEach((c) => {
-				c.get('MinimumOrderQty').enable();
-				c.get('Price').enable();
-				c.get('Quantity').enable();
-				c.get('TotalDiscount').enable();
-				c.get('IsDiscontinued').enable();
-			});
-		}
-
 		if (this.item?.Id == 0) this.formGroup.controls.ContentType.markAsDirty();
 		this._currentContentType = this.item.ContentType;
-		let groups = <FormArray>this.formGroup.controls.QuotationLines;
-		groups.controls.forEach((group) => {
-			let g = <FormGroup>group;
-			if (g.controls.Quantity.disabled) this._isShowtoggleAllQuantity = false;
-			if (g.controls.IsDiscontinued.value) {
-				group.get('Price').clearValidators();
-				group.get('Price').disable();
-			}
-			return;
-		});
 	}
 
 	async saveChange() {
@@ -256,85 +237,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		}
 	}
 
-	setQuotationLines() {
-		this.formGroup.controls.QuotationLines = new FormArray([]);
-		if (this.item?.QuotationLines?.length)
-			this.item?.QuotationLines.forEach((i) => {
-				this.addLine(i);
-			});
-		if (!this.pageConfig.canEdit) {
-			this.formGroup.controls.QuotationLines.disable();
-		}
-	}
-
-	addLine(line, markAsDirty = false) {
-		let groups = <FormArray>this.formGroup.controls.QuotationLines;
-		let selectedItem = line._Item;
-		line.Status = line.Status || 'Open';
-		let group = this.formBuilder.group({
-			// _IDItemDataSource : this.buildSelectDataSource((term) => {
-			// 	return this.pageProvider.commonService.connect('GET', 'P/BillOfMaterials/ItemSearch/',{ Take: 20, Skip: 0, Term: term });
-			// }),
-			_IDItemDataSource: this.buildSelectDataSource((term) => {
-				return this.pageProvider.commonService.connect('GET', 'PURCHASE/Quotation/ItemSearch/', {
-					IDVendor: this.item.IDBusinessPartner,
-					SortBy: ['Id_desc'],
-					Take: 20,
-					Skip: 0,
-					Term: term,
-				});
-			}),
-			_IDUoMDataSource: [selectedItem ? selectedItem.UoMs : []],
-			IDItem: new FormControl({ value: line.IDItem, disabled: this.item?.SourceType != null }, this.item?.ContentType === 'Item' ? [Validators.required] : []), //Validators.required
-			IDItemUoM: new FormControl({ value: line.IDItemUoM, disabled: this.item?.SourceType != null }, this.item?.ContentType === 'Item' ? [Validators.required] : []),
-			Id: [line.Id],
-			Status: [line.Status],
-			Sort: [line.Sort],
-			Name: [line.Name, this.item?.ContentType == 'Service' ? Validators.required : null],
-			Remark: [line.Remark],
-			RequiredDate: new FormControl({ value: line.RequiredDate, disabled: this.item?.SourceType != null }), //,Validators.required
-			Price: [line.Price, this.vendorView ? (line.Price == null ? null : Validators.required) : null],
-			IsDiscontinued: [line.Price == null ? true : false],
-			UoMName: [line.UoMName],
-			IDVendor: [line.IDVendor || ''],
-			Quantity: new FormControl(
-				line.Quantity,
-				this.item.ContentType === 'Item' && this.vendorView ? Validators.required : null // Conditional validator
-			),
-			MinimumOrderQty: [line?.MinimumOrderQty],
-			QuantityRemainingOpen: new FormControl({ value: line.QuantityRemainingOpen, disabled: true }),
-			QuantityRequired: new FormControl({ value: line.QuantityRequired, disabled: this.item?.SourceType != null }, Validators.required),
-			UoMSwap: [line.UoMSwap],
-			UoMSwapAlter: [line.UoMSwapAlter],
-			IDTax: [line.IDTax], //,Validators.required
-			TaxRate: new FormControl({ value: line.TaxRate, disabled: this.item?.SourceType != null }),
-
-			TotalAfterTax: [line.TotalAfterTax],
-
-			TotalBeforeDiscount: [line.TotalBeforeDiscount],
-
-			TotalDiscount: [line.TotalDiscount],
-
-			TotalAfterDiscount: [line.TotalAfterDiscount],
-			_Item: [line._Item],
-			Tax: new FormControl({ value: line.Tax, disabled: true }),
-			IsDeleted: [line.IsDeleted],
-			CreatedBy: [line.CreatedBy],
-			ModifiedBy: [line.ModifiedBy],
-			CreatedDate: [line.CreatedDate],
-			DeletedLines: [],
-			_Status: [this._statusLineList.find((d) => d.Code == line.Status)],
-			_Vendors: [],
-			IsChecked: [false],
-		});
-		groups.push(group);
-		if (selectedItem) group.get('_IDItemDataSource').value.selected.push(selectedItem);
-		group.get('_IDItemDataSource').value?.initSearch();
-
-		if (markAsDirty) {
-			group.get('Status').markAsDirty();
-		}
-	}
+	
 
 	changeIsDiscontinued(group) {
 		if (group.get('IsDiscontinued').value) {
@@ -349,31 +252,23 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		this.saveChange();
 	}
 
-	removeLine(index) {
-		let groups = <FormArray>this.formGroup.controls.QuotationLines;
-		let group = groups.controls[index];
-		if (group.get('Id').value) {
-			this.env
-				.showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
-				.then((_) => {
-					let Ids = [];
-					Ids.push(groups.controls[index].get('Id').value);
-					// this.removeItem.emit(Ids);
-					if (Ids && Ids.length > 0) {
-						this.formGroup.get('DeletedLines').setValue(Ids);
-						this.formGroup.get('DeletedLines').markAsDirty();
-						//this.item.DeletedLines = Ids;
-						this.saveChange().then((_) => {
-							Ids.forEach((id) => {
-								let index = groups.controls.findIndex((x) => x.get('Id').value == id);
-								if (index >= 0) groups.removeAt(index);
-							});
-						});
-					}
-				})
-				.catch((_) => {});
-		} else groups.removeAt(index);
+
+
+	removeQuotationItem(Ids: number[]) {
+		if (!Ids || !Ids.length) return;
+		const groups = this.formGroup.get('QuotationLines') as FormArray;
+		this.formGroup.get('DeletedLines')?.setValue(Ids);
+		this.formGroup.get('DeletedLines')?.markAsDirty();
+		this.saveChange();
+		for (let i = groups.length - 1; i >= 0; i--) {
+			const id = groups.at(i).get('Id')?.value;
+			if (Ids.includes(id)) {
+				groups.removeAt(i);
+			}
+		}
+		this.calcTotalAfterTax();
 	}
+
 
 	calcTotalAfterTax() {
 		if (this.formGroup.get('QuotationLines').getRawValue()) {
@@ -385,12 +280,6 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		} else {
 			return 0;
 		}
-	}
-
-	calcTotalDiscount() {
-		return this.formGroup.controls.QuotationLines.getRawValue()
-			.map((x) => x.TotalDiscount)
-			.reduce((a, b) => +a + +b, 0);
 	}
 
 	copyCopyToPurchaseOrder() {
@@ -748,42 +637,5 @@ export class PurchaseQuotationDetailPage extends PageBase {
 
 			if (this.isAllChecked) this.selectedOrderLines.push(i);
 		});
-	}
-	removeSelectedItems() {
-		let groups = <FormArray>this.formGroup.controls.QuotationLines;
-		if (this.selectedOrderLines.controls.some((g) => g.get('Id').value)) {
-			this.env
-				.showPrompt({ code: 'ACTION_DELETE_MESSAGE', value: { value: this.selectedOrderLines.length } }, null, {
-					code: 'ACTION_DELETE_MESSAGE',
-					value: { value: this.selectedOrderLines.length },
-				})
-				.then((_) => {
-					let Ids = this.selectedOrderLines.controls.map((fg) => fg.get('Id').value);
-					// this.removeItem.emit(Ids);
-					if (Ids && Ids.length > 0) {
-						this.formGroup.get('DeletedLines').setValue(Ids);
-						this.formGroup.get('DeletedLines').markAsDirty();
-						//this.item.DeletedLines = Ids;
-						this.saveChange().then((_) => {
-							Ids.forEach((id) => {
-								let index = groups.controls.findIndex((x) => x.get('Id').value == id);
-								if (index >= 0) groups.removeAt(index);
-							});
-						});
-					}
-					this.selectedOrderLines = new FormArray([]);
-				})
-				.catch((_) => {});
-		} else if (this.selectedOrderLines.controls.length > 0) {
-			this.selectedOrderLines.controls
-				.map((fg) => fg.get('Id').value)
-				.forEach((id) => {
-					let index = groups.controls.findIndex((x) => x.get('Id').value == id);
-					if (index >= 0) groups.removeAt(index);
-				});
-			this.selectedOrderLines = new FormArray([]);
-		} else {
-			this.env.showMessage('Please select at least one item to remove', 'warning');
-		}
 	}
 }
