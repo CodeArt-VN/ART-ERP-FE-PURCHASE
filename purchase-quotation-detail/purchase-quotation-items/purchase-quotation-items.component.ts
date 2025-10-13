@@ -106,7 +106,7 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 			_IDItemDataSource: this.buildSelectDataSource((term) => {
 				return this.pageProvider.commonService.connect('GET', 'PURCHASE/Quotation/ItemSearch/', {
 					IDVendor: this._IDVendor,
-					IDQuotation: line.IDQuotation,
+					IDQuotation: line.IDQuotation ?? this._IDPurchaseQuotation,
 					SortBy: ['Id_desc'],
 					Take: 20,
 					Skip: 0,
@@ -371,8 +371,11 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 	}
 
 	updateFormPermissions() {
-		if (!this.formGroup?.controls?.QuotationLines || !this.page) return;
-		const groups = this.formGroup.controls.QuotationLines as FormArray;
+		if(this.page.pageConfig.canEditPurchaseQuotation != undefined) {
+			this.page.pageConfig.canEdit = this.page.pageConfig.canEditPurchaseQuotation;
+		}
+		if (!this.formGroup?.controls?.OrderLines || !this.page) return;
+		const groups = this.formGroup.controls.OrderLines as FormArray;
 
 		if (!this.page.pageConfig.canEdit) {
 			this.formGroup.disable();
