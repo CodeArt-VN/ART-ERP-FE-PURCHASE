@@ -130,6 +130,7 @@
 						[requiredDate]="formGroup.get('RequiredDate')?.value"
 						[sourceType]="formGroup.get('SourceType')?.value"
 						(renderFormArray)="renderQuotationFormArray($event)" 
+						(confirmEvent)="confirm()"
 						(onChange)="saveChange()"
 						(onRefresh)="refresh()" 
 						(removeItem)="removeQuotationItem($event)">
