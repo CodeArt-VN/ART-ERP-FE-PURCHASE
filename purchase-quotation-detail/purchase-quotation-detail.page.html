@@ -117,7 +117,7 @@
 			</ion-toolbar>
 			<div *ngIf="segmentView == 's1'">
 				<form [formGroup]="formGroup">
-					<app-purchase-quotation-items 
+					<app-purchase-quotation-items *ngIf="readyRender"
 						[page]="this" 
 						[IDPurchaseQuotation]="formGroup.get('Id')?.value"
 						[contentType]="formGroup.get('ContentType')?.value"
