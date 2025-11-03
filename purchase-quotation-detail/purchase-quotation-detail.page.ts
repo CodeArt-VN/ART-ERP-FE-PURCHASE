@@ -137,7 +137,9 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		this.formGroup.controls.QuotationLines = formArray as any;
 	}
 
+	readyRender = false;
 	loadedData(event) {
+		this.readyRender = false;
 		this.pageConfig.canEdit = this.checkingCanEdit;
 		this.isAllChecked = true;
 		this.buildFormGroup();
@@ -171,6 +173,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 
 		if (this.item?.Id == 0) this.formGroup.controls.ContentType.markAsDirty();
 		this._currentContentType = this.item.ContentType;
+		this.readyRender = true;
 	}
 
 	async saveChange() {
