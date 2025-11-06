@@ -101,22 +101,22 @@
                     <ng-template let-g="row" datatable-cell-template>
                         <span class="c-input disable">
                             {{
-                                (g.get('IsPromotionItem').value ? 0 :
-                                    (
-                                        (
-                                            (g.get('UoMQuantityExpected').value || 0) +
-                                            (g.get('QuantityAdjusted').value || 0)
-                                        ) *
-                                        (g.get('UoMPrice').value || 0) -
-                                        (g.get('TotalDiscount').value || 0)
-                                    ) *
-                                    (1 + (g.get('TaxRate').value || 0) / 100)
-                                ) | number: '1.0-0'
+                            (g.get('IsPromotionItem').value ? 0 :
+                            (
+                            (
+                            (g.get('UoMQuantityExpected').value || 0) +
+                            (g.get('QuantityAdjusted').value || 0)
+                            ) *
+                            (g.get('UoMPrice').value || 0) -
+                            (g.get('TotalDiscount').value || 0)
+                            ) *
+                            (1 + (g.get('TaxRate').value || 0) / 100)
+                            ) | number: '1.0-0'
                             }}
                         </span>
                     </ng-template>
                 </datatable-column>
-               
+
                 <datatable-column class="col-remark" name="Remark" property="value">
                     <ng-template let-g="row" datatable-cell-template>
                         <app-input-control (change)="submitData(g)" [field]="{id: 'Remark', type: 'text', form: g}">
@@ -152,4 +152,16 @@
         <ion-icon slot="start" name="add-circle-outline"></ion-icon>
         {{ 'Add items from SO' | translate }}
     </ion-button>
+</div>
+
+<div class="ion-padding" *ngIf="vendorView">
+    <ion-buttons class="ion-justify-content-end" slot="end">
+        <ion-button style="margin-right: 0" *ngIf="formGroup.get('Status').value == 'Ordered'" fill="solid"
+            expand="block" size="small" (click)="confirmOrder()">
+            {{'Confirm order' | translate}}
+        </ion-button>
+        <ion-button style="margin-right: 0" fill="solid" expand="block" size="small" (click)="print()">
+            <ion-icon slot="icon-only" name="print"></ion-icon>
+        </ion-button>
+    </ion-buttons>
 </div>

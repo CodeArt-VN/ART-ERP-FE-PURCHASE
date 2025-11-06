@@ -55,6 +55,9 @@
 			<ion-button *ngIf="pageConfig.ShowSubmitOrders && pageConfig.canSubmitOrders" fill="clear" title="Order submitted" (click)="submitOrders()">
 				<ion-icon slot="start" name="cart-outline"></ion-icon>
 			</ion-button>
+			<ion-button *ngIf="vendorView && pageConfig.ShowConfirmOrder" fill="clear" title="Confirm Order" (click)="confirmOrder()">
+				<ion-icon slot="start" name="receipt-outline"></ion-icon>
+			</ion-button>
 		</ng-container>
 
 		<ion-button
@@ -167,4 +170,43 @@
 			<ion-button class="ion-margin" size="small" expand="block" (click)="dismissPopover(true)">Apply</ion-button>
 		</ng-template>
 	</ion-popover>
+
+	<ion-modal [isOpen]="isShowReceiptModal" (willDismiss)="onDismissReceiptModal(); ">
+		<ng-template>
+			<ion-header>
+				<ion-toolbar>
+					<ion-title>{{'Confirm modal' | translate}}</ion-title>
+					<ion-buttons slot="primary">
+						<ion-button title="{{'Close' | translate}}" color="secondary" (click)="isShowReceiptModal= false">
+							<ion-icon slot="icon-only" name="close"></ion-icon>
+						</ion-button>
+					</ion-buttons>
+				</ion-toolbar>
+			</ion-header>
+			<ion-content appScrollbarTheme class="scrollx">
+				<ion-grid>
+					<ion-row>
+						<ion-col size="12" size-sm size-xl="6">
+							<app-form-control [field]="{id: 'Code', label: 'PO code (Vendors)', type: 'text', form: receiptFormGroup}"> </app-form-control>
+
+							<app-form-control
+								[field]="{id: 'ExpectedReceiptDate', label: 'Expected receipt date', type: 'datetime-local', form: receiptFormGroup}"
+							></app-form-control>
+						</ion-col>
+						<ion-col size="12" size-sm size-xl="6">
+							<app-form-control
+								[field]="{ id: 'IDCarrier', type: 'ng-select', label: 'Carrier', dataSource: carrierList, bindValue: 'Id', bindLabel: 'Name', form: receiptFormGroup }"
+							></app-form-control>
+							<app-form-control [field]="{ id: 'VehicleNumber', type: 'text', label: 'Vehicle number', form: receiptFormGroup }"></app-form-control>
+						</ion-col>
+					</ion-row>
+				</ion-grid>
+			</ion-content>
+			<ion-footer>
+				<div class="ion-padding">
+					<ion-button color="primary" (click)="onDismissReceiptModal(true)" expand="block">{{'Confirm' | translate}}</ion-button>
+				</div>
+			</ion-footer>
+		</ng-template>
+	</ion-modal>
 </ion-content>
