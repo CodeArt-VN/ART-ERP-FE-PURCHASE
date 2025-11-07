@@ -80,20 +80,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 							reject(err);
 						});
 				});
-			},
-			copyToReceipt(item) {
-				return new Promise((resolve, reject) => {
-					this.commonService
-						.connect('POST', ApiSetting.apiDomain('PURCHASE/Order/CopyToReceipt/'), item)
-						.toPromise()
-						.then((data) => {
-							resolve(data);
-						})
-						.catch((err) => {
-							reject(err);
-						});
-				});
-			},
+			}
 		});
 	}
 	buildFormGroup() {
@@ -348,8 +335,10 @@ export class PurchaseOrderDetailPage extends PageBase {
 						this.pageProvider['copyToReceipt']({
 							...this.item,
 							...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' },
-						})
-					)
+						},
+						this.env, 
+						this.pageConfig
+					))
 					.then((r: any) => {
 						let messageTitle;
 						let subMessage = 'Do you want to navigate to the receipt just created?';

@@ -143,9 +143,13 @@
 				[_item]="item"
 				[page]="this"
 				[orderLines]="item.OrderLines"
+				[vendorView]="vendorView"
+				[_status]="this.formGroup.get('Status').value"
 				(renderFormArray)="renderFormArray($event)"
 				(onChange)="saveOrder()"
 				(removeItem)="removeOrderItem($event)"
+				(onConfirmOrder)="confirmOrder()"
+				(onPrint)="print()"
 				(onShowSaleOrder)="showSaleOrderPickerModal()">
 				</app-purchase-order-items>
 			</div>

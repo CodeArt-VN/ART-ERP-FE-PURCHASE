@@ -2,11 +2,10 @@ import { Component, ViewChild } from '@angular/core';
 import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
-import { BANK_OutgoingPaymentProvider, PURCHASE_OrderProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
+import { BANK_OutgoingPaymentProvider, CRM_ContactProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
 import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
-import { ApiSetting } from 'src/app/services/static/api-setting';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { PURCHASE_OrderService } from '../purchase-order-service';
 import { PURCHASE_QuotationService } from '../purchase-quotation.service';
 import { CopyFromPurchaseQuotationToPurchaseOrder } from '../copy-from-purchase-quotation-to-purchase-order-modal/copy-from-purchase-quotation-to-purchase-order-modal.page';
@@ -27,9 +26,11 @@ export class PurchaseOrderPage extends PageBase {
 	paymentTypeList = [];
 	paymentReasonList = [];
 	showRequestOutgoingPayment = false;
+	vendorView = false;
 	constructor(
 		public pageProvider: PURCHASE_OrderService,
 		public sysConfigProvider: SYS_ConfigProvider,
+		public contactProvider: CRM_ContactProvider,
 		public outgoingPaymentProvider: BANK_OutgoingPaymentProvider,
 		public modalController: ModalController,
 		public popoverCtrl: PopoverController,
@@ -51,6 +52,9 @@ export class PurchaseOrderPage extends PageBase {
 		});
 		this.pageConfig.ShowAdd = false;
 		this.pageConfig.ShowAddNew = true;
+		if (this.env.user.IDBusinessPartner > 0 && this.env.user.SysRoles.includes('VENDOR')) {
+			this.vendorView = true;
+		}
 	}
 
 	preLoadData(event) {
@@ -227,25 +231,23 @@ export class PurchaseOrderPage extends PageBase {
 
 	copyFromPurchaseQuotation(id: any) {
 		// Sau khi chọn PQ thì mở modal chọn các sản phẩm từ PQ để copy sang PO
-		this.env
-			.showLoading('Please wait for a few moments', this.purchaseQuotationProvider.getAnItem(id, null))
-			.then((data: any) => {
-				this.purchaseQuotationProvider
-					.copyCopyToPurchaseOrder(data, CopyFromPurchaseQuotationToPurchaseOrder, this.modalController)
-					.then((data: any) => {
-						if (data) {
-							// this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
-							// 	this.nav('/purchase-order/' + data.Id);
-							// });
-							this.env.showMessage('PO created!', 'success');
-							this.env.publishEvent({ Code: this.pageConfig.pageName });
-							this.refresh();
-						}
-					})
-					.catch((err) => {
-						this.env.showMessage(err, 'danger');
-					});
-			})
+		this.env.showLoading('Please wait for a few moments', this.purchaseQuotationProvider.getAnItem(id, null)).then((data: any) => {
+			this.purchaseQuotationProvider
+				.copyCopyToPurchaseOrder(data, CopyFromPurchaseQuotationToPurchaseOrder, this.modalController)
+				.then((data: any) => {
+					if (data) {
+						// this.env.showPrompt(null, 'Do you want to move to the just created PO page ?', 'PO created!').then((_) => {
+						// 	this.nav('/purchase-order/' + data.Id);
+						// });
+						this.env.showMessage('PO created!', 'success');
+						this.env.publishEvent({ Code: this.pageConfig.pageName });
+						this.refresh();
+					}
+				})
+				.catch((err) => {
+					this.env.showMessage(err, 'danger');
+				});
+		});
 	}
 
 	async openPurchaseQuotationPopover(ev: any) {
@@ -324,18 +326,16 @@ export class PurchaseOrderPage extends PageBase {
 					vendorList = [...vendorList, ...o._Item._Vendors.filter((v) => !vendorList.some((vd) => v.Id == vd.Id))];
 				}
 			});
-			this.purchaseRequestProvider
-				.copyToPO(data.Id, orderLines, data._Vendor, vendorList, PurchaseOrderModalPage, this.modalController, this.env)
-				.then((rs: any) => {
-					if (rs) {
-						this.env.showMessage('PO created!', 'success');
-						// this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
-						// 	this.nav('/purchase-order/' + rs.Id, 'forward');
-						// });
-						this.refresh();
-						this.env.publishEvent({ Code: this.pageConfig.pageName });
-					}
-				})
+			this.purchaseRequestProvider.copyToPO(data.Id, orderLines, data._Vendor, vendorList, PurchaseOrderModalPage, this.modalController, this.env).then((rs: any) => {
+				if (rs) {
+					this.env.showMessage('PO created!', 'success');
+					// this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
+					// 	this.nav('/purchase-order/' + rs.Id, 'forward');
+					// });
+					this.refresh();
+					this.env.publishEvent({ Code: this.pageConfig.pageName });
+				}
+			});
 		});
 	}
 
@@ -403,17 +403,96 @@ export class PurchaseOrderPage extends PageBase {
 	}
 
 	createInvoice() {
-		this.pageProvider
-			.createInvoice(this.selectedItems, this.env, this.pageConfig)
-			.then((resp: any) => {
+		this.pageProvider.createInvoice(this.selectedItems, this.env, this.pageConfig).then((resp: any) => {
+			this.env
+				.showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
+				.then((_) => {
+					if (resp.length == 1) {
+						this.nav('/ap-invoice/' + resp[0], 'forward');
+					}
+				})
+				.catch((_) => {});
+		});
+	}
+
+	confirmOrder() {
+		if (this.carrierList.length == 0) {
+			this.contactProvider
+				.read({ IsCarrier: true })
+				.then((rs: any) => {
+					if (rs && rs.data?.length > 0) {
+						this.carrierList = [...rs.data];
+					}
+				})
+				.finally(() => (this.isShowReceiptModal = true));
+		} else this.isShowReceiptModal = true;
+	}
+	carrierList = [];
+	isShowReceiptModal = false;
+	receiptFormGroup = this.formBuilder.group({
+		Code: ['', Validators.required],
+		IDCarrier: ['', Validators.required],
+		VehicleNumber: ['', Validators.required],
+		ExpectedReceiptDate: ['', Validators.required],
+	});
+	onDismissReceiptModal(isApply = false) {
+		this.isShowReceiptModal = false;
+
+		if (isApply) {
+			this.receiptFormGroup.updateValueAndValidity();
+			if (!this.receiptFormGroup.valid) {
+				let invalidControls = this.findInvalidControlsRecursive(this.receiptFormGroup);
+				const translationPromises = invalidControls.map((control) => this.env.translateResource(control));
+				Promise.all(translationPromises).then((values) => {
+					let invalidControls = values;
+					this.env.showMessage('Please recheck control(s): {{value}}', 'warning', invalidControls.join(' | '));
+				});
+			} else {
 				this.env
-					.showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
-					.then((_) => {
-						if (resp.length == 1) {
-							this.nav('/ap-invoice/' + resp[0], 'forward');
-						}
+					.showLoading(
+						'Please wait for a few moments',
+						this.pageProvider['copyToReceipt'](
+							this.selectedItems.map((item) => {
+								return {
+									...item,
+									...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' },
+								};
+							}),
+							this.env, 
+							this.pageConfig
+						)
+					)
+					.then((r: any) => {
+						let messageTitle;
+						let subMessage = 'Do you want to navigate to the receipt just created?';
+						let message = '';
+						let recheckList = [];
+						let ids = [];
+						if (r.Id) ids.push(r.Id);
+						if (r.RecheckReceipts && r.RecheckReceipts.length) recheckList = [...recheckList, ...r.RecheckReceipts];
+						if (recheckList.length > 0) message = recheckList.join(', ');
+						if (ids.length > 0) messageTitle = { code: 'Created ASN successfully with Id: {{value}}', value: ids.join(', ') };
+						else messageTitle = 'PO has entered a full amount of quantity!';
+						this.env
+							.showPrompt(message != '' ? { code: 'Refer to ASN: {{value}}', value: message } : null, ids.length > 0 ? subMessage : null, messageTitle)
+							.then((_) => {
+								if (ids.length > 0) {
+									this.refresh();
+									this.env.publishEvent({ Code: this.pageConfig.pageName });
+									this.nav('/receipt/' + r.Id);
+								}
+							})
+							.catch((e) => {
+								if (ids.length > 0) {
+									this.refresh();
+									this.env.publishEvent({ Code: this.pageConfig.pageName });
+								}
+							});
 					})
-					.catch((_) => {});
-			})
+					.catch((err) => {
+						this.env.showMessage('Cannot create ASN, please try again later', 'danger');
+					});
+			}
+		}
 	}
 }

@@ -51,4 +51,18 @@ export class PURCHASE_OrderService extends PURCHASE_OrderProvider {
 				});
 		});
 	}
+
+	copyToReceipt(items: any, env?: any, pageConfig?: any) {
+        return new Promise((resolve, reject) => {
+			this.commonService.connect('POST', 'PURCHASE/Order/CopyToReceipt/', items).toPromise()
+			.then((resp: any) => {
+				env.publishEvent({ Code: pageConfig.pageName });
+				resolve(resp);
+			})
+			.catch((err) => {
+				reject(err);
+			});
+		});
+    }
+	
 }
