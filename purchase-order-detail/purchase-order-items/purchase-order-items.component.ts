@@ -31,8 +31,6 @@ export class PurchaseOrderItemsComponent extends PageBase {
 	@Output() renderFormArray = new EventEmitter<any>();
 	@Output() onShowSaleOrder = new EventEmitter<any>();
 	@Output() onConfirmOrder = new EventEmitter<any>();
-	@Output() onPrint = new EventEmitter<any>();
-
 
 	constructor(
 		public pageProvider: PROD_ItemInVendorProvider,
@@ -312,10 +310,6 @@ export class PurchaseOrderItemsComponent extends PageBase {
 
 	confirmOrder() {
 		this.onConfirmOrder.emit();
-	}
-
-	print() {
-		this.onPrint.emit();
 	}
 	
 }

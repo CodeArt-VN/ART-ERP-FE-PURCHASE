@@ -59,6 +59,9 @@
 			<ion-button (click)="importClick()" *ngIf="formGroup.controls.Status.value=='Draft' && pageConfig.canEdit" title="{{'Import product' | translate}}">
 				<ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
 			</ion-button>
+			<ion-button (click)="print()" title="{{'Print' | translate}}">
+				<ion-icon slot="icon-only" name="print"></ion-icon>
+			</ion-button>
 		</ng-container>
 	</app-toolbar>
 </ion-header>
@@ -149,7 +152,6 @@
 				(onChange)="saveOrder()"
 				(removeItem)="removeOrderItem($event)"
 				(onConfirmOrder)="confirmOrder()"
-				(onPrint)="print()"
 				(onShowSaleOrder)="showSaleOrderPickerModal()">
 				</app-purchase-order-items>
 			</div>
