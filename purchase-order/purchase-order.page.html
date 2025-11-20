@@ -58,8 +58,10 @@
 			<ion-button *ngIf="vendorView && pageConfig.ShowConfirmOrder" fill="clear" title="Confirm Order" (click)="confirmOrder()">
 				<ion-icon slot="start" name="receipt-outline"></ion-icon>
 			</ion-button>
+			<ion-button *ngIf="selectedItems.length === 1" (click)="print()" title="{{'Print' | translate}}">
+				<ion-icon slot="start" name="print"></ion-icon>
+			</ion-button>
 		</ng-container>
-
 		<ion-button
 			class="clickable"
 			title="{{'Add' | translate}}"
