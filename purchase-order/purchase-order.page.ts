@@ -13,6 +13,7 @@ import { PURCHASE_RequestService } from '../purchase-request.service';
 import { PurchaseOrderModalPage } from '../purchase-request-detail/purchase-order-modal/purchase-order-modal.page';
 import { SearchAsyncPopoverPage } from '../search-async-popover/search-async-popover.page';
 import { CopyFromPurchaseOrderToReceiptModalPage } from '../copy-from-purchase-order-to-receipt-modal/copy-from-purchase-order-to-receipt-modal.page';
+import { Router } from '@angular/router';
 
 @Component({
 	selector: 'app-purchase-order',
@@ -40,6 +41,7 @@ export class PurchaseOrderPage extends PageBase {
 		public env: EnvService,
 		public navCtrl: NavController,
 		public location: Location,
+		public router: Router,
 		public purchaseQuotationProvider: PURCHASE_QuotationService,
 		public purchaseRequestProvider: PURCHASE_RequestService
 	) {
@@ -413,6 +415,12 @@ export class PurchaseOrderPage extends PageBase {
 				})
 				.catch((_) => {});
 		});
+	}
+
+	print() {
+		this.pageConfig['purchase-order-note'] = true;
+		const item = this.selectedItems[0];
+		this.router.navigate(['/purchase-order-note/' + item.Id], { state: { print: true } });
 	}
 
 	confirmOrder() {
