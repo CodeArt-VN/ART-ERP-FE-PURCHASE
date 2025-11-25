@@ -125,12 +125,10 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 			Name: [line.Name, this._contentType === 'Service' ? Validators.required : null],
 			Remark: [line.Remark],
 			RequiredDate: new FormControl({ value: line.RequiredDate, disabled: this?._sourceType != null }),
-
 			Price: [line.Price],
+			IsDiscontinued: [line.Price == null ? true : false],
 			UoMName: [line.UoMName],
-
 			IDVendor: [this._IDVendor ? this._IDVendor : line.IDVendor || ''],
-
 			Quantity: new FormControl(line.Quantity, this._contentType === 'Item' ? Validators.required : null),
 			MinimumOrderQty: [line?.MinimumOrderQty],
 			QuantityRemainingOpen: new FormControl({ value: line.QuantityRemainingOpen, disabled: true }),
@@ -469,5 +467,18 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 				});
 		}
 		this._isOpenAddAllProductFromVendor = false;
+	}
+
+	changeIsDiscontinued(group) {
+		if (group.get('IsDiscontinued').value) {
+			group.get('Price').setValue(null);
+			group.get('Price').clearValidators();
+			group.get('Price').disable();
+			group.get('Price').markAsDirty();
+		} else {
+			group.get('Price').setValidators([Validators.required]);
+			group.get('Price').enable();
+		}
+		this.onChange.emit();
 	}
 }

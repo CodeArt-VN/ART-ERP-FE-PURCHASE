@@ -152,6 +152,12 @@
                     </ng-template>
                 </datatable-column>
 
+                <datatable-column class="col-discontinued" name="Is discontinued" property="value">
+                    <ng-template let-g="row" datatable-cell-template>
+                        <app-input-control style="display: flex;justify-content: center;" (change)="changeIsDiscontinued(g)" [field]="{ id: 'IsDiscontinued', type: 'checkbox', form: g }"></app-input-control>
+                    </ng-template>
+                </datatable-column>
+
                 <datatable-column class="col-number" name="Discount" property="value">
                     <ng-template let-g="row" datatable-cell-template>
                         <app-input-control [field]="{ id: 'TotalDiscount', type: 'number', form: g }"
