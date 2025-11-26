@@ -151,7 +151,7 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 			CreatedDate: [line.CreatedDate],
 			DeletedLines: [],
 			_Status: [this._statusLineList.find((d) => d.Code == line.Status)],
-			_Vendors: [selectedItem ? selectedItem._Vendors : []], 
+			_Vendors: [selectedItem ? selectedItem._Vendors : []],
 			IsChecked: [false],
 		});
 
@@ -216,12 +216,18 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 						group.controls.IDBaseUoM.setValue(baseUOM.Id);
 						group.controls.IDBaseUoM.markAsDirty();
 					}
-
+					if (priceBeforeTax > 0) {
+						group.controls.IsDiscontinued.setValue(false);
+						this.changeIsDiscontinued(group);
+					}
 					group.controls.Price.setValue(priceBeforeTax);
 					group.controls.Price.markAsDirty();
 
 					this.submitData(group);
 					return;
+				} else {
+					group.controls.IsDiscontinued.setValue(true);
+					this.changeIsDiscontinued(group);
 				}
 			}
 		} else {
@@ -369,7 +375,7 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 	}
 
 	updateFormPermissions() {
-		if(this.page.pageConfig.canEditPurchaseQuotation != undefined) {
+		if (this.page.pageConfig.canEditPurchaseQuotation != undefined) {
 			this.page.pageConfig.canEdit = this.page.pageConfig.canEditPurchaseQuotation;
 		}
 		if (!this.formGroup?.controls?.OrderLines || !this.page) return;
