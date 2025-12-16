@@ -2,8 +2,9 @@
 	<app-toolbar [page]="this"> </app-toolbar>
 </ion-header>
 
-<ion-content appScrollbarTheme class="header-table">
-	<div class="table-contain">
+<ion-content appScrollbarTheme class="scrollx" forceOverscroll="false">
+	<app-page-title class="ion-padding safe-max-width" [pageConfig]="pageConfig"></app-page-title>
+	<div class="safe-max-width">
 		<app-data-table
 			class="box-shadow responsive"
 			[rows]="items"
@@ -31,31 +32,49 @@
 					<span (click)="showPlanningVendorModal(i)">{{i?.Id}}</span>
 				</ng-template>
 			</datatable-column>
-			<datatable-column class="col-id" name="IDVendor" property="IDVendor" [navLink]="pageConfig.pageName"></datatable-column>
-			<datatable-column class="col-name flex-break" name="Vendor name" property="Id">
+			<!-- <datatable-column class="col-id" name="IDVendor" property="IDVendor" [navLink]="pageConfig.pageName"></datatable-column> -->
+			<datatable-column class="col-name" name="Vendor" property="_Vendor">
 				<ng-template let-i="row" datatable-cell-template>
-					<div *ngIf="i?._Vendor">{{i._Vendor.Name}}</div>
+					<div>
+						<span (mousedown)="$event.stopPropagation()"> #{{ i?._Vendor?.Id }} </span>
+						<a class="clickable" [routerLink]="['/vendor/' + i?._Vendor?.Id]" (mousedown)="$event.stopPropagation()"><ion-icon name="open-outline"></ion-icon></a>
+						<small label class="bold">{{ i?._Vendor?.Code }}</small>
+						<div>{{ i?._Vendor?.Name }}</div>
+					</div>
 				</ng-template>
 			</datatable-column>
-			<datatable-column class="col-code" name="Order interval" property="OrderInterval"></datatable-column>
-			<datatable-column class="col-code" name="Order multiple" property="OrderMultiple"></datatable-column>
-			<datatable-column class="col-code" name="Order multiple" property="OrderMultiple"></datatable-column>
-			<datatable-column class="col-code" name="MOQ" property="MinimumOrderQty"></datatable-column>
-			<datatable-column class="col-code" name="Lead time" property="LeadTime"></datatable-column>
-			<datatable-column class="col-code" name="Tolerance days" property="ToleranceDays"></datatable-column>
-			<datatable-column class="col-name" name="Branch" property="IDBranch"></datatable-column>
-			<ng-template let-i="row" datatable-cell-template>
-				<app-branch-breadcrumbs
-					[maxItems]="3"
-					[itemsBeforeCollapse]="0"
-					[itemsAfterCollapse]="2"
-					[Id]="i.IDBranch"
-					[Items]="env.branchList"
-					[ngClass]="{'no-check-dirty': noCheckDirty}"
-					class="c-input disable breadcrumbs"
-				>
-				</app-branch-breadcrumbs>
-			</ng-template>
+
+			<datatable-column class="col-name flex-break" name="Item" property="_Item" [navLink]="pageConfig.pageName">
+				<ng-template let-i="row" datatable-cell-template>
+					<div>
+						<span (mousedown)="$event.stopPropagation()"> #{{ i._Item.Id }} </span>
+						<a class="clickable" [routerLink]="['/item/' + i._Item.Id]" (mousedown)="$event.stopPropagation()"><ion-icon name="open-outline"></ion-icon></a>
+						<small label class="bold">{{ i._Item.Code }}</small>
+						<div>{{ i._Item.Name }}</div>
+					</div>
+				</ng-template>
+			</datatable-column>
+
+			<datatable-column class="col-number" name="Order interval" property="OrderInterval"></datatable-column>
+			<datatable-column class="col-number" name="Order multiple" property="OrderMultiple"></datatable-column>
+			<datatable-column class="col-number" name="Order multiple" property="OrderMultiple"></datatable-column>
+			<datatable-column class="col-number" name="MOQ" property="MinimumOrderQty"></datatable-column>
+			<datatable-column class="col-number" name="Lead time" property="LeadTime"></datatable-column>
+			<datatable-column class="col-number" name="Tolerance days" property="ToleranceDays"></datatable-column>
+			<datatable-column class="col-name" name="Unit" property="IDBranch">
+				<ng-template let-i="row" datatable-cell-template>
+					<app-branch-breadcrumbs
+						[maxItems]="3"
+						[itemsBeforeCollapse]="0"
+						[itemsAfterCollapse]="2"
+						[Id]="i.IDBranch"
+						[Items]="env.branchList"
+						[ngClass]="{'no-check-dirty': noCheckDirty}"
+						class="c-input disable breadcrumbs"
+					>
+					</app-branch-breadcrumbs>
+				</ng-template>
+			</datatable-column>
 		</app-data-table>
 	</div>
 </ion-content>

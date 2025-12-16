@@ -36,7 +36,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 			SortBy: ['Id_desc'],
 			Take: 20,
 			Skip: 0,
-			Term: term,
+			Keyword: term ,
 		});
 	});
 	paymentFormGroup: FormGroup;

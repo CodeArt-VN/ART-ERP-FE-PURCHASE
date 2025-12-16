@@ -36,11 +36,11 @@ export class PurchaseQuotationDetailPage extends PageBase {
 	_isVendorSearch = false;
 	_isShowtoggleAllQuantity = true;
 	_vendorDataSource = this.buildSelectDataSource((term) => {
-		return this.contactProvider.search({ SkipAddress: true, IsVendor: true, SortBy: ['Id_desc'], Take: 20, Skip: 0, Term: term });
+		return this.contactProvider.search({ SkipAddress: true, IsVendor: true, SortBy: ['Id_desc'], Take: 20, Skip: 0, Keyword: term  });
 	});
 
 	_staffDataSource = this.buildSelectDataSource((term) => {
-		return this.staffProvider.search({ Take: 20, Skip: 0, Term: term });
+		return this.staffProvider.search({ Take: 20, Skip: 0, Keyword: term  });
 	});
 
 	constructor(

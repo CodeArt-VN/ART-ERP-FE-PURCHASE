@@ -110,7 +110,7 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 					SortBy: ['Id_desc'],
 					Take: 20,
 					Skip: 0,
-					Term: term,
+					Keyword: term
 				});
 			}),
 			_IDUoMDataSource: [selectedItem ? selectedItem.UoMs : []],
