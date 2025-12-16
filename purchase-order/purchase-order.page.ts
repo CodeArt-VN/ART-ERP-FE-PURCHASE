@@ -2,7 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
-import { BANK_OutgoingPaymentProvider, CRM_ContactProvider, SYS_ConfigProvider } from 'src/app/services/static/services.service';
+import { BANK_OutgoingPaymentProvider, CRM_ContactProvider } from 'src/app/services/static/services.service';
 import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
 import { FormBuilder, Validators } from '@angular/forms';
@@ -14,6 +14,7 @@ import { PurchaseOrderModalPage } from '../purchase-request-detail/purchase-orde
 import { SearchAsyncPopoverPage } from '../search-async-popover/search-async-popover.page';
 import { CopyFromPurchaseOrderToReceiptModalPage } from '../copy-from-purchase-order-to-receipt-modal/copy-from-purchase-order-to-receipt-modal.page';
 import { Router } from '@angular/router';
+import { SYS_ConfigService } from 'src/app/services/custom/system-config.service';
 
 @Component({
 	selector: 'app-purchase-order',
@@ -30,7 +31,7 @@ export class PurchaseOrderPage extends PageBase {
 	vendorView = false;
 	constructor(
 		public pageProvider: PURCHASE_OrderService,
-		public sysConfigProvider: SYS_ConfigProvider,
+		public sysConfigService: SYS_ConfigService,
 		public contactProvider: CRM_ContactProvider,
 		public outgoingPaymentProvider: BANK_OutgoingPaymentProvider,
 		public modalController: ModalController,
@@ -70,18 +71,18 @@ export class PurchaseOrderPage extends PageBase {
 		Promise.all([
 			this.env.getStatus('PurchaseOrder'),
 			this.env.getStatus('OutgoingPaymentStatus'),
-			this.sysConfigProvider.read({ Code_in: sysConfigQuery, IDBranch: this.env.selectedBranch }),
+			this.sysConfigService.getConfig(this.env.selectedBranch, ['POUsedApprovalModule']),
 			this.env.getType('PaymentType'),
 			this.env.getType('OutgoingPaymentReasonType'),
 		]).then((values) => {
 			this.statusList = values[0];
 			this.paymentStatusList = values[1];
-			values[2]['data'].forEach((e) => {
-				if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
-					e.Value = e._InheritedConfig.Value;
-				}
-				this.pageConfig[e.Code] = JSON.parse(e.Value);
-			});
+			if(values[2]){
+				this.pageConfig = {
+					...this.pageConfig,
+					...values[2]
+				};
+			}
 			if (values[3]) {
 				this.paymentTypeList = values[3].filter((d) => d.Code == 'Cash' || d.Code == 'Card' || d.Code == 'Transfer');
 			}
