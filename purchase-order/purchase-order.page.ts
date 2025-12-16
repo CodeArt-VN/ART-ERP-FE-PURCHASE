@@ -54,6 +54,7 @@ export class PurchaseOrderPage extends PageBase {
 		});
 		this.pageConfig.ShowAdd = false;
 		this.pageConfig.ShowAddNew = true;
+		this.pageConfig.IsRequiredDateRangeToExport = true;
 		if (this.env.user.IDBusinessPartner > 0 && this.env.user.SysRoles.includes('VENDOR')) {
 			this.vendorView = true;
 		}
