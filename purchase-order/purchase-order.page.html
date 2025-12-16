@@ -133,8 +133,23 @@
 			<datatable-column class="col-id" name="#" property="Id" [navLink]="pageConfig.pageName"></datatable-column>
 			<datatable-column class="col-date" format="yyyy-MM-dd" name="Order date" property="OrderDate" filterControlType="time-frame"></datatable-column>
 			<datatable-column class="col-date" format="yyyy-MM-dd" name="Expected receipt date" property="ExpectedReceiptDate" filterControlType="date"></datatable-column>
-			<datatable-column class="col-name flex-break" name="Vendor" property="VendorName"></datatable-column>
-			<datatable-column class="col-name flex-break" name="Goods owner" property="StorerName"></datatable-column>
+			<datatable-column class="col-name " name="Vendor" property="_Vendor">
+				<ng-template let-i="row" datatable-cell-template>
+						<span (mousedown)="$event.stopPropagation()"> #{{ i?._Vendor?.Id }} </span>
+						<a class="clickable" [routerLink]="['/vendor/' + i?._Vendor?.Id]" (mousedown)="$event.stopPropagation()"><ion-icon name="open-outline"></ion-icon></a>
+						<small label class="bold">{{ i?._Vendor?.Code }}</small>
+						<div>{{ i?._Vendor?.Name }}</div>
+				</ng-template>
+			</datatable-column>
+			<datatable-column class="col-name" name="Goods owner" property="_Storer">
+				<ng-template let-i="row" datatable-cell-template>
+						<span (mousedown)="$event.stopPropagation()"> #{{ i?._Storer?.Id }} </span>
+						<a class="clickable" [routerLink]="['/storer/' + i?._Storer?.Id]" (mousedown)="$event.stopPropagation()"><ion-icon name="open-outline"></ion-icon></a>
+						<small label class="bold">{{ i?._Storer?.Code }}</small>
+						<div>{{ i?._Storer?.Name }}</div>
+				</ng-template>
+			</datatable-column>
+			<datatable-column class="col-name" name="Warehouse" property="WarehouseName"></datatable-column>
 			<datatable-column class="col-number bold" format="1.0-0" name="Total" property="TotalAfterTax"></datatable-column>
 			<datatable-column class="col-status" name="Status" property="Status" filterControlType="ng-select-status" [filterDataSource]="statusList">
 				<ng-template let-i="row" datatable-cell-template>

@@ -52,7 +52,7 @@ export class ItemPlanningDataDetailPage extends PageBase {
 	preLoadData() {
 		this._vendorDataSource = this.buildSelectDataSource((term) => {
 			return this.contactProvider.search({
-				Term: term,
+				Keyword: term ,
 				SortBy: ['Id_desc'],
 				Take: 20,
 				Skip: 0,
@@ -62,7 +62,7 @@ export class ItemPlanningDataDetailPage extends PageBase {
 		});
 		this._itemDataSource = this.buildSelectDataSource((term) => {
 			return this.itemProvider.search({
-				Term: term,
+				Keyword: term,
 				SortBy: ['Id_desc'],
 				Take: 20,
 				Skip: 0,

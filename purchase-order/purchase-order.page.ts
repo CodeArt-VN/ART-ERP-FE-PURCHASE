@@ -106,6 +106,7 @@ export class PurchaseOrderPage extends PageBase {
 			i.OrderTimeText = lib.dateFormat(i.OrderDate, 'hh:MM');
 			i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
 			i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
+			i.WarehouseName = this.env.branchList.find(d=> d.Id == i.IDWarehouse)?.Name
 		});
 		if (this.pageConfig.canSubmitOrdersForApproval) {
 			this.pageConfig.canSubmit = true;
