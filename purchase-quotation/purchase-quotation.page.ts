@@ -2,10 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { NavController, ModalController, AlertController, LoadingController, PopoverController } from '@ionic/angular';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
-import { SYS_ConfigProvider } from 'src/app/services/static/services.service';
 import { Location } from '@angular/common';
-import { lib } from 'src/app/services/static/global-functions';
-import { ApiSetting } from 'src/app/services/static/api-setting';
 import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
 import { PURCHASE_QuotationService } from '../purchase-quotation.service';
 import { CopyFromPurchaseQuotationToPurchaseOrder } from '../copy-from-purchase-quotation-to-purchase-order-modal/copy-from-purchase-quotation-to-purchase-order-modal.page';
@@ -13,6 +10,7 @@ import { PURCHASE_RequestService } from '../purchase-request.service';
 import { PurchaseQuotationModalPage } from '../purchase-request-detail/purchase-quotation-modal/purchase-quotation-modal.page';
 import { SearchAsyncPopoverPage } from '../search-async-popover/search-async-popover.page';
 import { ItemPlanningDataModalPage } from '../item-planning-data-modal/item-planning-data-modal.page';
+import { SYS_ConfigService } from 'src/app/services/custom/system-config.service';
 @Component({
 	selector: 'app-purchase-quotation',
 	templateUrl: 'purchase-quotation.page.html',
@@ -24,7 +22,7 @@ export class PurchaseQuotationPage extends PageBase {
 	isOpenCopyPopover: boolean = false;
 	constructor(
 		public pageProvider: PURCHASE_QuotationService,
-		public sysConfigProvider: SYS_ConfigProvider,
+		public sysConfigService: SYS_ConfigService,
 		public modalController: ModalController,
 		public popoverCtrl: PopoverController,
 		public alertCtrl: AlertController,
@@ -45,15 +43,14 @@ export class PurchaseQuotationPage extends PageBase {
 			this.sortToggle('Id', true);
 		}
 
-		let sysConfigQuery = ['PQUsedApprovalModule'];
-		Promise.all([this.env.getStatus('PurchaseQuotation'),this.sysConfigProvider.read({ Code_in: sysConfigQuery, IDBranch: this.env.selectedBranch })]).then((values) => {
+		Promise.all([this.env.getStatus('PurchaseQuotation'), this.sysConfigService.getConfig(this.env.selectedBranch, ['PQUsedApprovalModule'])]).then((values) => {
 			this.statusList = values[0];
-			values[1]['data'].forEach((e) => {
-				if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
-					e.Value = e._InheritedConfig.Value;
-				}
-				this.pageConfig[e.Code] = JSON.parse(e.Value);
-			});
+			if(values[1]){
+				this.pageConfig = {
+					...this.pageConfig,
+					...values[1]
+				};
+			}
 			super.preLoadData(event);
 		});
 	}

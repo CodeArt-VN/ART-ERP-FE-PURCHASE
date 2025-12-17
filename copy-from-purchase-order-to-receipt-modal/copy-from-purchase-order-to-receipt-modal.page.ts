@@ -3,9 +3,9 @@ import { NavController, ModalController, NavParams, LoadingController, AlertCont
 import { PageBase } from 'src/app/page-base';
 import { ActivatedRoute } from '@angular/router';
 import { EnvService } from 'src/app/services/core/env.service';
-import { PURCHASE_OrderProvider, SALE_OrderProvider, SYS_ConfigProvider, WMS_ItemProvider, WMS_ReceiptProvider } from 'src/app/services/static/services.service';
+import { PURCHASE_OrderProvider, WMS_ItemProvider, WMS_ReceiptProvider } from 'src/app/services/static/services.service';
 import { FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
-import { lib } from 'src/app/services/static/global-functions';
+import { SYS_ConfigService } from 'src/app/services/custom/system-config.service';
 
 @Component({
 	selector: 'app-copy-from-purchase-order-to-receipt-modal',
@@ -36,7 +36,7 @@ export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 		public env: EnvService,
 		public navCtrl: NavController,
 		public route: ActivatedRoute,
-		public sysConfigProvider: SYS_ConfigProvider,
+		public sysConfigService: SYS_ConfigService,
 
 		public modalController: ModalController,
 		public alertCtrl: AlertController,
@@ -55,15 +55,9 @@ export class CopyFromPurchaseOrderToReceiptModalPage extends PageBase {
 	preLoadData(event) {
 		this.branchList = [...this.env.branchList];
 		if (!this.item.IDWarehouse) {
-			let sysConfigQuery = ['IDWarehouse'];
-			this.sysConfigProvider.read({ Code_in: sysConfigQuery, IDBranch: this.env.selectedBranch }).then((res: any) => {
-				if (res && res['data']) {
-					res['data'].forEach((e) => {
-						if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
-							e.Value = e._InheritedConfig.Value;
-						}
-						this.item.IDWarehouse = JSON.parse(e.Value);
-					});
+			this.sysConfigService.getConfig(this.env.selectedBranch, ['IDWarehouse']).then((res: any) => {
+				if (res) {
+					this.item.IDWarehouse = res.IDWarehouse;
 				}
 			this.loadedData(event);
 		});

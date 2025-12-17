@@ -8,15 +8,15 @@ import {
 	CRM_ContactProvider,
 	HRM_StaffProvider,
 	PURCHASE_QuotationDetailProvider,
-	SYS_ConfigProvider,
 	WMS_ItemProvider,
 } from 'src/app/services/static/services.service';
-import { FormBuilder, Validators, FormControl, FormArray, FormGroup } from '@angular/forms';
+import { FormBuilder, Validators, FormControl, FormArray } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
 import { CopyFromPurchaseQuotationToPurchaseOrder } from '../copy-from-purchase-quotation-to-purchase-order-modal/copy-from-purchase-quotation-to-purchase-order-modal.page';
 import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-version-modal.page';
 import { PURCHASE_QuotationService } from '../purchase-quotation.service';
 import { ItemPlanningDataModalPage } from '../item-planning-data-modal/item-planning-data-modal.page';
+import { SYS_ConfigService } from 'src/app/services/custom/system-config.service';
 
 @Component({
 	selector: 'app-purchase-quotation-detail',
@@ -50,7 +50,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		public branchProvider: BRA_BranchProvider,
 		public itemProvider: WMS_ItemProvider,
 		public popoverCtrl: PopoverController,
-		public sysConfigProvider: SYS_ConfigProvider,
+		public sysConfigService: SYS_ConfigService,
 		public env: EnvService,
 		public navCtrl: NavController,
 		public route: ActivatedRoute,
@@ -111,24 +111,23 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			{ Code: 'Item', Name: 'Items' },
 			{ Code: 'Service', Name: 'Service' },
 		];
-		let sysConfigQuery = ['PQUsedApprovalModule'];
 		Promise.all([
 			this.env.getStatus('PurchaseQuotation'),
 			this.contactProvider.read({ IsVendor: true, Take: 20 }),
 			this.env.getStatus('PurchaseQuotationLine'),
-			this.sysConfigProvider.read({ Code_in: sysConfigQuery, IDBranch: this.env.selectedBranch }),
+			this.sysConfigService.getConfig(this.env.selectedBranch, ['PQUsedApprovalModule']),
 		]).then((values: any) => {
 			if (values[0]) this.statusList = values[0];
 			if (values[1] && values[1].data) {
 				this._vendorDataSource.selected.push(...values[1].data);
 			}
 			if (values[2]) this._statusLineList = values[2];
-			values[3]['data'].forEach((e) => {
-				if ((e.Value == null || e.Value == 'null') && e._InheritedConfig) {
-					e.Value = e._InheritedConfig.Value;
-				}
-				this.pageConfig[e.Code] = JSON.parse(e.Value);
-			});
+			if(values[3]){
+				this.pageConfig = {
+					...this.pageConfig,
+					...values[3]
+				};
+			}
 			super.preLoadData(event);
 		});
 	}
