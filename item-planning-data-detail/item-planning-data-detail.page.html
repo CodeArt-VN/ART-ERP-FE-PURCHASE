@@ -14,7 +14,8 @@
 		<ion-grid fixed>
 			<ion-row>
 				<ion-col>
-					<app-form-control *ngIf="!isOpenFromOtherPage"
+					<app-form-control
+						*ngIf="!isOpenFromOtherPage"
 						[field]="{id:'IDItem', label: 'Item', type : 'ng-select-item', dataSource: _itemDataSource, bindLabel: 'Name', bindValue: 'Id', form: formGroup
 						}"
 					></app-form-control>
@@ -29,7 +30,6 @@
 					<app-form-control [field]="{id:'MinimumOrderQty', label: 'Minimum order qty', type : 'number', form: formGroup }"></app-form-control>
 					<app-form-control [field]="{id:'LeadTime', label: 'Lead time', type : 'number', form: formGroup }"></app-form-control>
 					<app-form-control [field]="{id:'ToleranceDays', label: 'Tolerance days', type : 'number', form: formGroup }"></app-form-control>
-
 				</ion-col>
 			</ion-row>
 			<ion-row>
@@ -37,7 +37,6 @@
 					<app-form-control [field]="{id:'Remark', label:'Remark', type : 'textarea', form : formGroup }"></app-form-control>
 
 					<!-- <app-form-control [field]="{id:'Sort', label:'Sort', type : 'number', form : formGroup }" (change)="saveChange()"></app-form-control> -->
-
 				</ion-col>
 			</ion-row>
 		</ion-grid>
@@ -46,27 +45,15 @@
 <ion-footer collapse="fade">
 	<ion-toolbar>
 		<div slot="start">
-			
-        </div>
-		
+			<ion-button fill="outline" *ngIf="item.Id && pageConfig.canDelete" (click)="delete()" color="danger"> {{'Delete' | translate}} </ion-button>
+		</div>
+
 		<div slot="end">
-			<ion-button [strong]="true" *ngIf="!item.Id && pageConfig.canAdd" (click)="saveChange()">
-				{{'Add' | translate}}
+			<ion-button fill="outline" *ngIf="!item.Id" color="warning" (click)="closeModal()"> {{'Cancel' | translate}} </ion-button>
+			<ion-button fill="outline" *ngIf="item.Id && pageConfig.canEdit" (click)="refresh()" color="warning" [disabled]="!formGroup.dirty">
+				{{'Discard changes' | translate}}
 			</ion-button>
-			<ion-button [strong]="true" *ngIf="item.Id && pageConfig.canEdit" (click)="saveChange()" [disabled]="!formGroup.dirty">
-				{{'Save' | translate}}
-			</ion-button>
-			<ion-button fill="outline" *ngIf="item.Id" (click)="refresh()" color="warning">
-				{{'Change cancel' | translate}}
-			</ion-button>
-			<ion-button fill="outline" *ngIf="item.Id && pageConfig.canDelete" (click)="delete()" color="danger">
-				{{'Delete' | translate}}
-			</ion-button>
-            <ion-button fill="outline" color="warning" (click)="closeModal()" >
-                {{'Cancel' | translate}}
-            </ion-button>
-        </div>
-		
+			<ion-button [strong]="true" *ngIf="(pageConfig.canAdd || pageConfig.canEdit)" (click)="saveChange()" [disabled]="!formGroup.dirty"> {{'Save' | translate}} </ion-button>
+		</div>
 	</ion-toolbar>
 </ion-footer>
-

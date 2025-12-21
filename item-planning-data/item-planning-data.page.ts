@@ -51,7 +51,7 @@ export class ItemPlanningDataPage extends PageBase {
 				item: i,
 				id: i.Id,
 			},
-			cssClass: 'modal90vh',
+			cssClass: 'modal90',
 		});
 		await modal.present();
 		const { data } = await modal.onDidDismiss();
