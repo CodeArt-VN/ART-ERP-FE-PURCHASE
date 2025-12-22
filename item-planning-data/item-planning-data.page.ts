@@ -4,6 +4,7 @@ import { EnvService } from 'src/app/services/core/env.service';
 import { PageBase } from 'src/app/page-base';
 import { PURCHASE_ItemPlanningDataProvider } from 'src/app/services/static/services.service';
 import { ItemPlanningDataDetailPage } from '../item-planning-data-detail/item-planning-data-detail.page';
+import { SortConfig } from 'src/app/interfaces/options-interface';
 
 @Component({
 	selector: 'app-item-planning-data',
@@ -31,8 +32,10 @@ export class ItemPlanningDataPage extends PageBase {
 		this.query.AllParent = true;
 	}
 
-	loadedData(event) {
-		super.loadedData(event);
+	preLoadData(event?: any): void {
+		let sorted: SortConfig[] = [{ Dimension: 'Id', Order: 'DESC' }];
+		this.pageConfig.sort = sorted;
+		super.preLoadData(event);
 	}
 
 	add() {

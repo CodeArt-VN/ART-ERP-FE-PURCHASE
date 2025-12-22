@@ -1,0 +1,55 @@
+<ion-header collapse="fade">
+	<ion-toolbar>
+		<ion-title>{{item?.Name}}</ion-title>
+
+		<ion-buttons slot="primary">
+			<ion-button title="{{'Close' | translate}}" color="secondary" (click)="closeModal()">
+				<ion-icon slot="icon-only" name="close"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
+</ion-header>
+<ion-content appScrollbarTheme class="ion-padding">
+	<div id="detail-page" style="position: absolute"></div>
+	<form [formGroup]="formGroup">
+		<ion-grid fixed>
+			<ion-row>
+				<ion-col>
+					<app-form-control [field]="{id:'Name', label: 'Name', type : 'text', form: formGroup}" (change)="changeName()"></app-form-control>
+					<app-form-control [field]="{id:'Code', label: 'Code', type : 'text', form: formGroup}"></app-form-control>
+					<app-form-control [field]="{id:'Type', label: 'Type', type : 'ng-select', dataSource: typeDataSource, bindLabel:'Name', bindValue:'Code', form : formGroup }"></app-form-control>
+					<app-form-control [field]="{id:'Value', label:'Value', type:'number', form:formGroup}"></app-form-control>
+					<app-form-control [field]="{ id: 'Remark', label: 'Remark', type: 'textarea', form: formGroup }"></app-form-control>
+				</ion-col>
+				
+			</ion-row>
+			<ion-row>
+				<ion-col *ngIf="item.Id">
+					<app-form-control [field]="{id: 'CreatedBy', type: 'text', label: 'Created by', form: formGroup }"></app-form-control>
+					<app-form-control [field]="{id: 'CreatedDate', type: 'span-datetime', label: 'Created date', form: formGroup }"></app-form-control>
+					<app-form-control [field]="{id: 'ModifiedBy', type: 'text', label: 'Last modified by', form: formGroup }"></app-form-control>
+					<app-form-control [field]="{id: 'ModifiedDate', type: 'span-datetime', label: 'Last modified date', form: formGroup }"></app-form-control>
+				</ion-col>
+				
+			</ion-row>
+		</ion-grid>
+	</form>
+	<app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>
+</ion-content>
+<ion-footer collapse="fade">
+	<ion-toolbar>
+		<div slot="start">
+			<ion-button fill="outline" *ngIf="item.Id && pageConfig.canDelete" (click)="delete()" color="danger"> {{'Delete' | translate}} </ion-button>
+		</div>
+
+		<div slot="end">
+			<ion-button fill="outline" *ngIf="!item.Id" color="warning" (click)="closeModal()"> {{'Cancel' | translate}} </ion-button>
+			<ion-button fill="outline" *ngIf="item.Id && pageConfig.canEdit" (click)="refresh()" color="warning" [disabled]="!formGroup.dirty">
+				{{'Discard changes' | translate}}
+			</ion-button>
+			<ion-button [strong]="true" *ngIf="(pageConfig.canAdd || pageConfig.canEdit)" (click)="saveChange()" [disabled]="!formGroup.dirty">
+				{{'Save' | translate}}
+			</ion-button>
+		</div>
+	</ion-toolbar>
+</ion-footer>

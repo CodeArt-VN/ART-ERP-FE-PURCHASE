@@ -23,7 +23,8 @@
 						[field]="{id:'IDVendor', label: 'Vendor', type : 'ng-select-bp', dataSource: _vendorDataSource, bindLabel: 'Name', bindValue: 'Id', form: formGroup
 						}"
 					></app-form-control>
-					<app-form-control [field]="{id:'OrderInterval', label: 'Order interval', type : 'text', form: formGroup}"></app-form-control>
+					<app-form-control [field]="{id:'OrderInterval', label: 'Order interval', type : 'ng-select-async', dataSource: _orderIntervalDataSource, bindLabel: 'Name', bindValue: 'Name', form: formGroup}"
+					></app-form-control>
 					<app-form-control [field]="{id:'OrderMultiple', label: 'Order multiple', type : 'number', form: formGroup }"></app-form-control>
 				</ion-col>
 				<ion-col>

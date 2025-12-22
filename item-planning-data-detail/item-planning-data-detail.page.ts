@@ -3,7 +3,7 @@ import { NavController, ModalController, NavParams, LoadingController, AlertCont
 import { PageBase } from 'src/app/page-base';
 import { ActivatedRoute } from '@angular/router';
 import { EnvService } from 'src/app/services/core/env.service';
-import { CRM_ContactProvider, PURCHASE_ItemPlanningDataProvider, SYS_FormProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
+import { CRM_ContactProvider, PURCHASE_ItemPlanningDataProvider, PURCHASE_OrderIntervalProvider, SYS_FormProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
@@ -19,6 +19,7 @@ export class ItemPlanningDataDetailPage extends PageBase {
 		public pageProvider: PURCHASE_ItemPlanningDataProvider,
 		public contactProvider: CRM_ContactProvider,
 		public itemProvider: WMS_ItemProvider,
+		public purchaseOrderInterval: PURCHASE_OrderIntervalProvider,
 		public env: EnvService,
 		public navCtrl: NavController,
 		public route: ActivatedRoute,
@@ -49,6 +50,8 @@ export class ItemPlanningDataDetailPage extends PageBase {
 	}
 	_vendorDataSource;
 	_itemDataSource;
+	_orderIntervalDataSource;
+
 	preLoadData() {
 		this._vendorDataSource = this.buildSelectDataSource((term) => {
 			return this.contactProvider.search({
@@ -62,6 +65,15 @@ export class ItemPlanningDataDetailPage extends PageBase {
 		});
 		this._itemDataSource = this.buildSelectDataSource((term) => {
 			return this.itemProvider.search({
+				Keyword: term,
+				SortBy: ['Id_desc'],
+				Take: 20,
+				Skip: 0,
+				
+			});
+		});
+		this._orderIntervalDataSource = this.buildSelectDataSource((term) => {
+			return this.purchaseOrderInterval.search({
 				Keyword: term,
 				SortBy: ['Id_desc'],
 				Take: 20,
@@ -99,9 +111,13 @@ export class ItemPlanningDataDetailPage extends PageBase {
 		if(this.item?._Item){
 			this._itemDataSource.selected = [this.item._Item];
 		}
+		if(this.item?.OrderInterval){
+			this._orderIntervalDataSource.selected = [this.item.OrderInterval];
+		}
 		
 		this._itemDataSource.initSearch();
 		this._vendorDataSource.initSearch();
+		this._orderIntervalDataSource.initSearch();
 		super.loadedData();
 	}
 	refresh(event?: any): void {
