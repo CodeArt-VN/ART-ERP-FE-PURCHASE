@@ -17,8 +17,21 @@
 				<ion-col>
 					<app-form-control [field]="{id:'Name', label: 'Name', type : 'text', form: formGroup}" (change)="changeName()"></app-form-control>
 					<app-form-control [field]="{id:'Code', label: 'Code', type : 'text', form: formGroup}"></app-form-control>
-					<app-form-control [field]="{id:'Type', label: 'Type', type : 'ng-select', dataSource: typeDataSource, bindLabel:'Name', bindValue:'Code', form : formGroup }"></app-form-control>
-					<app-form-control [field]="{id:'Value', label:'Value', type:'number', form:formGroup}"></app-form-control>
+					<app-form-control
+						[field]="{id:'Type', label: 'Type', type : 'ng-select', dataSource: typeDataSource, bindLabel:'Name', bindValue:'Code', form : formGroup }"
+						(change)="onTypeChange(true)"
+					></app-form-control>
+					<ng-container [ngSwitch]="formGroup.get('Type')?.value">
+						<app-form-control *ngSwitchCase="'EveryEachDay'" [field]="{id:'Value', label:'Value', type:'number', form:formGroup}"></app-form-control>
+						<app-form-control
+							*ngSwitchCase="'Weekly'"
+							[field]="{id:'Value', label:'Day of week', type:'ng-select', dataSource: weekDayDataSource, bindLabel:'Name', bindValue:'Code', form:formGroup}"
+						></app-form-control>
+						<app-form-control
+							*ngSwitchCase="'Monthly'"
+							[field]="{id:'Value', label:'Day of month', type:'ng-select', dataSource: monthDayDataSource, bindLabel:'Name', bindValue:'Code', form:formGroup}"
+						></app-form-control>
+					</ng-container>
 					<app-form-control [field]="{ id: 'Remark', label: 'Remark', type: 'textarea', form: formGroup }"></app-form-control>
 				</ion-col>
 				
