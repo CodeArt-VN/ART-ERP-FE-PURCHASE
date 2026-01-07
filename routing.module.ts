@@ -14,6 +14,9 @@ export const PURCHASERoutes: Routes = [
     
     { path: 'item-planning-data', loadChildren: () => import('./item-planning-data/item-planning-data.module').then(m => m.ItemPlanningDataPageModule), canActivate: [AuthGuard]},
     { path: 'item-planning-data/:id', loadChildren: () => import('./item-planning-data-detail/item-planning-data-detail.module').then(m => m.ItemPlanningDataDetailPageModule), canActivate: [AuthGuard]},
+
+    { path: 'purchase-order-interval', loadChildren: () => import('./purchase-order-interval/purchase-order-interval.module').then(m => m.PurchaseOrderIntervalPageModule), canActivate: [AuthGuard]},
+    { path: 'purchase-order-interval/:id', loadChildren: () => import('./purchase-order-interval-detail/purchase-order-interval-detail.module').then(m => m.PurchaseOrderIntervalDetailPageModule), canActivate: [AuthGuard]},
   
 ];
 ``
