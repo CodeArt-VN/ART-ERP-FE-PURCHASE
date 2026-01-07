@@ -14,10 +14,24 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 })
 export class PurchaseOrderIntervalDetailPage extends PageBase {
 	typeDataSource = [
+		{ Name: 'Every each day', Code: 'EveryEachDay' },
 		{ Name: 'Daily', Code: 'Daily' },
 		{ Name: 'Weekly', Code: 'Weekly' },
 		{ Name: 'Monthly', Code: 'Monthly' },
 	];
+	weekDayDataSource = [
+		{ Name: 'Monday', Code: 1 },
+		{ Name: 'Tuesday', Code: 2 },
+		{ Name: 'Wednesday', Code: 3 },
+		{ Name: 'Thursday', Code: 4 },
+		{ Name: 'Friday', Code: 5 },
+		{ Name: 'Saturday', Code: 6 },
+		{ Name: 'Sunday', Code: 0 },
+	];
+	monthDayDataSource = []
+
+	
+
 	constructor(
 		public pageProvider: PURCHASE_OrderIntervalProvider,
 		public env: EnvService,
@@ -48,15 +62,35 @@ export class PurchaseOrderIntervalDetailPage extends PageBase {
 			ModifiedDate: new FormControl({ value: '', disabled: true }),
 		});
 	}
-
-	preLoadData(event?: any): void {
-		Promise.all([this.env.getType('ControlType'), this.env.getType('UDFGroupsType', true)]).then((values: any) => {
-			super.preLoadData(event);
+	loadData(event?: any, forceReload?: boolean): void {
+		this.monthDayDataSource = [];
+		for (let day = 1; day <= 31; day++) {
+		this.monthDayDataSource.push({
+			Name: day.toString(),
+			Code: day
 		});
+		}
+		super.loadData(event, forceReload);
 	}
 
 	async saveChange() {
 		super.saveChange2();
+	}
+
+	onTypeChange(resetValue = false) {
+		const type = this.formGroup?.get('Type')?.value;
+		const valueControl = this.formGroup?.get('Value');
+		if (!valueControl) return;
+		valueControl.clearValidators();
+
+		if (type === 'EveryEachDay' || type === 'Weekly' || type === 'Monthly') {
+			valueControl.setValue(null);
+			valueControl.setValidators([Validators.required]);
+		} else if (type === 'Daily' && resetValue) {
+			valueControl.setValue(1);
+		}
+
+		valueControl.updateValueAndValidity();
 	}
 	changeName() {
 		if (this.submitAttempt) return;
