@@ -14,7 +14,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 })
 export class PurchaseOrderIntervalDetailPage extends PageBase {
 	typeDataSource = [
-		{ Name: 'Every each day', Code: 'EveryEachDay' },
+		{ Name: 'One Time', Code: 'OneTime' },
 		{ Name: 'Daily', Code: 'Daily' },
 		{ Name: 'Weekly', Code: 'Weekly' },
 		{ Name: 'Monthly', Code: 'Monthly' },
@@ -28,9 +28,35 @@ export class PurchaseOrderIntervalDetailPage extends PageBase {
 		{ Name: 'Saturday', Code: 6 },
 		{ Name: 'Sunday', Code: 0 },
 	];
-	monthDayDataSource = []
-
-	
+	monthDataSource = [
+		{ Name: 'January', Code: 1 },
+		{ Name: 'February', Code: 2 },
+		{ Name: 'March', Code: 3 },
+		{ Name: 'April', Code: 4 },
+		{ Name: 'May', Code: 5 },
+		{ Name: 'June', Code: 6 },
+		{ Name: 'July', Code: 7 },
+		{ Name: 'August', Code: 8 },
+		{ Name: 'September', Code: 9 },
+		{ Name: 'October', Code: 10 },
+		{ Name: 'November', Code: 11 },
+		{ Name: 'December', Code: 12 },
+	];
+	monthlyMethodDataSource = [
+		{ Name: 'Days', Code: 0 },
+		{ Name: 'On', Code: 1 },
+	];
+	monthlyDayDataSource = [
+		...Array.from({ length: 31 }, (_, i) => ({ Name: `${i + 1}`, Code: i + 1 })),
+		{ Name: 'Last', Code: 'LAST' },
+	];
+	monthlyWeekDataSource = [
+		{ Name: 'First', Code: 1 },
+		{ Name: 'Second', Code: 2 },
+		{ Name: 'Third', Code: 3 },
+		{ Name: 'Fourth', Code: 4 },
+		{ Name: 'Last', Code: 'LAST' },
+	];
 
 	constructor(
 		public pageProvider: PURCHASE_OrderIntervalProvider,
@@ -51,7 +77,15 @@ export class PurchaseOrderIntervalDetailPage extends PageBase {
 			Code: [''],
 			Name: ['', Validators.required],
 			Type: ['', Validators.required],
-			Value: ['', Validators.required],
+			StartDate: ['', Validators.required],
+			EndDate: [''],
+			Value: [''],
+			WeeklyDays: [''],
+			MonthlyMonths: [''],
+			MonthlyMethod: [''],
+			MonthlyDays: [''],
+			MonthlyWeeks: [''],
+			MonthlyWeekDays: [''],
 			Remark: [''],
 			Sort: [''],
 			IsDisabled: new FormControl({ value: '', disabled: true }),
@@ -62,15 +96,17 @@ export class PurchaseOrderIntervalDetailPage extends PageBase {
 			ModifiedDate: new FormControl({ value: '', disabled: true }),
 		});
 	}
-	loadData(event?: any, forceReload?: boolean): void {
-		this.monthDayDataSource = [];
-		for (let day = 1; day <= 31; day++) {
-		this.monthDayDataSource.push({
-			Name: day.toString(),
-			Code: day
-		});
-		}
-		super.loadData(event, forceReload);
+
+
+	loadedData(event?: any, ignoredFromGroup?: boolean): void {
+		super.loadedData(event, ignoredFromGroup);
+		this.setMonthlyMethodControl();
+		this.setMultiValueControl('WeeklyDays');
+		this.setMultiValueControl('MonthlyMonths');
+		this.setMultiValueControl('MonthlyDays');
+		this.setMultiValueControl('MonthlyWeeks');
+		this.setMultiValueControl('MonthlyWeekDays');
+		this.onTypeChange(false);
 	}
 
 	async saveChange() {
@@ -79,19 +115,179 @@ export class PurchaseOrderIntervalDetailPage extends PageBase {
 
 	onTypeChange(resetValue = false) {
 		const type = this.formGroup?.get('Type')?.value;
+		const isOneTime = type === 'OneTime';
+		const isDaily = type === 'Daily';
+		const isWeekly = type === 'Weekly';
+		const isMonthly = type === 'Monthly';
 		const valueControl = this.formGroup?.get('Value');
-		if (!valueControl) return;
-		valueControl.clearValidators();
+		const weeklyDaysControl = this.formGroup?.get('WeeklyDays');
+		const monthlyMethodControl = this.formGroup?.get('MonthlyMethod');
+		const monthlyMonthsControl = this.formGroup?.get('MonthlyMonths');
 
-		if (type === 'EveryEachDay' || type === 'Weekly' || type === 'Monthly') {
-			valueControl.setValue(null);
-			valueControl.setValidators([Validators.required]);
-		} else if (type === 'Daily' && resetValue) {
-			valueControl.setValue(1);
+		if (valueControl) {
+			valueControl.clearValidators();
+			if (isDaily || isWeekly) valueControl.setValidators([Validators.required, Validators.min(1)]);
+			if (resetValue && !isDaily && !isWeekly) this.resetControl(valueControl);
+			if ((isOneTime || isMonthly) && resetValue) {
+				valueControl.setValue(1);
+				valueControl.markAsDirty();
+			}
+			valueControl.updateValueAndValidity({ emitEvent: false });
 		}
 
-		valueControl.updateValueAndValidity();
+		if (weeklyDaysControl) {
+			weeklyDaysControl.clearValidators();
+			if (isWeekly) weeklyDaysControl.setValidators([Validators.required]);
+			if (resetValue && !isWeekly) this.clearMultiField('WeeklyDays');
+			weeklyDaysControl.updateValueAndValidity({ emitEvent: false });
+		}
+
+		if (monthlyMethodControl) {
+			monthlyMethodControl.clearValidators();
+			if (isMonthly) monthlyMethodControl.setValidators([Validators.required]);
+			if (resetValue && !isMonthly) this.resetControl(monthlyMethodControl);
+			monthlyMethodControl.updateValueAndValidity({ emitEvent: false });
+		}
+
+		if (monthlyMonthsControl) {
+			monthlyMonthsControl.clearValidators();
+			if (isMonthly) monthlyMonthsControl.setValidators([Validators.required]);
+			if (resetValue && !isMonthly) this.clearMultiField('MonthlyMonths');
+			monthlyMonthsControl.updateValueAndValidity({ emitEvent: false });
+		}
+
+		if (!isMonthly) {
+			const monthlyDaysControl = this.formGroup?.get('MonthlyDays');
+			const monthlyWeeksControl = this.formGroup?.get('MonthlyWeeks');
+			const monthlyWeekDaysControl = this.formGroup?.get('MonthlyWeekDays');
+			monthlyDaysControl?.clearValidators();
+			monthlyWeeksControl?.clearValidators();
+			monthlyWeekDaysControl?.clearValidators();
+			monthlyDaysControl?.updateValueAndValidity({ emitEvent: false });
+			monthlyWeeksControl?.updateValueAndValidity({ emitEvent: false });
+			monthlyWeekDaysControl?.updateValueAndValidity({ emitEvent: false });
+		}
+
+		if (!isMonthly && resetValue) {
+			this.clearMultiField('MonthlyDays');
+			this.clearMultiField('MonthlyWeeks');
+			this.clearMultiField('MonthlyWeekDays');
+			this.clearMultiField('MonthlyMonths');
+		}
+
+		this.onMonthlyMethodChange(resetValue);
 	}
+
+	onMonthlyMethodChange(resetValue = false) {
+		const type = this.formGroup?.get('Type')?.value;
+		if (type !== 'Monthly') return;
+
+		const methodControl = this.formGroup?.get('MonthlyMethod');
+		const method = this.normalizeMonthlyMethod(methodControl?.value);
+		const monthlyDaysControl = this.formGroup?.get('MonthlyDays');
+		const monthlyWeeksControl = this.formGroup?.get('MonthlyWeeks');
+		const monthlyWeekDaysControl = this.formGroup?.get('MonthlyWeekDays');
+
+		if (methodControl && method !== methodControl.value) {
+			methodControl.setValue(method, { emitEvent: false });
+		}
+		if (resetValue) methodControl?.markAsDirty();
+		else methodControl?.markAsPristine();
+
+		if (monthlyDaysControl) monthlyDaysControl.clearValidators();
+		if (monthlyWeeksControl) monthlyWeeksControl.clearValidators();
+		if (monthlyWeekDaysControl) monthlyWeekDaysControl.clearValidators();
+
+		if (method === 0) {
+			if (monthlyDaysControl) monthlyDaysControl.setValidators([Validators.required]);
+			if (resetValue) {
+				this.clearMultiField('MonthlyWeeks');
+				this.clearMultiField('MonthlyWeekDays');
+			}
+		} else if (method === 1) {
+			if (monthlyWeeksControl) monthlyWeeksControl.setValidators([Validators.required]);
+			if (monthlyWeekDaysControl) monthlyWeekDaysControl.setValidators([Validators.required]);
+			if (resetValue) this.clearMultiField('MonthlyDays');
+		}
+
+		if (monthlyDaysControl) monthlyDaysControl.updateValueAndValidity({ emitEvent: false });
+		if (monthlyWeeksControl) monthlyWeeksControl.updateValueAndValidity({ emitEvent: false });
+		if (monthlyWeekDaysControl) monthlyWeekDaysControl.updateValueAndValidity({ emitEvent: false });
+	}
+
+	private parseMultiValue(value: any) {
+		if (!value) return [];
+		if (Array.isArray(value)) return value;
+		return value
+			.toString()
+			.split(',')
+			.map((v) => v.trim())
+			.filter((v) => v !== '')
+			.map((v) => {
+				const num = Number(v);
+				return Number.isNaN(num) ? v : num;
+			});
+	}
+
+	private serializeMultiValue(value: any) {
+		if (value === null || value === undefined) return null;
+		if (!Array.isArray(value)) return value;
+		const mapped = value.filter((v) => v !== null && v !== undefined && v !== '');
+		return mapped.length ? mapped.join(',') : null;
+	}
+
+	private setMultiValueControl(field: string) {
+		const control = this.formGroup.get(field);
+		if (!control) return;
+		control.setValue(this.parseMultiValue(control.value), { emitEvent: false });
+		control.markAsPristine();
+	}
+
+	private normalizeMonthlyMethod(value: any) {
+		if (value === null || value === undefined || value === '') return null;
+		if (value === true || value === 'true') return 1;
+		if (value === false || value === 'false') return 0;
+		const num = Number(value);
+		return Number.isNaN(num) ? value : num;
+	}
+
+	private setMonthlyMethodControl() {
+		const methodControl = this.formGroup.get('MonthlyMethod');
+		if (!methodControl) return;
+		const normalized = this.normalizeMonthlyMethod(methodControl?.value);
+		methodControl.setValue(normalized, { emitEvent: false });
+		methodControl.markAsPristine();
+	}
+
+	private resetControl(control: any) {
+		if (!control) return;
+		control.setValue(null);
+		control.markAsDirty();
+	}
+
+	private clearMultiField(field: string) {
+		const control = this.formGroup.get(field);
+		if (!control) return;
+		control.setValue([], { emitEvent: false });
+		control.markAsDirty();
+	}
+
+	getDirtyValues(fg: FormGroup<any>) {
+		const dirtyValues = super.getDirtyValues(fg);
+		if (!dirtyValues) return dirtyValues;
+		const multiFields = ['WeeklyDays', 'MonthlyMonths', 'MonthlyDays', 'MonthlyWeeks', 'MonthlyWeekDays'];
+		multiFields.forEach((field) => {
+			if (dirtyValues.hasOwnProperty(field)) {
+				dirtyValues[field] = this.serializeMultiValue(dirtyValues[field]);
+			}
+		});
+		if (dirtyValues.hasOwnProperty('MonthlyMethod')) {
+			const method = this.normalizeMonthlyMethod(dirtyValues['MonthlyMethod']);
+			dirtyValues['MonthlyMethod'] = method === 1 ? true : method === 0 ? false : dirtyValues['MonthlyMethod'];
+		}
+		return dirtyValues;
+	}
+
 	changeName() {
 		if (this.submitAttempt) return;
 		this.submitAttempt = true;

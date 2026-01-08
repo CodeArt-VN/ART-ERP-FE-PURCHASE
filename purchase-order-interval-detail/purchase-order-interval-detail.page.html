@@ -21,16 +21,195 @@
 						[field]="{id:'Type', label: 'Type', type : 'ng-select', dataSource: typeDataSource, bindLabel:'Name', bindValue:'Code', form : formGroup }"
 						(change)="onTypeChange(true)"
 					></app-form-control>
+					<app-form-control [field]="{id:'StartDate', label:'Start', type:'datetime-local', form: formGroup}"></app-form-control>
+					<app-form-control [field]="{id:'EndDate', label:'End', type:'datetime-local', form: formGroup}"></app-form-control>
 					<ng-container [ngSwitch]="formGroup.get('Type')?.value">
-						<app-form-control *ngSwitchCase="'EveryEachDay'" [field]="{id:'Value', label:'Value', type:'number', form:formGroup}"></app-form-control>
-						<app-form-control
-							*ngSwitchCase="'Weekly'"
-							[field]="{id:'Value', label:'Day of week', type:'ng-select', dataSource: weekDayDataSource, bindLabel:'Name', bindValue:'Code', form:formGroup}"
-						></app-form-control>
-						<app-form-control
-							*ngSwitchCase="'Monthly'"
-							[field]="{id:'Value', label:'Day of month', type:'ng-select', dataSource: monthDayDataSource, bindLabel:'Name', bindValue:'Code', form:formGroup}"
-						></app-form-control>
+						<ng-container *ngSwitchCase="'Daily'">
+							<app-form-control [field]="{id:'Value', label:'Recur every (per day)', type:'number', form:formGroup}"></app-form-control>
+						</ng-container>
+						<ng-container *ngSwitchCase="'Weekly'">
+							<app-form-control [field]="{id:'Value', label:'Recur every (per week)', type:'number', form:formGroup}"></app-form-control>
+							<div class="c-control">
+								<label class="c-label" for="WeeklyDays"
+									>{{'Days of week' | translate}}
+									<span
+										*ngIf="!formGroup.controls.WeeklyDays.valid && !formGroup.controls.WeeklyDays.pending && (formGroup.controls.WeeklyDays.dirty || submitAttempt)"
+										ion-text
+										color="danger"
+										>(*)</span
+									>
+								</label>
+								<ng-select
+									class="c-input"
+									labelForId="WeeklyDays"
+									formControlName="WeeklyDays"
+									groupBy="Group"
+									[selectableGroup]="true"
+									[selectableGroupAsModel]="false"
+									[closeOnSelect]="false"
+									[items]="weekDayDataSource"
+									bindLabel="Name"
+									bindValue="Code"
+									[multiple]="true"
+									placeholder="{{'Select weekdays' | translate}}"
+								>
+									<ng-template ng-optgroup-tmp let-item="item" let-item$="item$" let-index="index">
+										<input id="WeeklyDays-group-{{index}}" type="checkbox" [ngModel]="item$.selected" [ngModelOptions]="{standalone: true}" />
+										{{'All' | translate}}
+									</ng-template>
+									<ng-template ng-option-tmp let-item="item" let-item$="item$" let-index="index">
+										<input id="WeeklyDays-{{index}}" type="checkbox" [ngModel]="item$.selected" [ngModelOptions]="{standalone: true}" />
+										{{item.Name}}
+									</ng-template>
+								</ng-select>
+							</div>
+						</ng-container>
+						<ng-container *ngSwitchCase="'Monthly'">
+							<div class="c-control">
+								<label class="c-label" for="MonthlyMonths"
+									>{{'Months' | translate}}
+									<span
+										*ngIf="!formGroup.controls.MonthlyMonths.valid && !formGroup.controls.MonthlyMonths.pending && (formGroup.controls.MonthlyMonths.dirty || submitAttempt)"
+										ion-text
+										color="danger"
+										>(*)</span
+									>
+								</label>
+								<ng-select
+									class="c-input"
+									labelForId="MonthlyMonths"
+									formControlName="MonthlyMonths"
+									groupBy="Group"
+									[selectableGroup]="true"
+									[selectableGroupAsModel]="false"
+									[closeOnSelect]="false"
+									[items]="monthDataSource"
+									bindLabel="Name"
+									bindValue="Code"
+									[multiple]="true"
+									placeholder="{{'Select months' | translate}}"
+								>
+									<ng-template ng-optgroup-tmp let-item="item" let-item$="item$" let-index="index">
+										<input id="MonthlyMonths-group-{{index}}" type="checkbox" [ngModel]="item$.selected" [ngModelOptions]="{standalone: true}" />
+										{{'All' | translate}}
+									</ng-template>
+									<ng-template ng-option-tmp let-item="item" let-item$="item$" let-index="index">
+										<input id="MonthlyMonths-{{index}}" type="checkbox" [ngModel]="item$.selected" [ngModelOptions]="{standalone: true}" />
+										{{item.Name}}
+									</ng-template>
+								</ng-select>
+							</div>
+							<app-form-control
+								[field]="{id:'MonthlyMethod', label:'Monthly method', type:'ng-select', dataSource: monthlyMethodDataSource, bindLabel:'Name', bindValue:'Code', form:formGroup}"
+								(change)="onMonthlyMethodChange(true)"
+							></app-form-control>
+							<ng-container [ngSwitch]="formGroup.get('MonthlyMethod')?.value">
+								<div class="c-control" *ngSwitchCase="0">
+									<label class="c-label" for="MonthlyDays"
+										>{{'Days' | translate}}
+										<span
+											*ngIf="!formGroup.controls.MonthlyDays.valid && !formGroup.controls.MonthlyDays.pending && (formGroup.controls.MonthlyDays.dirty || submitAttempt)"
+											ion-text
+											color="danger"
+											>(*)</span
+										>
+									</label>
+									<ng-select
+										class="c-input"
+										labelForId="MonthlyDays"
+										formControlName="MonthlyDays"
+										groupBy="Group"
+										[selectableGroup]="true"
+										[selectableGroupAsModel]="false"
+										[closeOnSelect]="false"
+										[items]="monthlyDayDataSource"
+										bindLabel="Name"
+										bindValue="Code"
+										[multiple]="true"
+										placeholder="{{'Select days' | translate}}"
+									>
+										<ng-template ng-optgroup-tmp let-item="item" let-item$="item$" let-index="index">
+											<input id="MonthlyDays-group-{{index}}" type="checkbox" [ngModel]="item$.selected" [ngModelOptions]="{standalone: true}" />
+											{{'All' | translate}}
+										</ng-template>
+										<ng-template ng-option-tmp let-item="item" let-item$="item$" let-index="index">
+											<input id="MonthlyDays-{{index}}" type="checkbox" [ngModel]="item$.selected" [ngModelOptions]="{standalone: true}" />
+											{{item.Name}}
+										</ng-template>
+									</ng-select>
+								</div>
+								<ng-container *ngSwitchCase="1">
+									<div class="c-control">
+										<label class="c-label" for="MonthlyWeeks"
+											>{{'Weeks in month' | translate}}
+											<span
+												*ngIf="!formGroup.controls.MonthlyWeeks.valid && !formGroup.controls.MonthlyWeeks.pending && (formGroup.controls.MonthlyWeeks.dirty || submitAttempt)"
+												ion-text
+												color="danger"
+												>(*)</span
+											>
+										</label>
+										<ng-select
+											class="c-input"
+											labelForId="MonthlyWeeks"
+											formControlName="MonthlyWeeks"
+											groupBy="Group"
+											[selectableGroup]="true"
+											[selectableGroupAsModel]="false"
+											[closeOnSelect]="false"
+											[items]="monthlyWeekDataSource"
+											bindLabel="Name"
+											bindValue="Code"
+											[multiple]="true"
+											placeholder="{{'Select weeks' | translate}}"
+										>
+											<ng-template ng-optgroup-tmp let-item="item" let-item$="item$" let-index="index">
+												<input id="MonthlyWeeks-group-{{index}}" type="checkbox" [ngModel]="item$.selected" [ngModelOptions]="{standalone: true}" />
+												{{'All' | translate}}
+											</ng-template>
+											<ng-template ng-option-tmp let-item="item" let-item$="item$" let-index="index">
+												<input id="MonthlyWeeks-{{index}}" type="checkbox" [ngModel]="item$.selected" [ngModelOptions]="{standalone: true}" />
+												{{item.Name}}
+											</ng-template>
+										</ng-select>
+									</div>
+									<div class="c-control">
+										<label class="c-label" for="MonthlyWeekDays"
+											>{{'Weekdays' | translate}}
+											<span
+												*ngIf="!formGroup.controls.MonthlyWeekDays.valid && !formGroup.controls.MonthlyWeekDays.pending && (formGroup.controls.MonthlyWeekDays.dirty || submitAttempt)"
+												ion-text
+												color="danger"
+												>(*)</span
+											>
+										</label>
+										<ng-select
+											class="c-input"
+											labelForId="MonthlyWeekDays"
+											formControlName="MonthlyWeekDays"
+											groupBy="Group"
+											[selectableGroup]="true"
+											[selectableGroupAsModel]="false"
+											[closeOnSelect]="false"
+											[items]="weekDayDataSource"
+											bindLabel="Name"
+											bindValue="Code"
+											[multiple]="true"
+											placeholder="{{'Select weekdays' | translate}}"
+										>
+											<ng-template ng-optgroup-tmp let-item="item" let-item$="item$" let-index="index">
+												<input id="MonthlyWeekDays-group-{{index}}" type="checkbox" [ngModel]="item$.selected" [ngModelOptions]="{standalone: true}" />
+												{{'All' | translate}}
+											</ng-template>
+											<ng-template ng-option-tmp let-item="item" let-item$="item$" let-index="index">
+												<input id="MonthlyWeekDays-{{index}}" type="checkbox" [ngModel]="item$.selected" [ngModelOptions]="{standalone: true}" />
+												{{item.Name}}
+											</ng-template>
+										</ng-select>
+									</div>
+								</ng-container>
+							</ng-container>
+						</ng-container>
 					</ng-container>
 					<app-form-control [field]="{ id: 'Remark', label: 'Remark', type: 'textarea', form: formGroup }"></app-form-control>
 				</ion-col>
