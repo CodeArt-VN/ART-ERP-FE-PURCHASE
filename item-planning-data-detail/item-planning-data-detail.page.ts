@@ -51,6 +51,7 @@ export class ItemPlanningDataDetailPage extends PageBase {
 	_vendorDataSource;
 	_itemDataSource;
 	_orderIntervalDataSource;
+	selectedIntervalData = [];
 
 	preLoadData() {
 		this._vendorDataSource = this.buildSelectDataSource((term) => {
@@ -80,6 +81,12 @@ export class ItemPlanningDataDetailPage extends PageBase {
 				Skip: 0,
 				
 			});
+		});
+		this.purchaseOrderInterval.read({ SortBy: ['Id_desc'], Take: 20 }).then((resp: any) => {
+			if (resp?.data?.length) {
+				this.selectedIntervalData = resp.data;
+				this.setOrderIntervalSelected(this.item?.OrderInterval);
+			}
 		});
 		if (this.pageConfig.canEditFunction) {
 			this.pageConfig.canEdit = true;
@@ -111,14 +118,22 @@ export class ItemPlanningDataDetailPage extends PageBase {
 		if(this.item?._Item){
 			this._itemDataSource.selected = [this.item._Item];
 		}
-		if(this.item?.OrderInterval){
-			this._orderIntervalDataSource.selected = [this.item.OrderInterval];
-		}
+		this.setOrderIntervalSelected(this.item?.OrderInterval);
 		
 		this._itemDataSource.initSearch();
 		this._vendorDataSource.initSearch();
-		this._orderIntervalDataSource.initSearch();
 		super.loadedData();
+	}
+
+	setOrderIntervalSelected(orderInterval?: string) {
+		if (!this._orderIntervalDataSource) return;
+		const baseSelected = Array.isArray(this.selectedIntervalData) ? this.selectedIntervalData : [];
+		const selected = baseSelected.map((item) => ({ Name: item?.Name ?? item }));
+		if (orderInterval && !selected.some((item) => item?.Name === orderInterval)) {
+			selected.push({ Name: orderInterval });
+		}
+		this._orderIntervalDataSource.selected = selected;
+		this._orderIntervalDataSource.initSearch();
 	}
 	refresh(event?: any): void {
 		this.preLoadData();
