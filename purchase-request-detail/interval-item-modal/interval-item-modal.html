@@ -1,0 +1,93 @@
+<ion-header>
+	<ion-toolbar>
+		<ion-title> {{'Order interval'|translate}} </ion-title>
+		<ion-buttons slot="end">
+			<ion-button (click)="closeModal()">
+				<ion-icon name="close"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
+</ion-header>
+<ion-content appScrollbarTheme>
+	<div id="order-detail-page" style="position: absolute"></div>
+	<div class="main-view">
+		<div class="table-contain" style="max-width: 1250px">
+			<ion-grid fixed>
+				<form *ngIf="formGroup" [formGroup]="formGroup">
+					<ion-row class="hr-group">
+						<ion-col size="12" size-sm="12" size-md="12" size-xl="3">
+							<ion-list-header class="ion-no-padding">
+								<ion-label color="primary">{{'Filter' | translate}}</ion-label>
+							</ion-list-header>
+						</ion-col>
+						<ion-col size="12" size-sm size-xl="4">
+							<app-form-control
+								(change)="triggerSearch()"
+								[field]="{id:'IntervalName',label:'Interval', dataSource: intervalDataSource,type:'ng-select-async',bindLabel:'Name',bindValue:'Name',form:formGroup,clearable:true}"
+							></app-form-control>
+							<div class="c-control">
+								<label class="c-label">{{ 'Search' | translate }}</label>
+
+								<div class="input-wrapper">
+									<input (change)="triggerSearch()" type="text" class="c-input" placeholder="{{ 'keyword' | translate }}" formControlName="Keyword" />
+
+									<ion-spinner *ngIf="isSearching" name="crescent" class="search-spinner"> </ion-spinner>
+								</div>
+							</div>
+						</ion-col>
+						<ion-col size="12" size-sm size-xl="4"> </ion-col>
+					</ion-row>
+				</form>
+			</ion-grid>
+		</div>
+	</div>
+	<div class="row-full shadow full-screen">
+		<app-data-table
+			[rows]="items"
+			class="box-shadow responsive"
+			[rows]="items"
+			[trackBy]="'Id'"
+			[(selectedRows)]="selectedItems"
+			[showSpinner]="pageConfig.showSpinner"
+			[showFilter]="pageConfig.isShowSearch"
+			[(query)]="query"
+			(dataInfinite)="loadData($event)"
+			(filter)="onDatatableFilter($event)"
+			(sort)="onSort($event)"
+			(selectedRowsChange)="showCommandBySelectedRows($event)"
+			[showSpinner]="isSearching"
+		>
+			<datatable-empty-message subMessage="Please click add new to start...">
+				<ng-template datatable-empty-message-template>
+					<div>{{ 'No data found' | translate }}</div>
+				</ng-template>
+			</datatable-empty-message>
+			<datatable-column [checkbox]="true" name="">
+				<ng-template datatable-header-template>
+					<div class="col-checkbox cell" style="text-align: center" >
+						<input type="checkbox" class="c-checkbox" [(ngModel)]="isCheckAll" (change)="checkAll()" />
+					</div>
+					<!-- <span class="clickable" (click)="toggleRowAll()">{{ 'Name' | translate }}</span> -->
+				</ng-template>
+			</datatable-column>
+
+			<datatable-column class="col-id" name="No." property="#"></datatable-column>
+
+			<datatable-column class="col-id" name="Id" property="Id"> </datatable-column>
+			<datatable-column class="col-name item-name" name="Name" property="Name">
+				<ng-template let-g="row" datatable-cell-template>
+					<span [title]="g.Name">
+						<b *ngIf="g.Code" (mousedown)="$event.stopPropagation()">{{ g.Code }}</b>
+						{{ g.Name }}
+					</span>
+				</ng-template>
+			</datatable-column>
+		</app-data-table>
+	</div>
+</ion-content>
+
+<ion-footer>
+	<div class="box ion-padding text-right">
+		<ion-button [disabled]="!selectedItems || selectedItems.length ==0"(click)="dismissModal(true)"> {{ 'Add items' | translate }}<ion-icon name="add-outline"></ion-icon></ion-button>
+	</div>
+</ion-footer>

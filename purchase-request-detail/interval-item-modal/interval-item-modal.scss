@@ -1,0 +1,19 @@
+.input-wrapper {
+  position: relative;
+}
+
+.search-spinner {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--ion-color-medium);
+  pointer-events: none;
+}
+
+/* chừa chỗ cho spinner để text không đè lên */
+.c-input {
+  padding-right: 36px;
+}

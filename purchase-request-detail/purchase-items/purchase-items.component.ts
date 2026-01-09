@@ -5,6 +5,8 @@ import { AlertController, LoadingController, ModalController, NavController } fr
 import { PageBase } from 'src/app/page-base';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PROD_ItemInVendorProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
+import { IntervalItemModalComponent } from '../interval-item-modal/interval-item-modal';
+import { lib } from 'src/app/services/static/global-functions';
 
 @Component({ selector: 'app-purchase-items', templateUrl: './purchase-items.component.html', styleUrls: ['./purchase-items.component.scss'], standalone: false })
 export class PurchaseItemsComponent extends PageBase {
@@ -272,5 +274,24 @@ export class PurchaseItemsComponent extends PageBase {
 		g.get('QuantityRemainingOpen').setValue(g.get('Quantity').value);
 		g.get('QuantityRemainingOpen').markAsDirty();
 		this.submitData(g);
+	}
+
+	async openFilterItemByBranch() {
+		const modal = await this.modalController.create({
+			component: IntervalItemModalComponent,
+			componentProps: {},
+			cssClass: 'modal90',
+		});
+
+		await modal.present();
+		const { data } = await modal.onWillDismiss();
+		if (data && data.length > 0) {
+			for (let i of data) {
+				i._Item = lib.cloneObject(i);
+				i.IDItem = i.Id;
+				delete i.Id;
+				this.addLine(i, true);
+			}
+		}
 	}
 }

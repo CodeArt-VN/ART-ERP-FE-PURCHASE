@@ -38,7 +38,7 @@ export class ItemPlanningDataDetailPage extends PageBase {
 			Id: [''],
 			IDBranch:[''],
 			IDItem: ['', Validators.required],
-			IDVendor: ['', Validators.required],
+			IDVendor: [''],
 			OrderInterval: [''],
 			OrderMultiple: [''],
 			MinimumOrderQty: [''],
@@ -110,7 +110,7 @@ export class ItemPlanningDataDetailPage extends PageBase {
 			}
 		}
 	}
-	alwaysReturnProps: string[] = ['IDBranch','Id','IDItem','IDVendor'];
+	alwaysReturnProps: string[] = ['IDBranch','Id','IDItem'];
 	loadedData(){
 		if(this.item?._Vendor){
 			this._vendorDataSource.selected = [this.item._Vendor];

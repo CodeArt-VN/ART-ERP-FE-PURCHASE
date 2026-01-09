@@ -35,7 +35,7 @@
 			<!-- <datatable-column class="col-id" name="IDVendor" property="IDVendor" [navLink]="pageConfig.pageName"></datatable-column> -->
 			<datatable-column class="col-name" name="Vendor" property="_Vendor">
 				<ng-template let-i="row" datatable-cell-template>
-					<div>
+					<div *ngIf="i._Vendor">
 						<span (mousedown)="$event.stopPropagation()"> #{{ i?._Vendor?.Id }} </span>
 						<a class="clickable" [routerLink]="['/vendor/' + i?._Vendor?.Id]" (mousedown)="$event.stopPropagation()"><ion-icon name="open-outline"></ion-icon></a>
 						<small label class="bold">{{ i?._Vendor?.Code }}</small>
