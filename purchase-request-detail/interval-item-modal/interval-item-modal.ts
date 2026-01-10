@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 import { debounceTime, switchMap, from, Subject } from 'rxjs';
@@ -6,6 +6,7 @@ import { PageBase } from 'src/app/page-base';
 import { EnvService } from 'src/app/services/core/env.service';
 import { FormManagementService } from 'src/app/services/page/form-management.service';
 import { PURCHASE_OrderIntervalProvider, PURCHASE_RequestProvider } from 'src/app/services/static/services.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
 	selector: 'app-interval-item',
@@ -14,6 +15,7 @@ import { PURCHASE_OrderIntervalProvider, PURCHASE_RequestProvider } from 'src/ap
 	standalone: false,
 })
 export class IntervalItemModalComponent extends PageBase {
+	@ViewChild('importfile') importfile: any;
 	private searchTrigger$ = new Subject<void>();
 	@Input() IDPurchaseRequest: number;
 	@Input() RequiredDate: any;
@@ -23,7 +25,7 @@ export class IntervalItemModalComponent extends PageBase {
 	formManagementService = new FormManagementService();
 	isSearching = false;
 	_IDVendor = null;
-	isCheckAll=false;
+	isCheckAll = false;
 	// ----- Các biến binding cho view -----
 	btnAmounts: number[] = [];
 	changeAmount: number = 0;
@@ -34,9 +36,8 @@ export class IntervalItemModalComponent extends PageBase {
 		private intervalOrderProvider: PURCHASE_OrderIntervalProvider,
 		private purchaseRequestProvider: PURCHASE_RequestProvider,
 		public env: EnvService
-
 	) {
-	super();
+		super();
 		this.formGroup = this.formBuilder.group({
 			IDBranch: [this.env.selectedBranch],
 			IDInterval: [''],
@@ -164,7 +165,7 @@ export class IntervalItemModalComponent extends PageBase {
 			_IDUoMDataSource: [uoMs],
 			_Vendors: [vendors],
 			IDItemUoM: [defaultUoMId],
-			IDVendor: [''],
+			IDVendor: [],
 			Quantity: [quantity],
 		});
 
@@ -172,8 +173,6 @@ export class IntervalItemModalComponent extends PageBase {
 			item.IDItemUoM = defaultUoMId;
 		}
 
-		
-		
 		if (quantity != null && item.Quantity == null) {
 			item.Quantity = quantity;
 		}
@@ -186,60 +185,118 @@ export class IntervalItemModalComponent extends PageBase {
 		item.IDVendor = form.get('IDVendor')?.value ?? null;
 		item.Quantity = form.get('Quantity')?.value ?? null;
 	}
-	checkAll(){
-		if(this.isCheckAll){
+	checkAll() {
+		if (this.isCheckAll) {
 			this.selectedItems = [...this.items];
-		}else{
+		} else {
 			this.selectedItems = [];
 		}
 		this.applySelectionValidators();
 		this.showCommandBySelectedRows(this.selectedItems);
 	}
+	applyItems() {
+		this.applySelectionValidators();
+		if (!this.validateSelectedItems()) return;
+		if (!this.IDPurchaseRequest) {
+			this.env.showMessage('Please save Purchase Request before adding items', 'warning');
+			return;
+		}
+		this.dismissModal(true);
+	}
 	async dismissModal(isApply = false) {
-		if(isApply){
-			this.applySelectionValidators();
-			if (!this.validateSelectedItems()) return;
-			if (!this.IDPurchaseRequest) {
-				this.env.showMessage('Please save Purchase Request before adding items', 'warning');
-				return;
-			}
-
-			const lines = (this.selectedItems || []).map((item) => {
-				this.setValueItemSelected(item);
-				const baseUoM = item?.UoMs?.find((u) => u.IsBaseUoM);
-				const taxRate = item?.TaxRate ?? item?.PurchaseTaxInPercent ?? null;
-				const taxId = item?.IDTax ?? item?.IDPurchaseTaxDefinition ?? null;
-				const vendorId = item.IDVendor === '' ? null : item.IDVendor ?? null;
-				return {
-					IDItem: item.Id,
-					IDItemUoM: item.IDItemUoM,
-					IDBaseUoM: baseUoM?.Id ?? null,
-					IDVendor: vendorId,
-					Id: null,
-					Status: 'Open',
-					UoMPrice: item?.UoMPrice ?? null,
-					Quantity: item.Quantity,
-					QuantityRemainingOpen: item.Quantity,
-					IDTax: taxId,
-					TaxRate: taxRate,
-					RequiredDate : this.RequiredDate
-				};
+		this.modalController.dismiss(isApply);
+	}
+	async onExportToExcel() {
+		this.intervalOrderProvider.commonService
+			.connect('GET', 'PURCHASE/OrderInterval/ExportComponentItem', this.buildExportPayload())
+			.toPromise()
+			.then((url: any) => {
+				if (url.indexOf('http') == -1) {
+					url = environment.appDomain + url;
+				}
+				var pom = document.createElement('a');
+				pom.setAttribute('target', '_blank');
+				pom.setAttribute('href', url);
+				//pom.setAttribute('target', '_blank');
+				pom.style.display = 'none';
+				document.body.appendChild(pom);
+				pom.click();
+				document.body.removeChild(pom);
 			});
-
-			const orderLines = lines.reduce((acc: Record<number, any>, line, index) => {
-				acc[index] = line;
-				return acc;
-			}, {} as Record<number, any>);
-			const payload = {
-				IDBranch: this.formGroup.get('IDBranch').value,
-				Id: this.IDPurchaseRequest,
-				OrderLines: orderLines,
-			};
-
-			this.env.showLoading('Please wait for a few moments', this.purchaseRequestProvider.save(payload)).then(() => {
-				this.modalController.dismiss({ reload: true });
+	}
+	onClickImport() {
+		this.importfile.nativeElement.value = '';
+		this.importfile.nativeElement.click();
+	}
+	async onImport(event) {
+		if (this.submitAttempt) {
+			this.env.showMessage('erp.app.pages.sale.sale-order.message.importing', 'primary');
+			return;
+		}
+		this.submitAttempt = true;
+		const formData: FormData = new FormData();
+		formData.append('fileKey', event.target.files[0], event.target.files[0].name);
+		this.env
+			.showLoading(
+				'Please wait for a few moments',
+				this.purchaseRequestProvider.commonService.connect('UPLOAD', 'PURCHASE/Request/ImportDetailFile/' + this.IDPurchaseRequest, formData).toPromise()
+			)
+			.then((resp: any) => {
+				this.submitAttempt = false;
+				if (resp.ErrorList && resp.ErrorList.length) {
+					let message = '';
+					for (let i = 0; i < resp.ErrorList.length && i <= 5; i++)
+						if (i == 5) message += '<br> Còn nữa...';
+						else {
+							const e = resp.ErrorList[i];
+							message += '<br> ' + e.Id + '. Tại dòng ' + e.Line + ': ' + e.Message;
+						}
+					this.env
+						.showPrompt(
+							{
+								code: 'Có {{value}} lỗi khi import: {{value1}}',
+								value: { value: resp.ErrorList.length, value1: message },
+							},
+							'Bạn có muốn xem lại các mục bị lỗi?',
+							'Có lỗi import dữ liệu'
+						)
+						.then((_) => {
+							this.dismissModal(true);
+							this.downloadURLContent(resp.FileUrl);
+						})
+						.catch((e) => {});
+				} else {
+					this.env.showMessage('Import completed!', 'success');
+					this.dismissModal(true);
+				}
+				// this.download(data);
+			})
+			.catch((err) => {
+				this.submitAttempt = false;
+				this.env.showMessage('erp.app.pages.sale.sale-order.message.import-error', 'danger');
 			});
-		}	
-		else this.modalController.dismiss(null);
+	}
+
+	buildExportPayload() {
+		const compactData = {
+			Items: this.selectedItems.map((i) => {
+				{
+					let item = i._formGroup.getRawValue();
+					let uomName = i.UoMs.find((u) => u.Id == item.IDItemUoM)?.Name || '';
+					return {
+						IDItem: i.Id,
+						ItemName: i.Name,
+						UoMName: uomName,
+						IDUoM: item.IDItemUoM,
+						Quantity: item.Quantity,
+						IDVendor: item.IDVendor ?? null,
+					};
+				}
+			}),
+		};
+		return {
+			IDBranch: this.formGroup.get('IDBranch').value.toString(),
+			Data: JSON.stringify(compactData),
+		};
 	}
 }

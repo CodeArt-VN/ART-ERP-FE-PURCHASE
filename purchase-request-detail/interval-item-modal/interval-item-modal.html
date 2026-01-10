@@ -11,7 +11,13 @@
 			<!-- <ion-button title="{{'Search' | translate}}" (click)="pageConfig.isShowSearch =! pageConfig.isShowSearch">
 				<ion-icon slot="icon-only" name="search-outline"></ion-icon>
 			</ion-button> -->
-
+			<ion-button class="ion-hide-sm-down" (click)="onClickImport()" title="{{'Import' | translate}}">
+				<ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
+				<input class="hide-all" #importfile type="file" accept=".xlsx" (change)="onImport($event)" />
+			</ion-button>
+			<ion-button (click)="onExportToExcel()">
+				<ion-icon slot="icon-only" name="cloud-download-outline"></ion-icon>
+			</ion-button>
 			<ion-button (click)="closeModal()">
 				<ion-icon name="close"></ion-icon>
 			</ion-button>
@@ -34,7 +40,7 @@
 				(filter)="onDatatableFilter($event)"
 				(sort)="onSort($event)"
 				(selectedRowsChange)="onSelectedRowsChange($event)"
-					>
+			>
 				<datatable-empty-message subMessage="Please click add new to start...">
 					<ng-template datatable-empty-message-template>
 						<div>{{ 'No data found' | translate }}</div>
@@ -42,7 +48,7 @@
 				</datatable-empty-message>
 				<datatable-column [checkbox]="true">
 					<ng-template datatable-header-template>
-						<div class="col-checkbox cell" style="text-align: center" >
+						<div class="col-checkbox cell" style="text-align: center">
 							<input type="checkbox" class="c-checkbox" [(ngModel)]="isCheckAll" (change)="checkAll()" />
 						</div>
 					</ng-template>
@@ -86,7 +92,7 @@
 						</div>
 					</ng-template>
 				</datatable-column>
-				<datatable-column class="col-vendor" name="Vendor" property="IDVendor"> 
+				<datatable-column class="col-vendor" name="Vendor" property="IDVendor">
 					<ng-template datatable-filter-template></ng-template>
 					<ng-template let-i="row" datatable-cell-template>
 						<div (mousedown)="$event.stopPropagation()">
@@ -111,10 +117,7 @@
 					<ng-template datatable-filter-template></ng-template>
 					<ng-template let-i="row" datatable-cell-template>
 						<div (mousedown)="$event.stopPropagation()">
-							<app-input-control
-								(inputChange)="setValueItemSelected(i)"
-								[field]="{ id: 'Quantity', type: 'number', form: i._formGroup }"
-							></app-input-control>
+							<app-input-control (inputChange)="setValueItemSelected(i)" [field]="{ id: 'Quantity', type: 'number', form: i._formGroup }"></app-input-control>
 						</div>
 					</ng-template>
 				</datatable-column>
@@ -125,6 +128,8 @@
 
 <ion-footer>
 	<div class="box ion-padding text-right">
-		<ion-button [disabled]="!selectedItems || selectedItems.length ==0"(click)="dismissModal(true)"> {{ 'Add items' | translate }}<ion-icon name="add-outline"></ion-icon></ion-button>
+		<ion-button [disabled]="!selectedItems || selectedItems.length ==0" (click)="applyItems()">
+			{{ 'Add items' | translate }}<ion-icon name="add-outline"></ion-icon
+		></ion-button>
 	</div>
 </ion-footer>

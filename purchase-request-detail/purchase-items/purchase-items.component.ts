@@ -288,7 +288,7 @@ export class PurchaseItemsComponent extends PageBase {
 
 		await modal.present();
 		const { data } = await modal.onWillDismiss();
-		if (data?.reload) {
+		if (data) {
 			this.page?.refresh?.();
 		}
 	}
