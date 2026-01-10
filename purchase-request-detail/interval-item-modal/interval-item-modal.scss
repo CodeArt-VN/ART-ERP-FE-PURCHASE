@@ -17,3 +17,44 @@
 .c-input {
   padding-right: 36px;
 }
+
+
+::ng-deep app-data-table .col-uom ng-select,
+::ng-deep app-data-table .col-vendor ng-select {
+  min-width: 220px;
+}
+
+::ng-deep app-data-table .col-uom .ng-select .ng-dropdown-panel,
+::ng-deep app-data-table .col-vendor .ng-select .ng-dropdown-panel {
+  min-width: 220px;
+}
+
+::ng-deep app-input-control.interval-select .c-input {
+  outline: none;
+  display: block;
+  border-radius: 4px;
+  border: 1px solid var(--menu-right-border-color);
+  padding: calc(10 / 16 * 1rem);
+  width: 100%;
+  height: calc(10 / 16 * 3.8rem);
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+  background-color: var(--menu-background-bottom);
+  color: var(--ion-color-light-contrast);
+  min-width: 240px;
+}
+
+::ng-deep app-input-control.interval-select .c-input.ng-select {
+  padding: 0;
+}
+
+::ng-deep app-input-control.interval-select .c-input.ng-select .ng-select-container {
+  padding-top: calc(10 / 16 * 1rem);
+  padding-right: calc(10 / 16 * 0.33rem);
+  padding-bottom: calc(10 / 16 * 1rem);
+  padding-left: calc(10 / 16 * 1rem);
+}
+
+::ng-deep app-input-control.interval-select .ng-select .ng-dropdown-panel {
+  min-width: 240px;
+}

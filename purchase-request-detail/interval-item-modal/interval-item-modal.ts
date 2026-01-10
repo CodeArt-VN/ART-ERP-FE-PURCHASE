@@ -15,15 +15,15 @@ import { PURCHASE_OrderIntervalProvider } from 'src/app/services/static/services
 	standalone: false,
 })
 export class IntervalItemModalComponent extends PageBase {
-private searchTrigger$ = new Subject<void>();
+	private searchTrigger$ = new Subject<void>();
 	intervalList = [];
 	intervalDataSource: any;
 	searchItemDataSource: any;
 	formManagementService = new FormManagementService();
-	searchControl: any;
 	isSearching = false;
 	_IDVendor = null;
 	isCheckAll=false;
+	useLocalFilter = false;
 	// ----- Các biến binding cho view -----
 	btnAmounts: number[] = [];
 	changeAmount: number = 0;
@@ -43,6 +43,10 @@ private searchTrigger$ = new Subject<void>();
 			Keyword: [''],
 			OrderLines: [[]],
 		});
+	}
+
+	ngAfterViewInit() {
+		setTimeout(() => (this.pageConfig.isShowSearch = true));
 	}
 
 	ngOnInit() {
@@ -65,7 +69,6 @@ private searchTrigger$ = new Subject<void>();
 					this.isSearching = false;
 				},
 			});
-		this.searchControl = this.formGroup.get('Keyword');
 
 		this.searchItemDataSource = this.formManagementService.createSelectDataSource((term) => {
 			return this.intervalOrderProvider.commonService.connect('GET', 'PURCHASE/OrderInterval/ComponentSearch', {
@@ -88,7 +91,16 @@ private searchTrigger$ = new Subject<void>();
 	}
 
 	triggerSearch() {
+		this.useLocalFilter = !!this.formGroup.get('IntervalName').value;
 		this.searchTrigger$.next();
+	}
+
+	onDatatableFilter(e) {
+		if (this.useLocalFilter) return;
+		const keyword = e?.query?.Name ?? '';
+		this.formGroup.get('Keyword').setValue(keyword);
+		this.searchTrigger$.next();
+		super.onDatatableFilter(e);
 	}
 	searchItems() {
 		return this.intervalOrderProvider.commonService
@@ -99,8 +111,43 @@ private searchTrigger$ = new Subject<void>();
 			})
 			.toPromise()
 			.then((rs: any) => {
-				this.items = rs;
+				this.items = rs || [];
+				this.items.forEach((item) => this.buildForm(item));
 			});
+	}
+
+	buildForm(item: any) {
+		const uoMs = Array.isArray(item?.UoMs) ? item.UoMs : [];
+		const vendors = Array.isArray(item?._Vendors) ? item._Vendors : [];
+		const defaultUoMId = item.IDItemUoM ?? item.PurchasingUoM ?? item.IDUoM ?? uoMs[0]?.Id ?? null;
+		const defaultVendorId = item.IDVendor ?? vendors[0]?.Id ?? null;
+		const quantity = item.Quantity ?? null;
+
+		item._formGroup = this.formBuilder.group({
+			_IDUoMDataSource: [uoMs],
+			_Vendors: [vendors],
+			IDItemUoM: [defaultUoMId],
+			IDVendor: [defaultVendorId],
+			Quantity: [quantity],
+		});
+
+		if (defaultUoMId != null && item.IDItemUoM == null) {
+			item.IDItemUoM = defaultUoMId;
+		}
+		if (defaultVendorId != null && item.IDVendor == null) {
+			item.IDVendor = defaultVendorId;
+		}
+		if (quantity != null && item.Quantity == null) {
+			item.Quantity = quantity;
+		}
+	}
+
+	setValueItemSelected(item: any) {
+		const form = item?._formGroup;
+		if (!form) return;
+		item.IDItemUoM = form.get('IDItemUoM')?.value ?? null;
+		item.IDVendor = form.get('IDVendor')?.value ?? null;
+		item.Quantity = form.get('Quantity')?.value ?? null;
 	}
 	checkAll(){
 		if(this.isCheckAll){
@@ -111,8 +158,13 @@ private searchTrigger$ = new Subject<void>();
 	}
 	dismissModal(isApply = false) {
 		if(isApply){
-		 this.modalController.dismiss(this.selectedItems);
-
+			const selectedItems = (this.selectedItems || []).map((item) => {
+				this.setValueItemSelected(item);
+				const cleaned = { ...item };
+				delete cleaned._formGroup;
+				return cleaned;
+			});
+			this.modalController.dismiss(selectedItems);
 		}	
 		else this.modalController.dismiss(null);
 	}
