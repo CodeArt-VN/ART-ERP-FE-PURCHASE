@@ -279,19 +279,17 @@ export class PurchaseItemsComponent extends PageBase {
 	async openFilterItemByBranch() {
 		const modal = await this.modalController.create({
 			component: IntervalItemModalComponent,
-			componentProps: {},
+			componentProps: {
+				IDPurchaseRequest: this._IDPurchaseRequest,
+				RequiredDate: this.page?.formGroup?.get('RequiredDate')?.value ?? null,
+			},
 			cssClass: 'modal90',
 		});
 
 		await modal.present();
 		const { data } = await modal.onWillDismiss();
-		if (data && data.length > 0) {
-			for (let i of data) {
-				i._Item = lib.cloneObject(i);
-				i.IDItem = i.Id;
-				delete i.Id;
-				this.addLine(i, true);
-			}
+		if (data?.reload) {
+			this.page?.refresh?.();
 		}
 	}
 }

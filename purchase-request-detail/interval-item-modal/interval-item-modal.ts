@@ -1,12 +1,11 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { Component, Input } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
-import { debounceTime, distinctUntilChanged, switchMap, tap, from, Subject } from 'rxjs';
+import { debounceTime, switchMap, from, Subject } from 'rxjs';
 import { PageBase } from 'src/app/page-base';
-import { CommonService } from 'src/app/services/core/common.service';
 import { EnvService } from 'src/app/services/core/env.service';
 import { FormManagementService } from 'src/app/services/page/form-management.service';
-import { PURCHASE_OrderIntervalProvider } from 'src/app/services/static/services.service';
+import { PURCHASE_OrderIntervalProvider, PURCHASE_RequestProvider } from 'src/app/services/static/services.service';
 
 @Component({
 	selector: 'app-interval-item',
@@ -16,6 +15,8 @@ import { PURCHASE_OrderIntervalProvider } from 'src/app/services/static/services
 })
 export class IntervalItemModalComponent extends PageBase {
 	private searchTrigger$ = new Subject<void>();
+	@Input() IDPurchaseRequest: number;
+	@Input() RequiredDate: any;
 	intervalList = [];
 	intervalDataSource: any;
 	searchItemDataSource: any;
@@ -23,7 +24,6 @@ export class IntervalItemModalComponent extends PageBase {
 	isSearching = false;
 	_IDVendor = null;
 	isCheckAll=false;
-	useLocalFilter = false;
 	// ----- Các biến binding cho view -----
 	btnAmounts: number[] = [];
 	changeAmount: number = 0;
@@ -32,6 +32,7 @@ export class IntervalItemModalComponent extends PageBase {
 		public modalController: ModalController,
 		private formBuilder: FormBuilder,
 		private intervalOrderProvider: PURCHASE_OrderIntervalProvider,
+		private purchaseRequestProvider: PURCHASE_RequestProvider,
 		public env: EnvService
 
 	) {
@@ -91,16 +92,52 @@ export class IntervalItemModalComponent extends PageBase {
 	}
 
 	triggerSearch() {
-		this.useLocalFilter = !!this.formGroup.get('IntervalName').value;
 		this.searchTrigger$.next();
 	}
 
+	onSelectedRowsChange(rows) {
+		this.selectedItems = rows || [];
+		this.applySelectionValidators();
+		this.showCommandBySelectedRows(this.selectedItems);
+	}
+
+	applySelectionValidators() {
+		const selectedSet = new Set(this.selectedItems || []);
+		this.items.forEach((item) => {
+			const form = item?._formGroup;
+			if (!form) return;
+			const isSelected = selectedSet.has(item);
+			const uomCtrl = form.get('IDItemUoM');
+			const qtyCtrl = form.get('Quantity');
+			if (isSelected) {
+				uomCtrl.setValidators(Validators.required);
+				qtyCtrl.setValidators(Validators.required);
+			} else {
+				uomCtrl.clearValidators();
+				qtyCtrl.clearValidators();
+			}
+			uomCtrl.updateValueAndValidity({ emitEvent: false });
+			qtyCtrl.updateValueAndValidity({ emitEvent: false });
+		});
+	}
+
+	validateSelectedItems(): boolean {
+		const invalidItems = (this.selectedItems || []).filter((item) => item?._formGroup && item._formGroup.invalid);
+		if (invalidItems.length) {
+			invalidItems.forEach((item) => {
+				item._formGroup.get('IDItemUoM')?.markAsTouched();
+				item._formGroup.get('Quantity')?.markAsTouched();
+			});
+			this.env.showMessage('Please fill Quantity and Unit for selected items', 'warning');
+			return false;
+		}
+		return true;
+	}
+
 	onDatatableFilter(e) {
-		if (this.useLocalFilter) return;
 		const keyword = e?.query?.Name ?? '';
 		this.formGroup.get('Keyword').setValue(keyword);
 		this.searchTrigger$.next();
-		super.onDatatableFilter(e);
 	}
 	searchItems() {
 		return this.intervalOrderProvider.commonService
@@ -111,7 +148,8 @@ export class IntervalItemModalComponent extends PageBase {
 			})
 			.toPromise()
 			.then((rs: any) => {
-				this.items = rs || [];
+				const rows = Array.isArray(rs?.data) ? rs.data : Array.isArray(rs) ? rs : [];
+				this.items = rows;
 				this.items.forEach((item) => this.buildForm(item));
 			});
 	}
@@ -119,24 +157,23 @@ export class IntervalItemModalComponent extends PageBase {
 	buildForm(item: any) {
 		const uoMs = Array.isArray(item?.UoMs) ? item.UoMs : [];
 		const vendors = Array.isArray(item?._Vendors) ? item._Vendors : [];
-		const defaultUoMId = item.IDItemUoM ?? item.PurchasingUoM ?? item.IDUoM ?? uoMs[0]?.Id ?? null;
-		const defaultVendorId = item.IDVendor ?? vendors[0]?.Id ?? null;
+		const defaultUoMId = item.IDItemUoM ?? item.PurchasingUoM ?? uoMs.find((d) => d.IsBaseUoM)?.Id ?? uoMs[0]?.Id ?? null;
 		const quantity = item.Quantity ?? null;
 
 		item._formGroup = this.formBuilder.group({
 			_IDUoMDataSource: [uoMs],
 			_Vendors: [vendors],
 			IDItemUoM: [defaultUoMId],
-			IDVendor: [defaultVendorId],
+			IDVendor: [''],
 			Quantity: [quantity],
 		});
 
 		if (defaultUoMId != null && item.IDItemUoM == null) {
 			item.IDItemUoM = defaultUoMId;
 		}
-		if (defaultVendorId != null && item.IDVendor == null) {
-			item.IDVendor = defaultVendorId;
-		}
+
+		
+		
 		if (quantity != null && item.Quantity == null) {
 			item.Quantity = quantity;
 		}
@@ -155,16 +192,53 @@ export class IntervalItemModalComponent extends PageBase {
 		}else{
 			this.selectedItems = [];
 		}
+		this.applySelectionValidators();
+		this.showCommandBySelectedRows(this.selectedItems);
 	}
-	dismissModal(isApply = false) {
+	async dismissModal(isApply = false) {
 		if(isApply){
-			const selectedItems = (this.selectedItems || []).map((item) => {
+			this.applySelectionValidators();
+			if (!this.validateSelectedItems()) return;
+			if (!this.IDPurchaseRequest) {
+				this.env.showMessage('Please save Purchase Request before adding items', 'warning');
+				return;
+			}
+
+			const lines = (this.selectedItems || []).map((item) => {
 				this.setValueItemSelected(item);
-				const cleaned = { ...item };
-				delete cleaned._formGroup;
-				return cleaned;
+				const baseUoM = item?.UoMs?.find((u) => u.IsBaseUoM);
+				const taxRate = item?.TaxRate ?? item?.PurchaseTaxInPercent ?? null;
+				const taxId = item?.IDTax ?? item?.IDPurchaseTaxDefinition ?? null;
+				const vendorId = item.IDVendor === '' ? null : item.IDVendor ?? null;
+				return {
+					IDItem: item.Id,
+					IDItemUoM: item.IDItemUoM,
+					IDBaseUoM: baseUoM?.Id ?? null,
+					IDVendor: vendorId,
+					Id: null,
+					Status: 'Open',
+					UoMPrice: item?.UoMPrice ?? null,
+					Quantity: item.Quantity,
+					QuantityRemainingOpen: item.Quantity,
+					IDTax: taxId,
+					TaxRate: taxRate,
+					RequiredDate : this.RequiredDate
+				};
 			});
-			this.modalController.dismiss(selectedItems);
+
+			const orderLines = lines.reduce((acc: Record<number, any>, line, index) => {
+				acc[index] = line;
+				return acc;
+			}, {} as Record<number, any>);
+			const payload = {
+				IDBranch: this.formGroup.get('IDBranch').value,
+				Id: this.IDPurchaseRequest,
+				OrderLines: orderLines,
+			};
+
+			this.env.showLoading('Please wait for a few moments', this.purchaseRequestProvider.save(payload)).then(() => {
+				this.modalController.dismiss({ reload: true });
+			});
 		}	
 		else this.modalController.dismiss(null);
 	}
