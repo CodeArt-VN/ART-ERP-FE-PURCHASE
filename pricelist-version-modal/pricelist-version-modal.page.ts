@@ -117,8 +117,15 @@ export class PriceListVersionModalPage extends PageBase {
 		this.env
 			.showLoading('Please wait for a few moments', this.pageProvider.commonService.connect('POST', 'Purchase/Quotation/ApplyPriceListVerson', postDATA).toPromise())
 			.then((result: any) => {
+				console.log(result);
+				if (result.Count > 0) {
+					this.env.showErrorMessage({ error: { ExceptionMessage: result.ExceptionMessage } });
+				}
 				this.modal.dismiss(result);
 			})
+			.catch((err) => {
+				this.env.showErrorMessage(err);
+			});
 	}
 
 	selectItem(item: any) {

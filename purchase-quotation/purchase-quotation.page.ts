@@ -77,9 +77,6 @@ export class PurchaseQuotationPage extends PageBase {
 			)
 			.then(() => {
 				this.submitAttempt = false;
-			})
-			.catch((err) => {
-				this.submitAttempt = false;
 			});
 	}
 
