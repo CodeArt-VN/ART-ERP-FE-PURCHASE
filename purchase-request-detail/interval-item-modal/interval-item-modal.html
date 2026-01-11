@@ -1,0 +1,135 @@
+<ion-header>
+	<ion-toolbar>
+		<ion-title> {{'Order interval'|translate}} </ion-title>
+		<ion-buttons slot="end">
+			<app-input-control
+				class="interval-select"
+				(change)="triggerSearch()"
+				[field]="{id:'IntervalName',label:'Interval', dataSource: intervalDataSource,type:'ng-select-async',bindLabel:'Name',bindValue:'Name',form:formGroup,clearable:true}"
+			></app-input-control>
+
+			<!-- <ion-button title="{{'Search' | translate}}" (click)="pageConfig.isShowSearch =! pageConfig.isShowSearch">
+				<ion-icon slot="icon-only" name="search-outline"></ion-icon>
+			</ion-button> -->
+			<ion-button class="ion-hide-sm-down" (click)="onClickImport()" title="{{'Import' | translate}}">
+				<ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
+				<input class="hide-all" #importfile type="file" accept=".xlsx" (change)="onImport($event)" />
+			</ion-button>
+			<ion-button (click)="onExportToExcel()">
+				<ion-icon slot="icon-only" name="cloud-download-outline"></ion-icon>
+			</ion-button>
+			<ion-button (click)="closeModal()">
+				<ion-icon name="close"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
+</ion-header>
+<ion-content appScrollbarTheme class="scrollx">
+	<div class="row-full shadow full-screen">
+		<div id="interval-item-modal-page" style="position: absolute"></div>
+		<div class="table-contain">
+			<app-data-table
+				class="box-shadow"
+				[rows]="items"
+				[trackBy]="'Id'"
+				[(selectedRows)]="selectedItems"
+				[showSpinner]="isSearching"
+				[showFilter]="pageConfig.isShowSearch"
+				[(query)]="query"
+				(dataInfinite)="loadData($event)"
+				(filter)="onDatatableFilter($event)"
+				(sort)="onSort($event)"
+				(selectedRowsChange)="onSelectedRowsChange($event)"
+			>
+				<datatable-empty-message subMessage="Please click add new to start...">
+					<ng-template datatable-empty-message-template>
+						<div>{{ 'No data found' | translate }}</div>
+					</ng-template>
+				</datatable-empty-message>
+				<datatable-column [checkbox]="true">
+					<ng-template datatable-header-template>
+						<div class="col-checkbox cell" style="text-align: center">
+							<input type="checkbox" class="c-checkbox" [(ngModel)]="isCheckAll" (change)="checkAll()" />
+						</div>
+					</ng-template>
+				</datatable-column>
+				<datatable-column class="col-id" name="No." property="#"></datatable-column>
+				<datatable-column class="col-name item-name" name="Name" property="Name">
+					<ng-template let-i="row" datatable-cell-template>
+						<span (mousedown)="$event.stopPropagation()"> #{{ i.Id }} </span>
+						<a [ngClass]="{ 'no-check-dirty': noCheckDirty }" class="clickable" [routerLink]="['/item/' + i.Id]" (mousedown)="$event.stopPropagation()"
+							><ion-icon name="open-outline"></ion-icon
+						></a>
+						&nbsp;
+						<span [title]="i.Name">
+							<b *ngIf="i.Code" (mousedown)="$event.stopPropagation()">{{ i.Code }}</b>
+							{{ i.Name }}
+						</span>
+						<!-- <span [title]="g.Name">
+							<b *ngIf="g.Code" (mousedown)="$event.stopPropagation()">{{ g.Code }}</b>
+							{{ g.Name }}
+						</span> -->
+					</ng-template>
+				</datatable-column>
+				<datatable-column class="col-uom" name="UoM" property="IDItemUoM">
+					<ng-template datatable-filter-template></ng-template>
+					<ng-template let-i="row" datatable-cell-template>
+						<div (mousedown)="$event.stopPropagation()">
+							<app-input-control
+								(change)="setValueItemSelected(i)"
+								[field]="{
+									id: 'IDItemUoM',
+									label: 'UoM',
+									type: 'ng-select',
+									form: i._formGroup,
+									dataSource: i._formGroup.controls._IDUoMDataSource.value,
+									bindLabel: 'Name',
+									bindValue: 'Id',
+									clearable: false,
+									appendTo:'#interval-item-modal-page'
+								}"
+							></app-input-control>
+						</div>
+					</ng-template>
+				</datatable-column>
+				<datatable-column class="col-vendor" name="Vendor" property="IDVendor">
+					<ng-template datatable-filter-template></ng-template>
+					<ng-template let-i="row" datatable-cell-template>
+						<div (mousedown)="$event.stopPropagation()">
+							<app-input-control
+								(change)="setValueItemSelected(i)"
+								[field]="{
+									id: 'IDVendor',
+									label: 'Vendor',
+									type: 'ng-select',
+									form: i._formGroup,
+									dataSource: i._formGroup.controls._Vendors.value,
+									bindLabel: 'Name',
+									bindValue: 'Id',
+									clearable: true,
+									appendTo:'#interval-item-modal-page'
+								}"
+							></app-input-control>
+						</div>
+					</ng-template>
+				</datatable-column>
+				<datatable-column class="col-number" name="Quantity" property="Quantity">
+					<ng-template datatable-filter-template></ng-template>
+					<ng-template let-i="row" datatable-cell-template>
+						<div (mousedown)="$event.stopPropagation()">
+							<app-input-control (inputChange)="setValueItemSelected(i)" [field]="{ id: 'Quantity', type: 'number', form: i._formGroup }"></app-input-control>
+						</div>
+					</ng-template>
+				</datatable-column>
+			</app-data-table>
+		</div>
+	</div>
+</ion-content>
+
+<ion-footer>
+	<div class="box ion-padding text-right">
+		<ion-button [disabled]="!selectedItems || selectedItems.length ==0" (click)="applyItems()">
+			{{ 'Add items' | translate }}<ion-icon name="add-outline"></ion-icon
+		></ion-button>
+	</div>
+</ion-footer>
