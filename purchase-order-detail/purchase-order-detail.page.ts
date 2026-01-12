@@ -36,7 +36,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 			SortBy: ['Id_desc'],
 			Take: 20,
 			Skip: 0,
-			Keyword: term ,
+			Keyword: term,
 		});
 	});
 	paymentFormGroup: FormGroup;
@@ -80,7 +80,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 							reject(err);
 						});
 				});
-			}
+			},
 		});
 	}
 	buildFormGroup() {
@@ -218,7 +218,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 			.map((x) => x.TotalDiscount)
 			.reduce((a, b) => +a + +b, 0);
 	}
-	
+
 	calcTotalAfterTax() {
 		const orderLines = this.formGroup.controls.OrderLines?.getRawValue() ?? [];
 		if (!Array.isArray(orderLines) || orderLines.length === 0) return 0;
@@ -332,13 +332,15 @@ export class PurchaseOrderDetailPage extends PageBase {
 				this.env
 					.showLoading(
 						'Please wait for a few moments',
-						this.pageProvider['copyToReceipt']({
-							...this.item,
-							...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' },
-						},
-						this.env, 
-						this.pageConfig
-					))
+						this.pageProvider['copyToReceipt'](
+							{
+								...this.item,
+								...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' },
+							},
+							this.env,
+							this.pageConfig
+						)
+					)
 					.then((r: any) => {
 						let messageTitle;
 						let subMessage = 'Do you want to navigate to the receipt just created?';
@@ -372,6 +374,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 			}
 		}
 	}
+
 	confirmOrder() {
 		if (this.carrierList.length == 0) {
 			this.contactProvider
@@ -606,5 +609,35 @@ export class PurchaseOrderDetailPage extends PageBase {
 				this.submitAttempt = false;
 				console.log(err);
 			});
+	}
+
+	delete(publishEventCode = this.pageConfig.pageName) {
+		if (this.submitAttempt) {
+			return;
+		}
+		this.submitAttempt = true;
+		if (this.pageConfig.ShowDelete) {
+			if (this.item.SourceType && this.item.SourceKey > 0) {
+				this.pageProvider
+					.deleteOrders(this.item, this.env, this.pageConfig, 'DELETE_FROM_PR')
+					.then((rs: any) => {
+						this.submitAttempt = false;
+						this.env.showMessage('DELETE_RESULT_SUCCESS', 'success');
+						this.env.publishEvent({ Code: publishEventCode });
+
+						if (this.pageConfig.isDetailPage) {
+							this.goBack();
+						} else {
+							this.removeSelectedItems();
+						}
+					})
+					.catch((err) => {
+						this.submitAttempt = false;
+						console.log(err);
+					});
+			} else {
+				super.delete(publishEventCode);
+			}
+		}
 	}
 }
