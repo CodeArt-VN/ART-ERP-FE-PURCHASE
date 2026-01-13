@@ -69,6 +69,8 @@ export class PurchaseOrderItemsComponent extends PageBase {
 		line.Status = line.Status ?? 'Open';
 		let preLoadItems = this.item._Items;
 		let selectedItem = preLoadItems?.find((d) => d.Id == line.IDItem);
+		const isSourceLocked = this.isSourceLocked();
+		const canEditQuantityAdjusted = this.canEditQuantityAdjusted(isSourceLocked);
 		const group = this.formBuilder.group({
 			_IDItemDataSource: [
 				{
@@ -106,10 +108,10 @@ export class PurchaseOrderItemsComponent extends PageBase {
 			IDUoM: new FormControl({ value: line.IDUoM, disabled: false }, Validators.required),
 			UoMPrice: new FormControl({ value: line.UoMPrice, disabled: !(this.page.pageConfig.canEdit && this.page.pageConfig.canEditPrice) }, Validators.required),
 			SuggestedQuantity: new FormControl({ value: line.SuggestedQuantity, disabled: true }),
-			UoMQuantityExpected: new FormControl({ value: line.UoMQuantityExpected, disabled: false }, Validators.required),
+			UoMQuantityExpected: new FormControl({ value: line.UoMQuantityExpected, disabled: isSourceLocked }, Validators.required),
 			QuantityAdjusted: new FormControl({
 				value: line.QuantityAdjusted,
-				disabled: !((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.page.pageConfig.canEditApprovedOrder),
+				disabled: !canEditQuantityAdjusted,
 			}),
 			IsPromotionItem: new FormControl({ value: line.IsPromotionItem, disabled: false }),
 			TotalBeforeDiscount: new FormControl({ value: line.TotalBeforeDiscount, disabled: true }),
@@ -294,15 +296,40 @@ export class PurchaseOrderItemsComponent extends PageBase {
 			this.page.pageConfig.canEdit = this.page.pageConfig.canEditPurchaseOrder;
 		}
 		const groups = this.formGroup.controls.OrderLines as FormArray;
+		const isSourceLocked = this.isSourceLocked();
+		const canEditQuantityAdjusted = this.canEditQuantityAdjusted(isSourceLocked);
+		const canEditApprovedOrder =
+			this.page.pageConfig?.canEditApprovedOrder && (this.item?.Status == 'Approved' || this.item?.Status == 'Ordered');
 		if (!this.page.pageConfig?.canEdit) {
 			this.formGroup.disable();
 		}
-		if (this.page.pageConfig?.canEditApprovedOrder && (this.item?.Status == 'Approved' || this.item?.Status == 'Ordered')) {
-			groups.controls.forEach((g) => {
+		groups.controls.forEach((g) => {
+			if (isSourceLocked) {
+				g.get('UoMQuantityExpected').disable();
+			} else if (this.page.pageConfig?.canEdit) {
+				g.get('UoMQuantityExpected').enable();
+			}
+
+			if (canEditQuantityAdjusted) {
 				g.get('QuantityAdjusted').enable();
+			} else if (this.page.pageConfig?.canEdit) {
+				g.get('QuantityAdjusted').disable();
+			}
+
+			if (canEditApprovedOrder) {
 				g.get('Remark').enable();
-			});
+			}
+		});
+	}
+	private isSourceLocked() {
+		return !!(this.item?.SourceType && this.item?.SourceKey > 0);
+	}
+
+	private canEditQuantityAdjusted(isSourceLocked = this.isSourceLocked()) {
+		if (this.page.pageConfig?.canEditApprovedOrder && (this.item?.Status == 'Approved' || this.item?.Status == 'Ordered')) {
+			return true;
 		}
+		return !!(this.page.pageConfig?.canEdit && isSourceLocked);
 	}
 	showSaleOrderPickerModal() {
 		this.onShowSaleOrder.emit();

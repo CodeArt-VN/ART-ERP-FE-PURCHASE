@@ -49,7 +49,7 @@
                         </app-input-control>
                     </ng-template>
                 </datatable-column>
-                <datatable-column *ngIf="pageConfig.POShowSuggestedQuantity && item.Type == 'FromPurchaseSuggestion'"
+                <datatable-column *ngIf="page.pageConfig.POShowSuggestedQuantity && item.Type == 'FromPurchaseSuggestion'"
                     class="col-date" name="Đề nghị" property="value">
                     <ng-template let-g="row" datatable-cell-template>
                         <app-input-control (change)="submitData(g)"
@@ -63,7 +63,7 @@
                     </ng-template>
                 </datatable-column>
 
-                <datatable-column *ngIf="pageConfig.POShowAdjustedQuantity" class="col-qty" name="SL đ.chỉnh"
+                <datatable-column *ngIf="page.pageConfig.POShowAdjustedQuantity" class="col-qty" name="SL đ.chỉnh"
                     property="value">
                     <ng-template let-g="row" datatable-cell-template>
                         <app-input-control (change)="submitData(g)"

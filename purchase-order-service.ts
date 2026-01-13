@@ -27,6 +27,30 @@ export class PURCHASE_OrderService extends PURCHASE_OrderProvider {
 		});
 	}
 
+	deleteOrders(items: any, env, pageConfig,action = 'DELETE') {
+		return new Promise((resolve, reject) => {
+			let postDTO = { Ids: [] };
+			let length = 0;
+			let itemName = '';
+			if (Array.isArray(items)) {
+				postDTO.Ids = items.map((item: any) => item.Id);
+				length = items.length;
+			} else {
+				postDTO.Ids = [items.Id];
+				itemName = items.Name;
+			}
+			env.actionConfirm(action, length, items?.Name, pageConfig.pageTitle, () => this.commonService.connect('POST', 'PURCHASE/Order/DeleteOrders/', postDTO).toPromise())
+				.then((savedItem: any) => {
+					env.publishEvent({ Code: pageConfig.pageName });
+					env.showMessage('Purchased deleted', 'success');
+					resolve(savedItem);
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	}
+
 	createInvoice(items: any, env, pageConfig) {
 		return new Promise((resolve, reject) => {
 			let postDTO = { Ids: [] };
@@ -53,16 +77,17 @@ export class PURCHASE_OrderService extends PURCHASE_OrderProvider {
 	}
 
 	copyToReceipt(items: any, env?: any, pageConfig?: any) {
-        return new Promise((resolve, reject) => {
-			this.commonService.connect('POST', 'PURCHASE/Order/CopyToReceipt/', items).toPromise()
-			.then((resp: any) => {
-				env.publishEvent({ Code: pageConfig.pageName });
-				resolve(resp);
-			})
-			.catch((err) => {
-				reject(err);
-			});
+		return new Promise((resolve, reject) => {
+			this.commonService
+				.connect('POST', 'PURCHASE/Order/CopyToReceipt/', items)
+				.toPromise()
+				.then((resp: any) => {
+					env.publishEvent({ Code: pageConfig.pageName });
+					resolve(resp);
+				})
+				.catch((err) => {
+					reject(err);
+				});
 		});
-    }
-	
+	}
 }

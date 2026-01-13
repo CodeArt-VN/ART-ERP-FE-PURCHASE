@@ -506,4 +506,34 @@ export class PurchaseOrderPage extends PageBase {
 			}
 		}
 	}
+
+	delete(publishEventCode = this.pageConfig.pageName) {
+		if (this.submitAttempt) {
+			return;
+		}
+		this.submitAttempt = true;
+		if (this.pageConfig.ShowDelete) {
+			if (this.item.SourceType && this.item.SourceKey > 0) {
+				this.pageProvider
+					.deleteOrders(this.item, this.env, this.pageConfig, 'DELETE_FROM')
+					.then((rs: any) => {
+						this.submitAttempt = false;
+						this.env.showMessage('DELETE_RESULT_SUCCESS', 'success');
+						this.env.publishEvent({ Code: publishEventCode });
+
+						if (this.pageConfig.isDetailPage) {
+							this.goBack();
+						} else {
+							this.removeSelectedItems();
+						}
+					})
+					.catch((err) => {
+						this.submitAttempt = false;
+						console.log(err);
+					});
+			} else {
+				super.delete(publishEventCode);
+			}
+		}
+	}
 }
