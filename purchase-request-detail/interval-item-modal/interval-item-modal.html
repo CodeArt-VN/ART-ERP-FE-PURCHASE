@@ -7,6 +7,11 @@
 				(change)="triggerSearch()"
 				[field]="{id:'IntervalName',label:'Interval', dataSource: intervalDataSource,type:'ng-select-async',bindLabel:'Name',bindValue:'Name',form:formGroup,clearable:true}"
 			></app-input-control>
+			
+
+			<ion-button fill="solid" size="small" color="primary" [disabled]="!selectedItems || selectedItems.length ==0" (click)="applyItems()">
+				&nbsp;{{ 'Add items' | translate }} &nbsp;
+			</ion-button>
 
 			<!-- <ion-button title="{{'Search' | translate}}" (click)="pageConfig.isShowSearch =! pageConfig.isShowSearch">
 				<ion-icon slot="icon-only" name="search-outline"></ion-icon>
@@ -125,11 +130,3 @@
 		</div>
 	</div>
 </ion-content>
-
-<ion-footer>
-	<div class="box ion-padding text-right">
-		<ion-button [disabled]="!selectedItems || selectedItems.length ==0" (click)="applyItems()">
-			{{ 'Add items' | translate }}<ion-icon name="add-outline"></ion-icon
-		></ion-button>
-	</div>
-</ion-footer>
