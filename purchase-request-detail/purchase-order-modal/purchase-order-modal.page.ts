@@ -65,7 +65,7 @@ export class PurchaseOrderModalPage extends PageBase {
 			this.env.showMessage('Please recheck information highlighted in red above', 'warning');
 		} else {
 			let submitItem: any = this.formGroup.value;
-			let orderLines = this.orderLines.filter((i) => i.checked && !i.disabled);
+			let orderLines = this.orderLines.filter((i) => i.checked && !i.disabled && i.QuantityRemainingOpen > 0);
 			submitItem.OrderLines = orderLines;
 			this.modalController.dismiss(submitItem);
 		}

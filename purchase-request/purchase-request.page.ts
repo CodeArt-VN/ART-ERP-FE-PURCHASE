@@ -39,10 +39,10 @@ export class PurchaseRequestPage extends PageBase {
 
 		Promise.all([this.env.getStatus('PurchaseRequest'), this.sysConfigService.getConfig(this.env.selectedBranch, ['PRUsedApprovalModule'])]).then((values) => {
 			this.statusList = values[0];
-			if(values[1]){
+			if (values[1]) {
 				this.pageConfig = {
 					...this.pageConfig,
-					...values[1]
+					...values[1],
 				};
 			}
 			super.preLoadData(event);
@@ -66,15 +66,18 @@ export class PurchaseRequestPage extends PageBase {
 			if (rs) {
 				let orderLines = rs.OrderLines.filter((d) => d.Id);
 				orderLines.forEach((d) => (d._Vendors = d._Item._Vendors));
-				this.pageProvider.sendRequestQuotationToVendor(rs.Id, orderLines, rs.IDVendor, PurchaseQuotationModalPage, this.modalController, this.env).then((rs) => {
-					if (rs) {
-						this.env.showMessage('Purchase quotations created!', 'success');
-						this.refresh();
-						this.env.publishEvent({
-							Code: this.pageConfig.pageName,
-						});
-					}
-				});
+				this.pageProvider
+					.sendRequestQuotationToVendor(rs.Id, orderLines, rs.IDVendor, PurchaseQuotationModalPage, this.modalController, this.env)
+					.then((rs) => {
+						if (rs) {
+							this.env.showMessage('Purchase quotations created!', 'success');
+							this.refresh();
+							this.env.publishEvent({
+								Code: this.pageConfig.pageName,
+							});
+						}
+					})
+					.catch((err) => this.env.showErrorMessage(err));
 			}
 		});
 	}
@@ -92,18 +95,21 @@ export class PurchaseRequestPage extends PageBase {
 						vendorList = [...vendorList, ...o._Vendors.filter((v) => !vendorList.some((vd) => v.Id == vd.Id))];
 					}
 				});
-				this.pageProvider.copyToPO(rs.Id, orderLines, rs._Vendor, vendorList, PurchaseOrderModalPage, this.modalController, this.env).then((rs: any) => {
-					if (rs) {
-						this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
-							this.nav('/purchase-order/' + rs.Id, 'forward');
-						});
-						if (rs.Count > 0) {
-							this.env.showErrorMessage({ error: { ExceptionMessage: rs.ExceptionMessage } });
+				this.pageProvider
+					.copyToPO(rs.Id, orderLines, rs._Vendor, vendorList, PurchaseOrderModalPage, this.modalController, this.env)
+					.then((rs: any) => {
+						if (rs) {
+							this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
+								this.nav('/purchase-order/' + rs.Id, 'forward');
+							});
+							if (rs.Count > 0) {
+								this.env.showErrorMessage({ error: { ExceptionMessage: rs.ExceptionMessage } });
+							}
+							this.refresh();
+							this.env.publishEvent({ Code: this.pageConfig.pageName });
 						}
-						this.refresh();
-						this.env.publishEvent({ Code: this.pageConfig.pageName });
-					}
-				}).catch((err) => {this.env.showErrorMessage(err);});
+					})
+					.catch((err) => this.env.showErrorMessage(err));
 			} else {
 				this.env.showMessage('Cannot get item!', 'danger');
 			}

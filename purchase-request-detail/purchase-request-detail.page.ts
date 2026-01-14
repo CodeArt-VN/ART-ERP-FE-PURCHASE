@@ -3,13 +3,7 @@ import { NavController, LoadingController, AlertController, ModalController, Pop
 import { PageBase } from 'src/app/page-base';
 import { ActivatedRoute } from '@angular/router';
 import { EnvService } from 'src/app/services/core/env.service';
-import {
-	BRA_BranchProvider,
-	CRM_ContactProvider,
-	HRM_StaffProvider,
-	PURCHASE_RequestDetailProvider,
-	WMS_ItemProvider,
-} from 'src/app/services/static/services.service';
+import { BRA_BranchProvider, CRM_ContactProvider, HRM_StaffProvider, PURCHASE_RequestDetailProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
 import { FormBuilder, Validators, FormControl, FormArray } from '@angular/forms';
 import { CommonService } from 'src/app/services/core/common.service';
 import { lib } from 'src/app/services/static/global-functions';
@@ -31,11 +25,11 @@ export class PurchaseRequestDetailPage extends PageBase {
 	_currentVendor;
 	_isVendorSearch = false;
 	_vendorDataSource = this.buildSelectDataSource((term) => {
-		return this.contactProvider.search({ SkipAddress: true, IsVendor: true, SortBy: ['Id_desc'], Take: 20, Skip: 0, Keyword: term  });
+		return this.contactProvider.search({ SkipAddress: true, IsVendor: true, SortBy: ['Id_desc'], Take: 20, Skip: 0, Keyword: term });
 	});
 
 	_staffDataSource = this.buildSelectDataSource((term) => {
-		return this.staffProvider.search({ Take: 20, Skip: 0, Keyword: term  });
+		return this.staffProvider.search({ Take: 20, Skip: 0, Keyword: term });
 	});
 
 	constructor(
@@ -111,10 +105,10 @@ export class PurchaseRequestDetailPage extends PageBase {
 				this._vendorDataSource.selected.push(...values[1].data);
 			}
 			if (values[2]) this.statusLineList = values[2];
-			if(values[3]){
+			if (values[3]) {
 				this.pageConfig = {
 					...this.pageConfig,
-					...values[3]
+					...values[3],
 				};
 			}
 			super.preLoadData(event);
@@ -247,7 +241,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 			this._vendorDataSource.selected = [...this._vendorDataSource.selected, ...[{ Id: e.Id, Name: e.Name, Code: e.Code }]];
 
 		let orderLines = this.formGroup.get('OrderLines') as FormArray;
-		if (orderLines.controls.some(s=> s.value.Id)) {
+		if (orderLines.controls.some((s) => s.value.Id)) {
 			if (e) {
 				this.env
 					.showPrompt('Tất cả hàng hoá trong danh sách khác với nhà cung cấp được chọn sẽ bị xoá. Bạn có muốn tiếp tục ? ', null, 'Thông báo')
@@ -259,7 +253,10 @@ export class PurchaseRequestDetailPage extends PageBase {
 
 						orderLines.controls
 							.filter((f) =>
-								f .get('_Vendors').value.map((v) => v.Id).includes(e.Id)
+								f
+									.get('_Vendors')
+									.value.map((v) => v.Id)
+									.includes(e.Id)
 							)
 							.forEach((o) => {
 								o.get('IDVendor').setValue(e.Id);
@@ -411,10 +408,14 @@ export class PurchaseRequestDetailPage extends PageBase {
 					this.env.showPrompt('Create purchase order successfully!', 'Do you want to navigate to purchase order?').then((d) => {
 						this.nav('/purchase-order/' + rs.Id, 'forward');
 					});
+					if (rs.Count > 0) {
+						this.env.showErrorMessage({ error: { ExceptionMessage: rs.ExceptionMessage } });
+					}
 					this.refresh();
 					this.env.publishEvent({ Code: this.pageConfig.pageName });
 				}
-			});
+			})
+			.catch((err) => this.env.showErrorMessage(err));
 	}
 	sendRequestQuotationToVendor() {
 		let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
@@ -428,7 +429,8 @@ export class PurchaseRequestDetailPage extends PageBase {
 						Code: this.pageConfig.pageName,
 					});
 				}
-			});
+			})
+			.catch((err) => this.env.showErrorMessage(err));
 		// let vendorList = [];
 		// this.formGroup.get('OrderLines').value.forEach((o) => {
 		// 	if (o.IDVendor) {
