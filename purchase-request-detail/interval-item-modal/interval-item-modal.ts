@@ -156,8 +156,8 @@ export class IntervalItemModalComponent extends PageBase {
 	}
 
 	buildForm(item: any) {
-		const uoMs = Array.isArray(item?.UoMs) ? item.UoMs : [];
-		const vendors = Array.isArray(item?._Vendors) ? item._Vendors : [];
+		const uoMs = Array.isArray(item?.UoMs) ? [...item.UoMs] : [];
+		const vendors = Array.isArray(item?._Vendors) ? [...item._Vendors] : [];
 		const defaultUoMId = item.IDItemUoM ?? item.PurchasingUoM ?? uoMs.find((d) => d.IsBaseUoM)?.Id ?? uoMs[0]?.Id ?? null;
 		const quantity = item.Quantity ?? null;
 
@@ -201,10 +201,58 @@ export class IntervalItemModalComponent extends PageBase {
 			this.env.showMessage('Please save Purchase Request before adding items', 'warning');
 			return;
 		}
-		this.dismissModal(true);
+		this.saveItem();
 	}
 	async dismissModal(isApply = false) {
 		this.modalController.dismiss(isApply);
+	}
+
+	saveItem() {
+		this.applySelectionValidators();
+		if (!this.validateSelectedItems()) return;
+		if (!this.IDPurchaseRequest) {
+			this.env.showMessage('Please save Purchase Request before adding items', 'warning');
+			return;
+		}
+
+		const lines = (this.selectedItems || []).map((item) => {
+			this.setValueItemSelected(item);
+			const baseUoM = item?.UoMs?.find((u) => u.IsBaseUoM);
+			const taxRate = item?.TaxRate ?? item?.PurchaseTaxInPercent ?? null;
+			const taxId = item?.IDTax ?? item?.IDPurchaseTaxDefinition ?? null;
+			const vendorId = item.IDVendor === '' ? null : item.IDVendor ?? null;
+			return {
+				IDItem: item.Id,
+				IDItemUoM: item.IDItemUoM,
+				IDBaseUoM: baseUoM?.Id ?? null,
+				IDVendor: vendorId,
+				Id: null,
+				Status: 'Open',
+				UoMPrice: item?.UoMPrice ?? null,
+				Quantity: item.Quantity,
+				QuantityRemainingOpen: item.Quantity,
+				IDTax: taxId,
+				TaxRate: taxRate,
+				RequiredDate : this.RequiredDate
+			};
+		});
+		const orderLines = lines.reduce((acc: Record<number, any>, line, index) => {
+			acc[index] = line;
+			return acc;
+		}, {} as Record<number, any>);
+		const payload = {
+			IDBranch: this.formGroup.get('IDBranch').value,
+			Id: this.IDPurchaseRequest,
+			OrderLines: orderLines,
+		};
+		this.env.showLoading('Please wait for a few moments', this.purchaseRequestProvider.save(payload)).then(() => {
+			this.env.showMessage('Saved', 'success');
+			this.dismissModal(true);
+		})
+		.catch((err) => {
+			this.env.showMessage(err, 'danger');
+		});
+		
 	}
 	async onExportToExcel() {
 		this.intervalOrderProvider.commonService

@@ -513,9 +513,10 @@ export class PurchaseOrderPage extends PageBase {
 		}
 		this.submitAttempt = true;
 		if (this.pageConfig.ShowDelete) {
-			if (this.item.SourceType && this.item.SourceKey > 0) {
+			let hasSource = this.selectedItems.some(s=> s.SourceKey || s.SourceKey > 0);
+			if (hasSource) {
 				this.pageProvider
-					.deleteOrders(this.item, this.env, this.pageConfig, 'DELETE_FROM')
+					.deleteOrders(this.selectedItems, this.env, this.pageConfig, 'DELETE_FROM')
 					.then((rs: any) => {
 						this.submitAttempt = false;
 						this.env.showMessage('DELETE_RESULT_SUCCESS', 'success');

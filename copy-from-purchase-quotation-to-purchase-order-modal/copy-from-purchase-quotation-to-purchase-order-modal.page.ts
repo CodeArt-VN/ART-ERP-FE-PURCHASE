@@ -140,6 +140,7 @@ export class CopyFromPurchaseQuotationToPurchaseOrder extends PageBase {
 			.map((d) => {
 				return {
 					UoMQuantityExpected: d.UoMQuantityExpected,
+					QuantityRemainingOpen : d. QuantityRemainingOpen,
 					// Id: d.Id,
 					// IDItem: d.IDItem,
 					// IDItemUoM: d.IDItemUoM,
