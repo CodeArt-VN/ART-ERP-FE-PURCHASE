@@ -99,14 +99,6 @@
 							[field]="{branchConfig: {showingType: 'Warehouse', showingMode:'showAll'}, id: 'IDWarehouse', label: 'Warehouse', type: 'ng-select-branch', dataSource: branchList, bindLabel: 'Name', bindValue: 'Id', placeholder: 'Search', form: formGroup}"
 						>
 						</app-form-control>
-					</ion-col>
-					<ion-col size="12" size-sm size-xl="4">
-						<app-form-control (change)="saveOrder()" [field]="{id: 'Code', label: 'PO code (Vendors)', type: 'text', form: formGroup}">
-							<small label *ngIf="item.Id">{{'Id' | translate}}: {{item.Id}}</small>
-						</app-form-control>
-
-						<app-form-control (change)="saveOrder()" [field]="{id: 'ExpectedReceiptDate', label: 'Expected receipt date', type: 'datetime-local', form: formGroup}">
-						</app-form-control>
 
 						<div class="c-control">
 							<label class="c-label" for="TotalAfterTax"
@@ -122,6 +114,20 @@
 								<b>{{calcTotalAfterTax() | number: '1.0-0'}}</b>
 							</span>
 						</div>
+					</ion-col>
+					<ion-col size="12" size-sm size-xl="4">
+						<app-form-control (change)="saveOrder()" [field]="{id: 'Code', label: 'PO code (Vendors)', type: 'text', form: formGroup}">
+							<small label *ngIf="item.Id">{{'Id' | translate}}: {{item.Id}}</small>
+						</app-form-control>
+
+						<app-form-control (change)="saveOrder()" [field]="{id: 'ExpectedReceiptDate', label: 'Expected receipt date', type: 'datetime-local', form: formGroup}">
+						</app-form-control>
+
+						<app-form-control (change)="saveOrder()" [field]="{id: 'OrderDate', label: 'OrderDate', type: 'datetime-local', form: formGroup}">
+						</app-form-control>
+
+
+						
 					</ion-col>
 				</ion-row>
 			</form>

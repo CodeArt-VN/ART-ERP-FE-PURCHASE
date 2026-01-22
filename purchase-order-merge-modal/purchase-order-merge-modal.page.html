@@ -1,0 +1,105 @@
+<ion-header collapse="fade">
+	<ion-toolbar>
+		<ion-buttons slot="start" class="ion-hide-sm-down_">
+			<ion-button color="dark" class="ion-hide-sm-down_"> {{'Merge' | translate}} {{selectedOrders.length}} {{'Order' | translate}} </ion-button>
+		</ion-buttons>
+
+		<ion-buttons slot="primary">
+			<ion-button title="{{'Help' | translate}}" (click)="help()">
+				<ion-icon slot="icon-only" name="help-circle-outline"></ion-icon>
+			</ion-button>
+
+			<ion-button title="{{'Close' | translate}}" color="secondary" (click)="closeModal()">
+				<ion-icon slot="icon-only" name="close"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
+</ion-header>
+<ion-content appScrollbarTheme class="ion-padding">
+	<div id="order-detail-page" style="position: absolute"></div>
+	<div class="main-view">
+		<form [formGroup]="formGroup">
+			<ion-grid fixed style="max-width: 500px">
+				<ion-row class="hr-group">
+					<ion-col size="12">
+						<div class="c-control">
+							<label class="c-label" for="IDVendor"> {{'Vendor' | translate}} </label>
+
+							<ng-select
+								formControlName="IDVendor"
+								appendTo="#order-detail-page"
+								class="c-input"
+								(change)="changedIDVendor($event)"
+								#IDVendor
+								labelForId="IDVendor"
+								[items]="vendorList$ | async"
+								[typeahead]="vendorListInput$"
+								[loading]="vendorListLoading"
+								[virtualScroll]="true"
+								[clearable]="true"
+								bindLabel="Name"
+								bindValue="Id"
+								placeholder="{{'Search for name, code or phone number' | translate}}"
+							>
+								<ng-template ng-option-tmp let-i="item" let-search="searchTerm">
+									<div *ngIf="i">
+										<div>
+											<span>{{i.Name}}</span>
+											<span *ngIf="i.WorkPhone">
+												|
+												<small> <b>{{i.WorkPhone}}</b></small></span
+											>
+										</div>
+										<small
+											>#<b><span class="important">{{i.Id}} - {{i.Code}}</span></b> <span *ngIf="i.AddressLine1"> | {{i.AddressLine1}}</span></small
+										>
+									</div>
+								</ng-template>
+							</ng-select>
+						</div>
+
+						<div class="c-control">
+							<label class="c-label" for="IDWarehouse"> {{'Warehouse' | translate}} </label>
+							<ng-select
+								formControlName="IDWarehouse"
+								appendTo="#order-detail-page"
+								class="c-input"
+								#IDWarehouse
+								labelForId="IDWarehouse"
+								[items]="warehouseList"
+								[loading]="warehouseListLoading"
+								[virtualScroll]="true"
+								[clearable]="true"
+								bindLabel="Name"
+								bindValue="Id"
+								placeholder="{{'Search' | translate}}"
+							>
+							</ng-select>
+						</div>
+
+						<div class="c-control">
+							<label class="c-label" for="ExpectedReceiptDate"> {{'Expected receipt date' | translate}} </label>
+							<input
+								id="ExpectedReceiptDate"
+								formControlName="ExpectedReceiptDate"
+								class="c-input"
+								type="date"
+								required
+							/>
+						</div>
+					</ion-col>
+				</ion-row>
+			</ion-grid>
+		</form>
+	</div>
+</ion-content>
+<ion-footer collapse="fade">
+	<ion-toolbar>
+		<div slot="start"></div>
+
+		<div slot="end">
+			<ion-button fill="outline" color="warning" (click)="closeModal()"> {{'Cancel' | translate}} </ion-button>
+			<ion-button [strong]="true" [disabled]="submitAttempt" (click)="mergePurchaseOrders()"> {{'Merge order' | translate}} </ion-button>
+		</div>
+	</ion-toolbar>
+</ion-footer>

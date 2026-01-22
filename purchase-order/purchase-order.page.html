@@ -127,10 +127,20 @@
 			(dataInfinite)="loadData($event)"
 			(filter)="onDatatableFilter($event)"
 			(sort)="onSort($event)"
-			(selectedRowsChange)="showCommandBySelectedRows($event)"
+			(selectedRowsChange)="changeSelection($event)"
 		>
 			<datatable-column [checkbox]="true" name=""></datatable-column>
-			<datatable-column class="col-id" name="#" property="Id" [navLink]="pageConfig.pageName"></datatable-column>
+			<datatable-column class="col-id" name="#" property="Id" [navLink]="pageConfig.pageName">
+				<ng-template let-i="row" datatable-cell-template>
+					<span class="spacing" *ngFor="let l of i._levels"></span>
+					<ion-icon
+						(click)="toggleRow(i, $event);"
+						class="min-btn clickable"
+						[name]="i._HasSubOrder? (!i._ShowSubItem? 'chevron-forward-outline':'chevron-down-outline') : '' "
+					></ion-icon>
+					<a (click)="nav(this.pageConfig.pageName+'/'+i.Id,'forward')" [routerLink]="['/'+pageConfig.pageName+'/'+i.Id]" [title]="i.Id">{{i.Id}}</a>
+				</ng-template>
+			</datatable-column>
 			<datatable-column class="col-date" format="yyyy-MM-dd" name="Order date" property="OrderDate" filterControlType="time-frame"></datatable-column>
 			<datatable-column class="col-date" format="yyyy-MM-dd" name="Expected receipt date" property="ExpectedReceiptDate" filterControlType="date"></datatable-column>
 			<datatable-column class="col-name " name="Vendor" property="_Vendor">

@@ -179,7 +179,12 @@ export class PurchaseOrderDetailPage extends PageBase {
 		) {
 			this.pageConfig.ShowRequestOutgoingPayment = false;
 		}
-		if (!this.item?.Id) this.formGroup.controls.IDBranch.markAsDirty();
+		if (!this.item?.Id) {
+			const now = lib.dateFormat(new Date(), 'yyyy-mm-dd');
+			this.formGroup.controls.OrderDate.setValue(now);
+			this.formGroup.controls.OrderDate.markAsDirty();
+			this.formGroup.controls.IDBranch.markAsDirty();
+		}
 		if (this.item?._Vendor) {
 			this._vendorDataSource.selected = [...this._vendorDataSource.selected, this.item?._Vendor];
 			this._currentBusinessPartner = this.item._Vendor;

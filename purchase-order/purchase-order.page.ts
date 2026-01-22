@@ -15,6 +15,7 @@ import { SearchAsyncPopoverPage } from '../search-async-popover/search-async-pop
 import { CopyFromPurchaseOrderToReceiptModalPage } from '../copy-from-purchase-order-to-receipt-modal/copy-from-purchase-order-to-receipt-modal.page';
 import { Router } from '@angular/router';
 import { SYS_ConfigService } from 'src/app/services/custom/system-config.service';
+import { PurchaseOrderMergeModalPage } from '../purchase-order-merge-modal/purchase-order-merge-modal.page';
 
 @Component({
 	selector: 'app-purchase-order',
@@ -29,6 +30,7 @@ export class PurchaseOrderPage extends PageBase {
 	paymentReasonList = [];
 	showRequestOutgoingPayment = false;
 	vendorView = false;
+	canMergeOrdersPermission = null;
 	constructor(
 		public pageProvider: PURCHASE_OrderService,
 		public sysConfigService: SYS_ConfigService,
@@ -70,7 +72,8 @@ export class PurchaseOrderPage extends PageBase {
 		let sysConfigQuery = ['POUsedApprovalModule'];
 		Promise.all([
 			this.env.getStatus('PurchaseOrder'),
-			this.env.getStatus('OutgoingPaymentStatus'),
+			// this.env.getStatus('OutgoingPaymentStatus'),
+			this.env.getStatus('SalesOrder'),
 			this.sysConfigService.getConfig(this.env.selectedBranch, ['POUsedApprovalModule']),
 			this.env.getType('PaymentType'),
 			this.env.getType('OutgoingPaymentReasonType'),
@@ -108,6 +111,17 @@ export class PurchaseOrderPage extends PageBase {
 			i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
 			i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
 			i.WarehouseName = this.env.branchList.find(d=> d.Id == i.IDWarehouse)?.Name
+			i._HasSubOrder = i.HasSubOrder || this.items.some((ii) => ii.IDParent == i.Id);
+			let level = 0;
+			let parentId = i.IDParent;
+			while (parentId) {
+				level++;
+				const parent = this.items.find((x) => x.Id == parentId);
+				if (!parent) break;
+				parentId = parent.IDParent;
+			}
+			i._level = level;
+			i._levels = new Array(level).fill(null);
 		});
 		if (this.pageConfig.canSubmitOrdersForApproval) {
 			this.pageConfig.canSubmit = true;
@@ -119,7 +133,101 @@ export class PurchaseOrderPage extends PageBase {
 		super.loadedData(event);
 	}
 
-	merge() {}
+	toggleRow(i, event) {
+		if (!i._HasSubOrder) {
+			return;
+		}
+		event.stopPropagation();
+
+		if (i._ShowSubItem) {
+			this.hideSubRows(i);
+		} else {
+			let idx = this.items.indexOf(i, 0) + 1;
+
+			if (i._SubItems) {
+				this.items = [...this.items.slice(0, idx), ...i._SubItems, ...this.items.slice(idx)];
+				i._ShowSubItem = true;
+			} else {
+				this.env
+					.showLoading('Please wait for a few moments', this.pageProvider.read({ IDParent: i.Id }))
+					.then((result: any) => {
+						i._SubItems = result.data;
+						i._SubItems.forEach((po) => {
+							po.TotalAfterTaxText = lib.currencyFormat(po.TotalAfterTax);
+							po.ExpectedReceiptDateText = lib.dateFormat(po.ExpectedReceiptDate, 'dd/mm/yyyy');
+							po.ExpectedReceiptTimeText = lib.dateFormat(po.ExpectedReceiptDate, 'hh:MM');
+							po.OrderDateText = lib.dateFormat(po.OrderDate, 'dd/mm/yyyy');
+							po.OrderTimeText = lib.dateFormat(po.OrderDate, 'hh:MM');
+							po.StatusText = lib.getAttrib(po.Status, this.statusList, 'Name', '--', 'Code');
+							po.StatusColor = lib.getAttrib(po.Status, this.statusList, 'Color', 'dark', 'Code');
+							po._level = (i._level || 0) + 1;
+							po._levels = new Array(po._level).fill(null);
+							po._HasSubOrder = po.HasSubOrder || i._SubItems.some((ii) => ii.IDParent == po.Id);
+						});
+						this.items = [...this.items.slice(0, idx), ...i._SubItems, ...this.items.slice(idx)];
+						i._ShowSubItem = true;
+					})
+					.catch((err) => {
+						if (err.message != null) {
+							this.env.showMessage(err.message, 'danger');
+						} else {
+							this.env.showMessage('Cannot extract data', 'danger');
+						}
+					});
+			}
+		}
+	}
+
+	hideSubRows(i) {
+		i._ShowSubItem = false;
+		let subItems = this.items.filter((d) => d.IDParent == i.Id);
+
+		subItems.forEach((it) => {
+			this.hideSubRows(it);
+			const index = this.items.indexOf(it, 0);
+			if (index > -1) {
+				this.items.splice(index, 1);
+			}
+		});
+	}
+
+	async merge() {
+		let itemsCanNotProcess = this.selectedItems.filter((i) => !(i.Status == 'Draft' || i.Status == 'Unapproved' || i.Status == 'Submitted'));
+		if (itemsCanNotProcess.length) {
+			this.env.showMessage('Your selected orders cannot be combined. Please select draft, unapproved, or submitted orders', 'warning');
+			return;
+		}
+		const vendorIds = new Set<number>();
+		const storerIds = new Set<number>();
+		this.selectedItems.forEach((order) => {
+			const vendorId = order?.IDVendor ?? order?._Vendor?.Id;
+			const storerId = order?.IDStorer ?? order?._Storer?.Id;
+			if (vendorId) vendorIds.add(vendorId);
+			if (storerId) storerIds.add(storerId);
+		});
+		if (vendorIds.size > 1) {
+			this.env.showMessage('Your selected orders must belong to the same vendor', 'warning');
+			return;
+		}
+		if (storerIds.size > 1) {
+			this.env.showMessage('Your selected orders must belong to the same storer', 'warning');
+			return;
+		}
+
+		const modal = await this.modalController.create({
+			component: PurchaseOrderMergeModalPage,
+			cssClass: 'modal-merge-orders',
+			componentProps: {
+				selectedOrders: this.selectedItems,
+			},
+		});
+		await modal.present();
+		const { data } = await modal.onWillDismiss();
+		if (data?.saved) {
+			this.selectedItems = [];
+			this.refresh();
+		}
+	}
 	split() {}
 	submitOrders() {
 		if (this.submitAttempt) {
@@ -201,6 +309,12 @@ export class PurchaseOrderPage extends PageBase {
 		} else {
 			this.IDBusinessPartner = [...uniqueSellerIDs][0];
 		}
+		if (this.canMergeOrdersPermission === null) {
+			this.canMergeOrdersPermission = !!this.pageConfig.canMerge;
+		}
+		const uniqueStorerIDs = new Set(this.selectedItems.map((item) => item.IDStorer ?? item._Storer?.Id ?? null));
+		const canMergeByStorer = this.selectedItems.length > 1 ? uniqueStorerIDs.size <= 1 : true;
+		this.pageConfig.canMerge = this.canMergeOrdersPermission && canMergeByStorer;
 	}
 
 	async copyToReceipt() {
