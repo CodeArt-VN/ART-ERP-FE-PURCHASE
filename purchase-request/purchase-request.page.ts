@@ -7,6 +7,7 @@ import { PURCHASE_RequestService } from '../purchase-request.service';
 import { PurchaseQuotationModalPage } from '../purchase-request-detail/purchase-quotation-modal/purchase-quotation-modal.page';
 import { PurchaseOrderModalPage } from '../purchase-request-detail/purchase-order-modal/purchase-order-modal.page';
 import { SYS_ConfigService } from 'src/app/services/custom/system-config.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
 	selector: 'app-purchase-request',
@@ -16,7 +17,7 @@ import { SYS_ConfigService } from 'src/app/services/custom/system-config.service
 })
 export class PurchaseRequestPage extends PageBase {
 	statusList = [];
-
+	imgPath = environment.staffAvatarsServer;
 	constructor(
 		public pageProvider: PURCHASE_RequestService,
 		public sysConfigService: SYS_ConfigService,

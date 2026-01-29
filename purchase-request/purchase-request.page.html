@@ -63,8 +63,17 @@
 			<datatable-column [checkbox]="true" name=""></datatable-column>
 			<datatable-column class="col-id" name="#" property="Id" [navLink]="pageConfig.pageName"></datatable-column>
 			<datatable-column class="col-date" format="yyyy-MM-dd" name="Required date" property="RequiredDate" filterControlType="date"></datatable-column>
-			<datatable-column class="col-code" name="Department" property="_requestBranchName"></datatable-column>
-			<datatable-column class="col-code" name="Requester" property="_requesterName"></datatable-column>
+			<datatable-column class="col-name" name="Department" property="_requestBranchName"></datatable-column>
+			<datatable-column class="col-code" name="Requester" property="_Requester">
+				<ng-template let-i="row" datatable-cell-template>
+					<div class="col-staff cell">
+						<ion-avatar class="avatar" slot="start" style="margin-right: 8px">
+							<ion-img #img [src]="imgPath + i._Requester?.Code + '.jpg'" (ionError)="img.src = 'assets/avartar-empty.jpg'"></ion-img>
+						</ion-avatar>
+						{{i._Requester?.FullName}}
+					</div>
+				</ng-template>
+			</datatable-column>
 			<datatable-column class="col-name flex-break" name="Title" property="Name"></datatable-column>
 			<datatable-column *ngIf="pageConfig.canViewPrice" class="col-number bold" format="1.0-0" name="Total" property="TotalAfterTax"></datatable-column>
 
