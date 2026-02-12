@@ -119,6 +119,12 @@
 						</ng-template>
 					</datatable-column>
 
+					<datatable-column class="col-remark" name="Remark" property="value">
+						<ng-template let-g="row" datatable-cell-template>
+							<app-input-control (change)="submitData(g)" [field]="{ id: 'Remark', type: 'textarea', form: g }"></app-input-control>
+						</ng-template>
+					</datatable-column>
+
 					<datatable-column *ngIf="_showStatus" class="col-status" name="Status" property="value" filterControlType="ng-select" [filterDataSource]="statusLineList">
 						<ng-template let-g="row" datatable-cell-template>
 							<ion-badge [color]="g.controls._Status.value?.Color" [title]="g.controls._Status.value?.Name">
