@@ -96,7 +96,7 @@
 
 	<div class="safe-max-width">
 		<app-data-table
-			class="box-shadow responsive"
+			class="box-shadow responsive padding-number-right"
 			[rows]="items"
 			[trackBy]="'Id'"
 			[(selectedRows)]="selectedItems"
@@ -111,7 +111,10 @@
 			<datatable-column [checkbox]="true" name=""></datatable-column>
 			<datatable-column class="col-id" name="#" property="Id" [navLink]="pageConfig.pageName"></datatable-column>
 			<datatable-column class="col-date" format="yyyy-MM-dd" name="Required date" property="RequiredDate" filterControlType="date"></datatable-column>
-			<datatable-column class="col-name" name="Source" property="SourceKey">
+			<datatable-column class="col-name flex-break" name="Title" property="Name"></datatable-column>
+			
+			<datatable-column class="col-remark flex-break" name="Vendor" property="_BusinessPartnerName"> </datatable-column>
+			<datatable-column class="col-code" name="Source" property="SourceKey">
 				<ng-template let-i="row" datatable-cell-template>
 					<ng-container *ngIf="i.SourceType=='FromPurchaseRequest'" (click)="nav('purchase-request/'+i.SourceLine,'forward')" class="col-id cell">
 						#{{i.SourceType}}: {{i.SourceKey}}</ng-container
@@ -119,8 +122,6 @@
 					<ng-container *ngIf="i.SourceType!='FromPurchaseRequest'">{{i.SourceKey}}</ng-container>
 				</ng-template>
 			</datatable-column>
-			<datatable-column class="col-name" name="Vendor" property="_BusinessPartnerName"> </datatable-column>
-			<datatable-column class="col-name flex-break" name="Title" property="Name"></datatable-column>
 			<!-- <datatable-column class="col-number bold" format="1.0-0" name="Total" property="_TotalAfterTax"></datatable-column> -->
 
 			<datatable-column class="col-status" name="Status" property="Status" filterControlType="ng-select" [filterDataSource]="statusList">
