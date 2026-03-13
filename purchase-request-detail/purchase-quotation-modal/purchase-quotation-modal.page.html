@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header [translucent]="true">
 	<ion-toolbar>
 		<ion-buttons slot="start">
 			<ion-button color="dark"> {{'Send request quotation' | translate}} </ion-button>
@@ -20,7 +20,7 @@
 	</ion-toolbar>
 </ion-header>
 
-<ion-content appScrollbarTheme class="header-table scrollx" forceOverscroll="false">
+<ion-content appScrollbarTheme class="header-table scrollx" [fullscreen]="true" forceOverscroll="false">
 	<app-data-table class="box-shadow" [rows]="items" [trackBy]="'Id'" [showSpinner]="pageConfig.showSpinner" [showFilter]="pageConfig.isShowSearch" [(query)]="query">
 		<datatable-column [checkbox]="true" class="col-checkbox" name="" property="Id">
 			<ng-template datatable-header-template>

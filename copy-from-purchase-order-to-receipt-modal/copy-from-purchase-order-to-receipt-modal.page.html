@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header [translucent]="true">
 	<ion-toolbar>
 		<ion-title> {{'Copy to goods receipt'| translate}}</ion-title>
 		<ion-buttons slot="end">
@@ -21,7 +21,7 @@
 		</ion-buttons>
 	</ion-toolbar>
 </ion-header>
-<ion-content appScrollbarTheme class="header-table">
+<ion-content appScrollbarTheme class="header-table" [fullscreen]="true">
 	<app-data-table
 		class="box-shadow responsive"
 		[rows]="item.OrderLines"

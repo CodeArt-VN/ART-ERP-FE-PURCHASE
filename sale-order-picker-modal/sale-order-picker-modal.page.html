@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header [translucent]="true">
 	<ion-toolbar class="no-padding">
 		<ion-buttons slot="start" class="ion-hide-sm-down">
 			<ion-button color="dark"> {{'Select order' | translate}} </ion-button>
@@ -117,7 +117,7 @@
 		</form>
 	</section>
 </ion-header>
-<ion-content appScrollbarTheme class="header-table">
+<ion-content appScrollbarTheme class="header-table" [fullscreen]="true">
 	<app-page-message [itemsLength]="items.length" [showSpinner]="pageConfig.showSpinner"></app-page-message>
 
 	<section class="table">

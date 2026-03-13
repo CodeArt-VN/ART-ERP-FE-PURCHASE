@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header [translucent]="true">
 	<ion-toolbar>
 		<ion-buttons slot="start">
 			<ion-button color="dark"> {{'Copy to purchase order' | translate}} </ion-button>
@@ -12,7 +12,7 @@
 		</ion-buttons>
 	</ion-toolbar>
 </ion-header>
-<ion-content appScrollbarTheme class="header-table">
+<ion-content appScrollbarTheme class="header-table" [fullscreen]="true">
 	<app-data-table
 		class="box-shadow responsive"
 		[rows]="item.QuotationLines"

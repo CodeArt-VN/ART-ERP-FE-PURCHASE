@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header [translucent]="true">
 	<ion-toolbar>
 		<!-- <ion-title> {{'Price list version'| translate}}</ion-title> -->
 		<ion-buttons slot="start" class="ion-hide-sm-down_">
@@ -24,7 +24,7 @@
 	</ion-toolbar>
 </ion-header>
 
-<ion-content appScrollbarTheme class="header-table scrollx" forceOverscroll="false">
+<ion-content appScrollbarTheme class="header-table scrollx" [fullscreen]="true" forceOverscroll="false">
 	<app-data-table
 		class="box-shadow responsive"
 		[rows]="items"

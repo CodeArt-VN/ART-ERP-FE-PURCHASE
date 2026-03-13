@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header [translucent]="true">
 	<app-toolbar [page]="this">
 		<ng-container tollbarSelected>
 			<ion-button
@@ -112,7 +112,7 @@
 	</app-toolbar>
 </ion-header>
 
-<ion-content appScrollbarTheme class="header-table" scroll-x="true">
+<ion-content [fullscreen]="true" appScrollbarTheme class="header-table" scroll-x="true">
 	<app-page-title class="ion-padding safe-max-width" [pageConfig]="pageConfig"></app-page-title>
 
 	<div class="safe-max-width">
@@ -151,7 +151,7 @@
 
 	<ion-popover class="w300" #popover [isOpen]="isOpenPopover" (didDismiss)="dismissPopover()">
 		<ng-template>
-			<ion-content appScrollbarTheme>
+			<ion-content [fullscreen]="true" appScrollbarTheme>
 				<ion-grid>
 					<form [formGroup]="formGroup" (submit)="dismissPopover(true)">
 						<ion-row>
@@ -176,7 +176,7 @@
 
 	<ion-modal [isOpen]="isShowReceiptModal" (willDismiss)="onDismissReceiptModal(); ">
 		<ng-template>
-			<ion-header>
+			<ion-header [translucent]="true">
 				<ion-toolbar>
 					<ion-title>{{'Confirm modal' | translate}}</ion-title>
 					<ion-buttons slot="primary">
@@ -186,7 +186,7 @@
 					</ion-buttons>
 				</ion-toolbar>
 			</ion-header>
-			<ion-content appScrollbarTheme class="scrollx">
+			<ion-content [fullscreen]="true" appScrollbarTheme class="scrollx">
 				<ion-grid>
 					<ion-row>
 						<ion-col size="12" size-sm size-xl="6">

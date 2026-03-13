@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header [translucent]="true">
 	<app-toolbar [page]="this">
 		<ng-container tollbarSelected>
 			<ion-button
@@ -67,7 +67,7 @@
 
 		<ion-popover #addNewPopover [isOpen]="isOpenAddNewPopover" (didDismiss)="isOpenAddNewPopover = false">
 			<ng-template>
-				<ion-content appScrollbarTheme scroll-y="false" scroll-x="true">
+				<ion-content [fullscreen]="true" appScrollbarTheme scroll-y="false" scroll-x="true">
 					<ion-list lines="none">
 						<ion-item [button]="true" [detail]="false" (click)="addNewPopover.dismiss() ;add() " title="{{'Add' | translate}}">
 							<!-- && selectedItems?.length  == 1 -->
@@ -91,7 +91,7 @@
 		</ion-popover>
 	</app-toolbar>
 </ion-header>
-<ion-content appScrollbarTheme scroll-x="true" class="header-table">
+<ion-content [fullscreen]="true" appScrollbarTheme scroll-x="true" class="header-table">
 	<app-page-title class="ion-padding safe-max-width" [pageConfig]="pageConfig"></app-page-title>
 
 	<div class="safe-max-width">
