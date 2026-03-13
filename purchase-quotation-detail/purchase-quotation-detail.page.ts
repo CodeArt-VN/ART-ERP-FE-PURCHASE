@@ -198,7 +198,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		}
 		this.saveChange();
 	}
-	changeRequiredDate() {
+	changeRequiredDate(e = null) {
 		let orderLines = this.formGroup.get('OrderLines') as FormArray;
 		orderLines?.controls.forEach((o) => {
 			if (!o.get('RequiredDate').value) {
@@ -640,4 +640,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			if (this.isAllChecked) this.selectedOrderLines.push(i);
 		});
 	}
+
+	//TODO: Remove empty functions
+	noCheckDirty = false;
 }

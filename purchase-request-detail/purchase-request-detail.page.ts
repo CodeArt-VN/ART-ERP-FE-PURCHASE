@@ -282,7 +282,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 		}
 	}
 
-	changeRequiredDate() {
+	changeRequiredDate(e = null) {
 		let orderLines = this.formGroup.get('OrderLines') as FormArray;
 		orderLines.controls.forEach((o) => {
 			if (!o.get('RequiredDate').value) {

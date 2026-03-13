@@ -347,4 +347,7 @@ export class IntervalItemModalComponent extends PageBase {
 			Data: JSON.stringify(compactData),
 		};
 	}
+
+	//TODO: Remove empty functions
+	noCheckDirty = false;
 }

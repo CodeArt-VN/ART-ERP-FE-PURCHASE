@@ -147,7 +147,7 @@
                 </datatable-column>
                 <datatable-column class="col-icon" property="value" *ngIf="page.pageConfig.canViewPriceListVersion">
                     <ng-template let-i="row" datatable-cell-template>
-                        <ion-icon class="clickable" color="danger" (click)="OpenViewPriceListVersionPopover(i,$event)"
+                        <ion-icon class="clickable" color="danger" (click)="OpenViewPriceListVersionPopover(i)"
                             class="min-btn" name="pricetag-outline"></ion-icon>
                     </ng-template>
                 </datatable-column>

@@ -26,6 +26,7 @@ export class PurchaseOrderPage extends PageBase {
 	statusList = [];
 	paymentStatusList = [];
 	paymentTypeList = [];
+	paymentSubTypeList = [];
 	paymentReasonList = [];
 	showRequestOutgoingPayment = false;
 	vendorView = false;
@@ -73,6 +74,7 @@ export class PurchaseOrderPage extends PageBase {
 			this.env.getStatus('OutgoingPaymentStatus'),
 			this.sysConfigService.getConfig(this.env.selectedBranch, ['POUsedApprovalModule']),
 			this.env.getType('PaymentType'),
+			this.env.getType('PaymentSubType'),
 			this.env.getType('OutgoingPaymentReasonType'),
 		]).then((values) => {
 			this.statusList = values[0];
@@ -86,9 +88,10 @@ export class PurchaseOrderPage extends PageBase {
 			if (values[3]) {
 				this.paymentTypeList = values[3].filter((d) => d.Code == 'Cash' || d.Code == 'Card' || d.Code == 'Transfer');
 			}
-			if (values[4]) {
-				this.paymentReasonList = values[4];
-				if (values[4].length == 0)
+			if (values[4]) this.paymentSubTypeList = values[4] || [];
+			if (values[5]) {
+				this.paymentReasonList = values[5];
+				if (values[5].length == 0)
 					this.paymentReasonList = [
 						{ Name: 'Payment of invoice', Code: 'PaymentOfInvoice' },
 						{ Name: 'Payment of purchase order', Code: 'PaymentOfPO' },
@@ -179,7 +182,7 @@ export class PurchaseOrderPage extends PageBase {
 		}
 		this.isOpenPopover = false;
 	}
-	presentPopover(event) {
+	presentPopover(event = null) {
 		this.isOpenPopover = true;
 	}
 
@@ -255,7 +258,7 @@ export class PurchaseOrderPage extends PageBase {
 		});
 	}
 
-	async openPurchaseQuotationPopover(ev: any) {
+	async openPurchaseQuotationPopover(ev: any = null) {
 		let queryPQ = {
 			IDBranch: this.env.selectedBranchAndChildren,
 			Take: 20,
@@ -344,7 +347,7 @@ export class PurchaseOrderPage extends PageBase {
 		});
 	}
 
-	async openPurchaseRequestPopover(ev: any) {
+	async openPurchaseRequestPopover(ev: any = null) {
 		let queryPR = {
 			IDBranch: this.env.selectedBranchAndChildren,
 			Take: 20,

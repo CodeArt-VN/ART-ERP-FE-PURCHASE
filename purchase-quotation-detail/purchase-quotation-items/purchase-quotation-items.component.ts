@@ -487,4 +487,7 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 		}
 		this.onChange.emit();
 	}
+
+	//TODO: Remove empty functions
+	isAllSelected = false;
 }

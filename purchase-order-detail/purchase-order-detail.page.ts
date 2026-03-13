@@ -209,7 +209,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 		}, 300);
 	}
 
-	changeVendor(e) {
+	changeVendor(e = null) {
 		this._currentBusinessPartner = e;
 		this.saveOrder();
 	}
@@ -590,7 +590,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 		}
 		this.isOpenPopover = false;
 	}
-	presentPopover(event) {
+	presentPopover(event = null) {
 		this.isOpenPopover = true;
 	}
 
@@ -640,4 +640,11 @@ export class PurchaseOrderDetailPage extends PageBase {
 			}
 		}
 	}
+
+	//TODO: Remove empty functions
+	changeDate(_e?: any) {}
+	noCheckDirty = false;
+	paymentReasonList = [];
+	paymentTypeList = [];
+	paymentSubTypeList = [];
 }

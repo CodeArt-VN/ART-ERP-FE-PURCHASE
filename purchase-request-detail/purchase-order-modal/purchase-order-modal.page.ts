@@ -106,4 +106,7 @@ export class PurchaseOrderModalPage extends PageBase {
 		i.checked = !i.checked;
 		super.changeSelection(i);
 	}
+
+	//TODO: Remove empty functions
+	isAllSelected = false;
 }

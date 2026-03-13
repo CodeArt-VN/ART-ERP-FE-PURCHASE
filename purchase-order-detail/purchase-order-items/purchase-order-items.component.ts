@@ -338,5 +338,7 @@ export class PurchaseOrderItemsComponent extends PageBase {
 	confirmOrder() {
 		this.onConfirmOrder.emit();
 	}
-	
+
+	//TODO: Remove empty functions
+	isAllSelected = false;
 }

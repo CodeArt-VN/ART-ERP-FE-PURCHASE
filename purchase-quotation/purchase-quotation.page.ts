@@ -140,7 +140,7 @@ export class PurchaseQuotationPage extends PageBase {
 		this.isOpenAddNewPopover = !this.isOpenAddNewPopover;
 	}
 	initDatasource = [];
-	async openPurchaseRequestPopover(ev: any) {
+	async openPurchaseRequestPopover(ev: any = null) {
 		let queryPR = {
 			IDBranch: this.env.selectedBranchAndChildren,
 			Take: 20,

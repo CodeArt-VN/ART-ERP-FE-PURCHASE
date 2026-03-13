@@ -62,4 +62,8 @@ export class ItemPlanningDataPage extends PageBase {
 			this.refresh();
 		}
 	}
+
+	//TODO: Remove empty functions
+	addPlanningVendor() {}
+	noCheckDirty = false;
 }

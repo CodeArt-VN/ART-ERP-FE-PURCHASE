@@ -28,7 +28,7 @@
 			</ng-template>
 			<ng-template let-i="row" datatable-cell-template>
 				<ng-container *ngIf="!i.IDItem">
-					<input class="c-checkbox" type="checkbox" [(ngModel)]="i.checked" (change)="changeVendor(i,z)" />
+					<input class="c-checkbox" type="checkbox" [(ngModel)]="i.checked" (change)="changeVendor(i, null)" />
 				</ng-container>
 			</ng-template>
 		</datatable-column>
