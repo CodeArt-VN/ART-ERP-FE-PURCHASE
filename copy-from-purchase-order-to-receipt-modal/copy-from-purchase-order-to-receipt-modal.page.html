@@ -142,7 +142,7 @@
 		</datatable-column>
 	</app-data-table>
 </ion-content>
-<ion-footer>
+<ion-footer [translucent]="true" collapse="fade">
 	<ion-toolbar>
 		<ion-button *ngIf="showButtonSave" size="large" slot="end" (click)="submitForm()">{{'Save' | translate}}</ion-button>
 		<ion-title *ngIf="!showButtonSave">
