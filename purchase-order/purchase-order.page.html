@@ -137,6 +137,8 @@
 			<datatable-column class="col-remark flex-break" name="Goods owner" property="_Storer.Name"></datatable-column>
 			<datatable-column class="col-name" name="Warehouse" property="_Warehouse.Name"></datatable-column>
 			<datatable-column class="col-number bold" format="1.0-0" name="Total" property="TotalAfterTax"></datatable-column>
+			<datatable-column class="col-number bold" name="Type" property="Type"></datatable-column>
+
 			<datatable-column class="col-status" name="Status" property="Status" filterControlType="ng-select-status" [filterDataSource]="statusList">
 				<ng-template let-i="row" datatable-cell-template>
 					<ion-badge [color]="i.StatusColor" [title]="i.StatusText"> {{i.StatusText | translate}} </ion-badge>
