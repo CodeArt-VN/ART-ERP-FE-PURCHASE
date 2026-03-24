@@ -243,7 +243,8 @@
 										*ngIf="formGroup.get('SourceType').value && formGroup.get('SourceKey').value "
 										[field]="{id: 'SourceKey', type : 'text', label: 
 										item.SourceType == 'FromPurchaseRequest'?'Purchase request' : 
-										item.SourceType =='FromPurchaseQuotation'?'Purchase quotation' : 'Source'
+										item.SourceType =='FromPurchaseQuotation'?'Purchase quotation' :
+										item.SourceType == 'FromPurchaseSuggestion'? 'MRP Recommendation' : 'Source'
 										, form : formGroup}"
 									>
 										<small label class="danger" *ngIf="formGroup.get('SourceType').value">
@@ -251,9 +252,10 @@
 												[ngClass]="{ 'no-check-dirty': noCheckDirty }"
 												class="clickable"
 												(click)="nav(
-                      (item.SourceType == 'FromPurchaseRequest'?'/purchase-request/': 
-                      item.SourceType =='FromPurchaseQuotation'?'/purchase-quotation/': item.SourceType)
-                      + formGroup.get('SourceKey').value)"
+												(item.SourceType == 'FromPurchaseRequest'?'/purchase-request/': 
+												item.SourceType =='FromPurchaseQuotation'?'/purchase-quotation/':
+												item.SourceType == 'FromPurchaseSuggestion' ? '/scenario/' :item.SourceType)
+												+ formGroup.get('SourceKey').value)"
 												(mousedown)="$event.stopPropagation()"
 												>#{{formGroup.get('SourceKey').value }} <ion-icon name="open-outline"></ion-icon
 											></a>
