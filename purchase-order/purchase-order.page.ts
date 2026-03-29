@@ -267,7 +267,7 @@ export class PurchaseOrderPage extends PageBase {
 		};
 
 		let searchFn = this.buildSelectDataSource((term) => {
-			return this.purchaseQuotationProvider.search({ ...queryPQ, Term: term });
+			return this.purchaseQuotationProvider.search({ ...queryPQ, Keyword: term });
 		}, false);
 
 		if (this.initPQDatasource.length == 0) {
@@ -355,7 +355,7 @@ export class PurchaseOrderPage extends PageBase {
 			Status: '["Approved"]',
 		};
 		let searchFn = this.buildSelectDataSource((term) => {
-			return this.purchaseRequestProvider.search({ ...queryPR, Term: term });
+			return this.purchaseRequestProvider.search({ ...queryPR, Keyword: term });
 		}, false);
 
 		if (this.initPRDatasource.length == 0) {

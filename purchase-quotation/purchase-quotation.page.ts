@@ -148,7 +148,7 @@ export class PurchaseQuotationPage extends PageBase {
 			Status: '["Approved"]',
 		};
 		let searchFn = this.buildSelectDataSource((term) => {
-			return this.purchaseRequestProvider.search({ ...queryPR, Term: term });
+			return this.purchaseRequestProvider.search({ ...queryPR, Keyword: term });
 		}, false);
 
 		if (this.initDatasource.length == 0) {
