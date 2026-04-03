@@ -17,6 +17,8 @@ import { SYS_ConfigService } from 'src/app/services/custom/system-config.service
 })
 export class PurchaseOrderNotePage extends PageBase {
 	statusList = [];
+	configByBranch :any = {};
+
 	constructor(
 		public pageProvider: PURCHASE_OrderProvider,
 		public sysConfigService: SYS_ConfigService,
@@ -40,12 +42,16 @@ export class PurchaseOrderNotePage extends PageBase {
 
 	preLoadData(event?: any): void {
 		Promise.all([
-			this.sysConfigService.getConfig(this.env.selectedBranch, ['PONConvertToLargerUoM', 'PONShowPackingUoM', 'PONShowEACaseOnly']),
+			this.sysConfigService.getConfig(this.env.selectedBranch, ['PONConvertToLargerUoM', 'PONShowPackingUoM', 'PONShowEACaseOnly','SmallLogo']),
 			this.env.getStatus('PurchaseOrder'),
 		]).then((values: any) => {
-			this.pageConfig.PONConvertToLargerUoM = values[0]['PONConvertToLargerUoM'];
-			this.pageConfig.PONShowPackingUoM = values[0]['PONShowPackingUoM'];
-			this.pageConfig.PONShowEACaseOnly = values[0]['PONShowEACaseOnly'];
+			this.configByBranch = {
+				IDBranch : this.env.selectedBranch,
+				Configs: values[0]
+			}
+			// this.pageConfig.PONConvertToLargerUoM = values[0]['PONConvertToLargerUoM'];
+			// this.pageConfig.PONShowPackingUoM = values[0]['PONShowPackingUoM'];
+			// this.pageConfig.PONShowEACaseOnly = values[0]['PONShowEACaseOnly'];
 			this.statusList = values[1];
 			super.preLoadData(event);
 		});
