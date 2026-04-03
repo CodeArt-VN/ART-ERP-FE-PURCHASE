@@ -70,8 +70,8 @@
 	<div style="overflow: auto">
 		<div class="giao-nhan" *ngFor="let o of sheets">
 			<section class="sheet padding-10mm rpt p1">
-				<app-po-note [ID]="o.Id" [PONConvertToLargerUoM]="true"
-					[PONShowPackingUoM]="true" [PONShowEACaseOnly]="false">
+				<app-po-note [item]="o" [PONConvertToLargerUoM]="pageConfig.PONConvertToLargerUoM"
+					[PONShowPackingUoM]="pageConfig.PONShowPackingUoM" [PONShowEACaseOnly]="pageConfig.PONShowEACaseOnly">
 				</app-po-note>
 			</section>
 		</div>
