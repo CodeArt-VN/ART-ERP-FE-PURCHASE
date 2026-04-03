@@ -7,6 +7,7 @@ import { Location } from '@angular/common';
 import { lib } from 'src/app/services/static/global-functions';
 import QRCode from 'qrcode';
 import { ActivatedRoute } from '@angular/router';
+import { SYS_ConfigService } from 'src/app/services/custom/system-config.service';
 
 @Component({
 	selector: 'app-purchase-order-note',
@@ -18,6 +19,8 @@ export class PurchaseOrderNotePage extends PageBase {
 	statusList = [];
 	constructor(
 		public pageProvider: PURCHASE_OrderProvider,
+		public sysConfigService: SYS_ConfigService,
+
 		public modalController: ModalController,
 		public alertCtrl: AlertController,
 		public loadingController: LoadingController,
@@ -37,30 +40,13 @@ export class PurchaseOrderNotePage extends PageBase {
 
 	preLoadData(event?: any): void {
 		Promise.all([
-			this.pageProvider.commonService
-				.connect('GET', 'SYS/Config/ConfigByBranch', {
-					Code: 'PONConvertToLargerUoM',
-					IDBranch: this.env.selectedBranch,
-				})
-				.toPromise(),
-			this.pageProvider.commonService
-				.connect('GET', 'SYS/Config/ConfigByBranch', {
-					Code: 'PONShowPackingUoM',
-					IDBranch: this.env.selectedBranch,
-				})
-				.toPromise(),
-			this.pageProvider.commonService
-				.connect('GET', 'SYS/Config/ConfigByBranch', {
-					Code: 'PONShowEACaseOnly',
-					IDBranch: this.env.selectedBranch,
-				})
-				.toPromise(),
+			this.sysConfigService.getConfig(this.env.selectedBranch, ['PONConvertToLargerUoM', 'PONShowPackingUoM', 'PONShowEACaseOnly']),
 			this.env.getStatus('PurchaseOrder'),
 		]).then((values: any) => {
-			this.pageConfig.PONConvertToLargerUoM = JSON.parse(values[0]['Value']);
-			this.pageConfig.PONShowPackingUoM = JSON.parse(values[1]['Value']);
-			this.pageConfig.PONShowEACaseOnly = JSON.parse(values[2]['Value']);
-			this.statusList = values[3];
+			this.pageConfig.PONConvertToLargerUoM = values[0]['PONConvertToLargerUoM'];
+			this.pageConfig.PONShowPackingUoM = values[0]['PONShowPackingUoM'];
+			this.pageConfig.PONShowEACaseOnly = values[0]['PONShowEACaseOnly'];
+			this.statusList = values[1];
 			super.preLoadData(event);
 		});
 	}
