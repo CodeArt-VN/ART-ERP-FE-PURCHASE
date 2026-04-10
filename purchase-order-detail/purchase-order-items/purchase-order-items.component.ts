@@ -135,7 +135,7 @@ export class PurchaseOrderItemsComponent extends PageBase {
 
 	IDItemChange(e, group) {
 		if (e) {
-			if (e.PurchaseTaxInPercent && e.PurchaseTaxInPercent != -99) {
+			if (e.PurchaseTaxInPercent != -99) {
 				group.controls._IDUoMDataSource.setValue(e.UoMs);
 
 				group.controls.IDUoM.setValue(e.PurchasingUoM);
@@ -146,9 +146,9 @@ export class PurchaseOrderItemsComponent extends PageBase {
 
 				this.IDUoMChange(group);
 				return;
+			} else {
+				this.env.showMessage('The item has not been set tax');
 			}
-
-			if (e.PurchaseTaxInPercent != -99) this.env.showMessage('The item has not been set tax');
 		}
 
 		group.controls.TaxRate.setValue(null);
@@ -292,14 +292,13 @@ export class PurchaseOrderItemsComponent extends PageBase {
 	}
 
 	updateFormPermissions() {
-		if(this.page.pageConfig.canEditPurchaseOrder != undefined) {
+		if (this.page.pageConfig.canEditPurchaseOrder != undefined) {
 			this.page.pageConfig.canEdit = this.page.pageConfig.canEditPurchaseOrder;
 		}
 		const groups = this.formGroup.controls.OrderLines as FormArray;
 		const isSourceLocked = this.isSourceLocked();
 		const canEditQuantityAdjusted = this.canEditQuantityAdjusted(isSourceLocked);
-		const canEditApprovedOrder =
-			this.page.pageConfig?.canEditApprovedOrder && (this.item?.Status == 'Approved' || this.item?.Status == 'Ordered');
+		const canEditApprovedOrder = this.page.pageConfig?.canEditApprovedOrder && (this.item?.Status == 'Approved' || this.item?.Status == 'Ordered');
 		if (!this.page.pageConfig?.canEdit) {
 			this.formGroup.disable();
 		}
