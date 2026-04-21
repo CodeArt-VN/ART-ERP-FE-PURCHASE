@@ -409,14 +409,41 @@ export class PurchaseRequestDetailPage extends PageBase {
 						this.nav('/purchase-order/' + rs.Id, 'forward');
 					});
 					if (rs.Count > 0) {
-						this.env.showErrorMessage({ error: { ExceptionMessage: rs.ExceptionMessage } });
+						const error = this.formatCopyToPOError({ error: { ExceptionMessage: rs.ExceptionMessage } });
+						this.env.showErrorMessage(error);
 					}
 					this.refresh();
 					this.env.publishEvent({ Code: this.pageConfig.pageName });
 				}
 			})
-			.catch((err) => this.env.showErrorMessage(err));
+			.catch((err) => {
+				this.env.showErrorMessage(this.formatCopyToPOError(err));
+			});
 	}
+
+	private formatCopyToPOError(err) {
+		const level1 = JSON.parse(err.error.ExceptionMessage);
+		if(level1.UoMs) {
+			level1.UoMs = level1.UoMs
+				?.split('\n')
+				.map((x: string) => x.trim())
+				.filter(Boolean)
+				.join('<br/>');
+			err.error.ExceptionMessage = JSON.stringify(level1);
+		}else {
+			const level2 = JSON.parse(level1.Message);
+			level2.UoMs = level2.UoMs
+				?.split('\n')
+				.map((x: string) => x.trim())
+				.filter(Boolean)
+				.join('<br/>');
+
+			level1.Message = JSON.stringify(level2);
+			err.error.ExceptionMessage = JSON.stringify(level1);
+		}
+		return err;
+	}
+
 	sendRequestQuotationToVendor() {
 		let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
 		this.pageProvider
