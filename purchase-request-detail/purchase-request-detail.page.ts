@@ -415,8 +415,11 @@ export class PurchaseRequestDetailPage extends PageBase {
 					this.env.publishEvent({ Code: this.pageConfig.pageName });
 				}
 			})
-			.catch((err) => this.env.showErrorMessage(err));
+			.catch((err) => {
+				this.env.showErrorMessage(err);
+			});
 	}
+
 	sendRequestQuotationToVendor() {
 		let orderLines = this.formGroup.get('OrderLines').value.filter((d) => d.Id);
 		this.pageProvider

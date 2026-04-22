@@ -52,9 +52,10 @@ export class PurchaseOrderModalPage extends PageBase {
 		if (this.defaultVendor?.Id) {
 			this.formGroup.get('IDVendor').setValue(this.defaultVendor.Id);
 			this.orderLines.forEach((i) => {
-				i.disabled = i.IDVendor != this.defaultVendor.Id;
-				i.checked = i.IDVendor == this.defaultVendor.Id;
-				this.changeSelection(i);
+				const canSelect = this.canSelectVendor(i, this.defaultVendor.Id) && i.QuantityRemainingOpen > 0;
+				i.disabled = !canSelect;
+				i.checked = canSelect;
+				super.changeSelection(i);
 			});
 		}
 	}
@@ -66,6 +67,10 @@ export class PurchaseOrderModalPage extends PageBase {
 		} else {
 			let submitItem: any = this.formGroup.value;
 			let orderLines = this.orderLines.filter((i) => i.checked && !i.disabled && i.QuantityRemainingOpen > 0);
+			if (!orderLines.length) {
+				this.env.showMessage('There are no items to add to the purchase order', 'warning');
+				return;
+			}
 			submitItem.OrderLines = orderLines;
 			this.modalController.dismiss(submitItem);
 		}
@@ -77,11 +82,13 @@ export class PurchaseOrderModalPage extends PageBase {
 		this.selectedItems = [];
 		// let groups = this.formGroup.get('OrderLines') as FormArray;
 		this.orderLines.forEach((i) => {
-			if (this.isAllChecked) {
-				if (i.IDVendor == this.formGroup.get('IDVendor').value) {
-					i.checked = this.isAllChecked;
-				}
-			} else i.checked = this.isAllChecked;
+			if (i.disabled) {
+				i.checked = false;
+			} else if (this.isAllChecked) {
+				i.checked = true;
+			} else {
+				i.checked = false;
+			}
 			super.changeSelection(i);
 		});
 		// this.selectedItems = this.isAllChecked ? [...this.items.filter(d=> d.checked)] : [];
@@ -95,9 +102,9 @@ export class PurchaseOrderModalPage extends PageBase {
 
 		setTimeout(() => {
 			this.orderLines.forEach((i) => {
-				const canNotSelect = i.IDVendor ? i.IDVendor != e.Id : !i.Vendor && i._Vendors.some((v) => v.Id == e.Id) ? false : true;
-				i.disabled = canNotSelect;
-				i.checked = !canNotSelect;
+				const canSelect = this.canSelectVendor(i, e.Id) && i.QuantityRemainingOpen > 0;
+				i.disabled = !canSelect;
+				i.checked = canSelect;
 				super.changeSelection(i);
 			});
 		}, 10);
@@ -105,6 +112,12 @@ export class PurchaseOrderModalPage extends PageBase {
 	changeSelection(i, e = null) {
 		i.checked = !i.checked;
 		super.changeSelection(i);
+	}
+
+	canSelectVendor(orderLine, vendorId: number) {
+		if (!vendorId) return false;
+		if (orderLine.IDVendor) return orderLine.IDVendor == vendorId;
+		return !!orderLine._Vendors?.some((v) => v.Id == vendorId);
 	}
 
 	//TODO: Remove empty functions

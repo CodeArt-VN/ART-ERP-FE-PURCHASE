@@ -103,18 +103,21 @@ export class PurchaseRequestPage extends PageBase {
 								this.nav('/purchase-order/' + rs.Id, 'forward');
 							});
 							if (rs.Count > 0) {
-								this.env.showErrorMessage({ error: { ExceptionMessage: rs.ExceptionMessage } });
+								this.env.showErrorMessage({error: { ExceptionMessage: rs.ExceptionMessage } });
 							}
 							this.refresh();
 							this.env.publishEvent({ Code: this.pageConfig.pageName });
 						}
 					})
-					.catch((err) => this.env.showErrorMessage(err));
+					.catch((err) => {
+						this.env.showErrorMessage(err);
+					});
 			} else {
 				this.env.showMessage('Cannot get item!', 'danger');
 			}
 		});
 	}
+
 	isOpenCopyPopover = false;
 	@ViewChild('copyPopover') copyPopover!: HTMLIonPopoverElement;
 	presentCopyPopover(e) {
