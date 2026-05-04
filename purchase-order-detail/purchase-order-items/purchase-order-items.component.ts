@@ -147,7 +147,7 @@ export class PurchaseOrderItemsComponent extends PageBase {
 				this.IDUoMChange(group);
 				return;
 			} else {
-				this.env.showMessage('The item has not been set tax');
+				this.env.showMessage('The item has not been set tax','danger');
 			}
 		}
 
