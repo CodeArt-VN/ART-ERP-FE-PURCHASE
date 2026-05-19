@@ -56,6 +56,9 @@
 			<ion-button *ngIf="pageConfig.ShowSubmitOrders && pageConfig.canSubmitOrders" fill="clear" title="Order submitted" (click)="submitOrders()">
 				<ion-icon slot="start" name="cart-outline"></ion-icon>
 			</ion-button>
+			<ion-button *ngIf="pageConfig.ShowReOpen && pageConfig.canSendReOpenRequest" fill="clear" title="Reopen" (click)="reOpen()">
+				<ion-icon slot="start" name="paper-plane"></ion-icon>
+			</ion-button>
 			<ion-button (click)="importClick()" *ngIf="formGroup.controls.Status.value=='Draft' && pageConfig.canEdit" title="{{'Import product' | translate}}">
 				<ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
 			</ion-button>

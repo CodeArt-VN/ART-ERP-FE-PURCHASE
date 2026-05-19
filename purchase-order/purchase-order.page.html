@@ -61,6 +61,9 @@
 			<ion-button *ngIf="selectedItems.length === 1" (click)="print()" title="{{'Print' | translate}}">
 				<ion-icon slot="start" name="print"></ion-icon>
 			</ion-button>
+			<ion-button *ngIf="pageConfig.canSendReOpenRequest && pageConfig.ShowReOpen" fill="clear" title="Reopen" (click)="reOpen()">
+				<ion-icon slot="start" name="paper-plane"></ion-icon>
+			</ion-button>
 		</ng-container>
 		<ion-button
 			class="clickable"
