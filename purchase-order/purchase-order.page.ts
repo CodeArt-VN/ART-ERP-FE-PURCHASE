@@ -15,6 +15,7 @@ import { SearchAsyncPopoverPage } from '../search-async-popover/search-async-pop
 import { CopyFromPurchaseOrderToReceiptModalPage } from '../copy-from-purchase-order-to-receipt-modal/copy-from-purchase-order-to-receipt-modal.page';
 import { Router } from '@angular/router';
 import { SYS_ConfigService } from 'src/app/services/custom/system-config.service';
+import { APIList } from 'src/app/services/static/global-variable';
 
 @Component({
 	selector: 'app-purchase-order',
@@ -79,7 +80,7 @@ export class PurchaseOrderPage extends PageBase {
 		]).then((values) => {
 			this.statusList = values[0];
 			this.paymentStatusList = values[1];
-			if(values[2]){
+			if (values[2]) {
 				this.pageConfig = {
 					...this.pageConfig,
 					...values[2]
@@ -110,7 +111,7 @@ export class PurchaseOrderPage extends PageBase {
 			i.OrderTimeText = lib.dateFormat(i.OrderDate, 'hh:MM');
 			i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
 			i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
-			i.WarehouseName = this.env.branchList.find(d=> d.Id == i.IDWarehouse)?.Name
+			i.WarehouseName = this.env.branchList.find(d => d.Id == i.IDWarehouse)?.Name
 		});
 		if (this.pageConfig.canSubmitOrdersForApproval) {
 			this.pageConfig.canSubmit = true;
@@ -122,8 +123,8 @@ export class PurchaseOrderPage extends PageBase {
 		super.loadedData(event);
 	}
 
-	merge() {}
-	split() {}
+	merge() { }
+	split() { }
 	submitOrders() {
 		if (this.submitAttempt) {
 			return;
@@ -419,7 +420,7 @@ export class PurchaseOrderPage extends PageBase {
 						this.nav('/ap-invoice/' + resp[0], 'forward');
 					}
 				})
-				.catch((_) => {});
+				.catch((_) => { });
 		});
 	}
 
@@ -472,7 +473,7 @@ export class PurchaseOrderPage extends PageBase {
 									...{ ...this.receiptFormGroup.getRawValue(), Status: 'Confirmed' },
 								};
 							}),
-							this.env, 
+							this.env,
 							this.pageConfig
 						)
 					)
@@ -516,7 +517,7 @@ export class PurchaseOrderPage extends PageBase {
 		}
 		this.submitAttempt = true;
 		if (this.pageConfig.ShowDelete) {
-			let hasSource = this.selectedItems.some(s=> s.SourceKey || s.SourceKey > 0);
+			let hasSource = this.selectedItems.some(s => s.SourceKey || s.SourceKey > 0);
 			if (hasSource) {
 				this.pageProvider
 					.deleteOrders(this.selectedItems, this.env, this.pageConfig, 'DELETE_FROM')
@@ -539,5 +540,24 @@ export class PurchaseOrderPage extends PageBase {
 				super.delete(publishEventCode);
 			}
 		}
+	}
+
+	reOpen() {
+		this.env
+			.actionConfirm('disapprove', this.selectedItems.length, this.item?.Name, this.pageConfig.pageTitle, () =>
+				this.pageProvider.disapprove(this.pageConfig.isDetailPage ? this.item : this.selectedItems, APIList.PURCHASE_Order)
+			)
+			.then((_) => {
+				this.env.publishEvent({
+					Code: this.pageConfig.pageName,
+				});
+				this.env.showMessage('Disapprove successfully!', 'success');
+				this.submitAttempt = false;
+				this.refresh();
+			})
+			.catch((err: any) => {
+				if (err != 'User abort action') this.env.showMessage('Cannot disapprove, please try again', 'danger');
+				console.log(err);
+			});
 	}
 }
