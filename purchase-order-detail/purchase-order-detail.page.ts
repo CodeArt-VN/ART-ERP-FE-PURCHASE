@@ -13,6 +13,7 @@ import { ApiSetting } from 'src/app/services/static/api-setting';
 import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-picker-modal.page';
 import { PURCHASE_OrderService } from '../purchase-order-service';
 import { CopyFromPurchaseOrderToReceiptModalPage } from '../copy-from-purchase-order-to-receipt-modal/copy-from-purchase-order-to-receipt-modal.page';
+import { APIList } from 'src/app/services/static/global-variable';
 
 @Component({
 	selector: 'app-purchase-order-detail',
@@ -282,7 +283,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 								message: 'Có ' + resp.ErrorList.length + ' lỗi khi import:' + message,
 								cssClass: 'alert-text-left',
 								buttons: [
-									{ text: 'Không', role: 'cancel', handler: () => {} },
+									{ text: 'Không', role: 'cancel', handler: () => { } },
 									{
 										text: 'Có',
 										cssClass: 'success-btn',
@@ -435,7 +436,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 							this.nav('/ap-invoice');
 						}
 					})
-					.catch((_) => {});
+					.catch((_) => { });
 			})
 			.catch((err) => this.env.showMessage(err));
 	}
@@ -641,8 +642,27 @@ export class PurchaseOrderDetailPage extends PageBase {
 		}
 	}
 
+	reOpen() {
+		this.env
+			.actionConfirm('disapprove', this.selectedItems.length, this.item?.Name, this.pageConfig.pageTitle, () =>
+				this.pageProvider.disapprove(this.pageConfig.isDetailPage ? this.item : this.selectedItems, APIList.PURCHASE_Order)
+			)
+			.then((_) => {
+				this.env.publishEvent({
+					Code: this.pageConfig.pageName,
+				});
+				this.env.showMessage('Disapprove successfully!', 'success');
+				this.submitAttempt = false;
+				this.refresh();
+			})
+			.catch((err: any) => {
+				if (err != 'User abort action') this.env.showMessage('Cannot disapprove, please try again', 'danger');
+				console.log(err);
+			});
+	}
+
 	//TODO: Remove empty functions
-	changeDate(_e?: any) {}
+	changeDate(_e?: any) { }
 	noCheckDirty = false;
 	paymentReasonList = [];
 	paymentTypeList = [];
