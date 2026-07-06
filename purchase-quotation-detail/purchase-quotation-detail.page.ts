@@ -105,6 +105,40 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			DeletedLines: [''],
 		});
 	}
+
+	isVendorCreateMode() {
+		return this.canVendorCreateQuotation() && (!this.item?.Id || this.item.Id == 0);
+	}
+
+	canVendorCreateQuotation() {
+		return (
+			this.vendorView &&
+			this.pageConfig.canCreateFromVendor &&
+			(!this.item?.Id || this.item.Id == 0 || this.item.IDBusinessPartner == this.env.user.IDBusinessPartner)
+		);
+	}
+
+	applyVendorCreateDefaults() {
+		if (!this.isVendorCreateMode()) return;
+
+		const vendorId = this.env.user.IDBusinessPartner;
+		this.item = {
+			...this.item,
+			Id: this.item?.Id ?? 0,
+			IsDisabled: this.item?.IsDisabled ?? false,
+			Status: 'Open',
+			IDBusinessPartner: vendorId,
+		};
+
+		this.pageConfig.canEdit = true;
+
+		this.formGroup.controls.Status.setValue('Open');
+		this.formGroup.controls.Status.markAsDirty();
+		this.formGroup.controls.IDBusinessPartner.setValue(vendorId);
+		this.formGroup.controls.IDBusinessPartner.markAsDirty();
+		this.formGroup.controls.IDBusinessPartner.disable();
+	}
+
 	preLoadData(event) {
 		this.checkingCanEdit = this.pageConfig.canEdit;
 		this.contentTypeList = [
@@ -142,12 +176,16 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		this.pageConfig.canEdit = this.checkingCanEdit;
 		this.isAllChecked = true;
 		this.buildFormGroup();
-		if (!['Open', 'Draft', 'Unapproved'].includes(this.item.Status)) this.pageConfig.canEdit = false;
+		const isVendorCreateMode = this.isVendorCreateMode();
+		if (this.canVendorCreateQuotation()) this.pageConfig.canEdit = true;
+		if (!isVendorCreateMode && !['Open', 'Draft', 'Unapproved'].includes(this.item.Status)) this.pageConfig.canEdit = false;
 		if (this.item.Status == 'Confirmed' && this.vendorView) this.pageConfig.canEdit = false;
 		if (this.pageConfig['PQUsedApprovalModule']) {
 			this.pageConfig['canApprove'] = false;
 		}
 		super.loadedData(event);
+		this.applyVendorCreateDefaults();
+		if (this.canVendorCreateQuotation()) this.formGroup.controls.IDBusinessPartner.disable();
 		this.toggleSelectAll();
 
 		if (this.item.SourceType == 'FromPurchaseRequest') {
@@ -227,7 +265,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 						this.saveChange();
 					})
 					.catch(() => {
-						this.formGroup.get('IDVendor').setValue(this._currentVendor?.Id);
+						this.formGroup.get('IDBusinessPartner').setValue(this._currentVendor?.Id);
 					});
 			} else {
 				this._currentVendor = e;

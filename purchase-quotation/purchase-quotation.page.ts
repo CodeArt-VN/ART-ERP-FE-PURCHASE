@@ -20,6 +20,7 @@ import { SYS_ConfigService } from 'src/app/services/custom/system-config.service
 export class PurchaseQuotationPage extends PageBase {
 	statusList: any = [];
 	isOpenCopyPopover: boolean = false;
+	vendorView = false;
 	constructor(
 		public pageProvider: PURCHASE_QuotationService,
 		public sysConfigService: SYS_ConfigService,
@@ -35,6 +36,13 @@ export class PurchaseQuotationPage extends PageBase {
 		super();
 		this.pageConfig.ShowAdd = false;
 		this.pageConfig.ShowAddNew = true;
+		if (this.env.user.IDBusinessPartner > 0 && !this.env.user.SysRoles.includes('STAFF') && this.env.user.SysRoles.includes('VENDOR')) {
+			this.vendorView = true;
+		}
+	}
+
+	canCreatePurchaseQuotation() {
+		return this.pageConfig.canAdd || (this.vendorView && this.pageConfig.canCreateFromVendor);
 	}
 
 	preLoadData(event) {
