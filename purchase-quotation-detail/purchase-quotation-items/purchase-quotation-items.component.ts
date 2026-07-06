@@ -407,6 +407,12 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 			}
 		});
 	}
+
+	canShowVendorProductActions() {
+		if (!this.page?.pageConfig?.canEdit || !this._IDVendor || !this._IDPurchaseQuotation) return false;
+		return !this.vendorView || this.page?.pageConfig?.canCreateFromVendor;
+	}
+
 	isOpenPriceListVersionPopover: boolean = false;
 	currentShowingPriceListVersionItem: any;
 	popoverSpinner = false;

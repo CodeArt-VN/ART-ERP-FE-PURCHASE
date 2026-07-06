@@ -63,7 +63,7 @@
 							(change)="changeVendor($event)"></app-form-control>
 
 						<app-form-control
-							[field]="{id: 'ContentType', label: 'Content type', type: 'ng-select',dataSource: contentTypeList, bindLabel: 'Name',bindValue: 'Code', form: formGroup}"
+							[field]="{id: 'ContentType', label: 'Content type', type: 'ng-select',dataSource: contentTypeList, bindLabel: 'Name',bindValue: 'Code', form: formGroup, appendTo: '#ng-select-table'}"
 							(change)="changeContentType($event)">
 						</app-form-control>
 					</ion-col>
