@@ -186,6 +186,55 @@ export class PurchaseOrderDetailPage extends PageBase {
 			this._currentBusinessPartner = this.item._Vendor;
 		}
 		this._vendorDataSource.initSearch();
+		this.loadItemPricesIfEditable();
+	}
+
+	isPriceEditableStatus(status = this.formGroup?.get('Status')?.value || this.item?.Status) {
+		return status == 'Draft' || status == 'Unapproved';
+	}
+
+	loadItemPricesIfEditable() {
+		if (!this.pageConfig.canEdit || !this.isPriceEditableStatus()) return;
+		const vendorId = this.formGroup.get('IDVendor')?.value || this.item?.IDVendor;
+		const lines = (this.item?.OrderLines || [])
+			.filter((l) => l.IDItem)
+			.map((l) => ({
+				IDItem: l.IDItem,
+				IDVendor: vendorId || 0,
+			}));
+		if (!lines.length) return;
+
+		this.commonService
+			.connect('POST', 'PURCHASE/Order/ItemPrices', { Lines: lines })
+			.toPromise()
+			.then((prices: any) => this.applyItemPrices(prices))
+			.catch(() => {});
+	}
+
+	applyItemPrices(prices: any) {
+		if (!prices?.length || !this.item?._Items) return;
+		const byItem = new Map<number, any>();
+		prices.forEach((p) => {
+			if (!byItem.has(p.IDItem)) byItem.set(p.IDItem, p);
+		});
+
+		this.item._Items = this.item._Items.map((it) => {
+			const row = byItem.get(it.Id);
+			if (!row) return it;
+			return {
+				...it,
+				UoMs: row.UoMs || [],
+				_Vendors: row._Vendors || it._Vendors || [],
+			};
+		});
+
+		const orderLines = this.formGroup.get('OrderLines') as FormArray;
+		orderLines?.controls?.forEach((g) => {
+			const idItem = g.get('IDItem')?.value;
+			const row = byItem.get(idItem);
+			if (!row) return;
+			g.get('_IDUoMDataSource')?.setValue(row.UoMs || []);
+		});
 	}
 
 	removeOrderItem(Ids: number[]) {

@@ -69,9 +69,9 @@
 	</app-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" appScrollbarTheme class="ion-padding">
+<ion-content [fullscreen]="true" appScrollbarTheme class="scrollx">
 	<div id="ng-select-table" style="position: absolute"></div>
-	<div class="main-view safe-max-width" *ngIf="item && pageConfig.showSpinner==false">
+	<div class="main-view safe-max-width" *ngIf="item && pageConfig.showSpinner==false" style="position: sticky; left: 0">
 		<ion-grid fixed>
 			<form [formGroup]="formGroup">
 				<ion-row class="hr-group">
@@ -144,20 +144,6 @@
 					</ion-segment-button>
 				</ion-segment>
 			</ion-toolbar>
-			<div *ngIf="segmentView == 's1'">
-				<app-purchase-order-items
-				[_item]="item"
-				[page]="this"
-				[orderLines]="item.OrderLines"
-				[vendorView]="vendorView"
-				[_status]="this.formGroup.get('Status').value"
-				(renderFormArray)="renderFormArray($event)"
-				(onChange)="saveOrder()"
-				(removeItem)="removeOrderItem($event)"
-				(onConfirmOrder)="confirmOrder()"
-				(onShowSaleOrder)="showSaleOrderPickerModal()">
-				</app-purchase-order-items>
-			</div>
 			<div *ngIf="segmentView == 's2'">
 				<div class="ion-padding">
 					<ion-grid fixed>
@@ -193,25 +179,6 @@
 									<app-form-control
 										[field]="{ id: 'PaymentStatus', type: 'ng-select', label: 'Payment status', dataSource: paymentStatusList, bindValue: 'Code', bindLabel: 'Name', form: formGroup }"
 									></app-form-control>
-
-									<!-- <app-form-control
-										*ngIf="formGroup.get('SourceType').value && formGroup.get('SourceKey').value "
-										[field]="{id: 'SourceKey', type: 'text',
-										label: formGroup.get('SourceType').value =='FromPurchaseRequest'?'Purchase request': 'Source'
-									, form: formGroup}"
-									>
-										<small label class="danger"
-											><ng-container *ngIf="formGroup.get('SourceType').value =='FromPurchaseRequest'">
-												<a
-													[ngClass]="{ 'no-check-dirty': noCheckDirty }"
-													class="clickable"
-													(click)="nav('/purchase-request/' + formGroup.get('SourceKey').value)"
-													(mousedown)="$event.stopPropagation()"
-													>#{{formGroup.get('SourceKey').value }} <ion-icon name="open-outline"></ion-icon
-												></a>
-											</ng-container>
-										</small>
-									</app-form-control> -->
 
 									<app-form-control [field]="{id: 'CreatedBy', type: 'text', label: 'Created by', form: formGroup }"></app-form-control>
 									<app-form-control [field]="{id: 'CreatedDate', type: 'span-datetime', label: 'Created date', form: formGroup }"></app-form-control>
@@ -271,29 +238,20 @@
 					</ion-grid>
 				</div>
 			</div>
-			<div class="table responsive" *ngIf="segmentView == 's3'">
+			<div *ngIf="segmentView == 's3'">
 				<app-data-table
-					class="box-shadow responsive"
+					[minHeight]="'calc(-500px + 100vh)!important'"
+					class="box-shadow"
 					*ngIf="paymentDetailList"
 					[rows]="paymentDetailList"
 					[(selectedRows)]="selectedItems"
 					[showSpinner]="showSpinnerPayment"
 				>
-					<!-- <datatable-column [checkbox]="true"></datatable-column> -->
 					<datatable-column class="col-id" name="Id" property="Id">
 						<ng-template let-i="row" datatable-cell-template>
 							<a [routerLink]="['/outgoing-payment/'+i.Id]">{{i.Id}}</a>
 						</ng-template>
 					</datatable-column>
-					<!-- <datatable-column class="col-name" name="Warehouse" property="WarehouseName">
-            <ng-template let-i="row" datatable-cell-template>
-              {{i.WarehouseName}}
-              <small class="address" *ngIf="i.WarehouseCode">
-                <ion-text color="dark">{{i.WarehouseCode}}</ion-text>
-              </small>
-            </ng-template>
-          </datatable-column>
-          -->
 					<datatable-column class="col-code" filterControlType="text" name="Type" property="Type"> </datatable-column>
 					<datatable-column class="col-number" filterControlType="number" name="Amount" property="Amount"> </datatable-column>
 					<datatable-column class="col-date" filterControlType="date" name="Posting date" property="PostingDate">
@@ -305,12 +263,6 @@
 					<datatable-column class="col-date" filterControlType="date" name="Due date" property="DueDate">
 						<ng-template let-i="row" datatable-cell-template> {{i.DueDate | date: 'dd/MM/yyyy HH: mm'}} </ng-template>
 					</datatable-column>
-					<!-- <datatable-column class="col-date" filterControlType="date" name="Picked date" property="PickedDate">
-            <ng-template let-i="row" datatable-cell-template>
-              {{i.PickedDate | date: 'dd/MM/yyyy HH: mm'}}
-              </ng-template>
-          </datatable-column> -->
-
 					<datatable-column class="col-status" name="Status" property="Status">
 						<ng-template let-i="row" datatable-cell-template>
 							<ion-badge [color]="i._Status?.Color" [title]="i._Status?.Name"> {{i._Status?.Name}} </ion-badge>
@@ -320,6 +272,24 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Product list — same layout as forecast-detail Products segment (outside row-full) -->
+
+	<app-purchase-order-items
+		*ngIf="segmentView == 's1' && item && pageConfig.showSpinner==false"
+		[_item]="item"
+		[page]="this"
+		[orderLines]="item.OrderLines"
+		[vendorView]="vendorView"
+		[_status]="this.formGroup.get('Status').value"
+		(renderFormArray)="renderFormArray($event)"
+		(onChange)="saveOrder()"
+		(removeItem)="removeOrderItem($event)"
+		(onConfirmOrder)="confirmOrder()"
+		(onShowSaleOrder)="showSaleOrderPickerModal()"
+	>
+	</app-purchase-order-items>
+
 	<app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>
 	<input class="hide-all" #importfile type="file" accept=".xlsx" (change)="uploadOrderLine($event)" />
 	<ion-popover class="w300" #popover [isOpen]="isOpenPopover" (didDismiss)="dismissPopover()">

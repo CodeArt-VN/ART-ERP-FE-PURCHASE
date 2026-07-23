@@ -101,6 +101,19 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 		const groups = this.formGroup.controls.OrderLines as FormArray;
 		const selectedItem = line._Item;
 		line.Status = line.Status ?? 'Open';
+		// Detail API no longer returns full UoMs/_Vendors — seed display-only; edit data via ItemPrices
+		const seedUoMs =
+			selectedItem?.UoMs?.length > 0
+				? selectedItem.UoMs
+				: line.IDItemUoM
+					? [{ Id: line.IDItemUoM, Name: line.UoMName, IsBaseUoM: false, PriceList: [] }]
+					: [];
+		const seedVendors =
+			selectedItem?._Vendors?.length > 0
+				? selectedItem._Vendors
+				: this._IDVendor
+					? [{ Id: this._IDVendor }]
+					: [];
 
 		const group = this.formBuilder.group({
 			_IDItemDataSource: this.buildSelectDataSource((term) => {
@@ -113,7 +126,7 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 					Keyword: term
 				});
 			}),
-			_IDUoMDataSource: [selectedItem ? selectedItem.UoMs : []],
+			_IDUoMDataSource: [seedUoMs],
 
 			IDItem: new FormControl({ value: line.IDItem, disabled: this?._sourceType != null }, this._contentType === 'Item' ? [Validators.required] : []),
 			IDItemUoM: new FormControl({ value: line.IDItemUoM, disabled: this?._sourceType != null }, this._contentType === 'Item' ? [Validators.required] : []),
@@ -151,7 +164,7 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 			CreatedDate: [line.CreatedDate],
 			DeletedLines: [],
 			_Status: [this._statusLineList.find((d) => d.Code == line.Status)],
-			_Vendors: [selectedItem ? selectedItem._Vendors : []],
+			_Vendors: [seedVendors],
 			IsChecked: [false],
 		});
 

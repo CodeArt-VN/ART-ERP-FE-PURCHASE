@@ -211,6 +211,70 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		if (this.item?.Id == 0) this.formGroup.controls.ContentType.markAsDirty();
 		this._currentContentType = this.item.ContentType;
 		this.readyRender = true;
+		this.loadItemPricesIfEditable();
+	}
+
+	isPriceEditableStatus(status = this.formGroup?.get('Status')?.value || this.item?.Status) {
+		return ['Open', 'Draft', 'Unapproved'].includes(status);
+	}
+
+	loadItemPricesIfEditable() {
+		if (!this.pageConfig.canEdit || !this.isPriceEditableStatus()) return;
+		const headerVendor = this.formGroup.get('IDBusinessPartner')?.value || this.item?.IDBusinessPartner;
+		const lines = (this.item?.QuotationLines || [])
+			.filter((l) => l.IDItem)
+			.map((l) => ({
+				IDItem: l.IDItem,
+				IDVendor: l.IDVendor || headerVendor || 0,
+			}));
+		if (!lines.length) return;
+
+		this.commonService
+			.connect('POST', 'PURCHASE/Quotation/ItemPrices', { Lines: lines })
+			.toPromise()
+			.then((prices: any) => this.applyItemPrices(prices))
+			.catch(() => {});
+	}
+
+	applyItemPrices(prices: any) {
+		if (!prices?.length) return;
+		const byItemVendor = new Map<string, any>();
+		const byItem = new Map<number, any>();
+		prices.forEach((p) => {
+			byItemVendor.set(`${p.IDItem}_${p.IDVendor || 0}`, p);
+			if (!byItem.has(p.IDItem)) byItem.set(p.IDItem, p);
+		});
+
+		(this.item?.QuotationLines || []).forEach((line) => {
+			if (!line._Item) return;
+			const vendorId = line.IDVendor || this.formGroup.get('IDBusinessPartner')?.value || this.item?.IDBusinessPartner || 0;
+			const row = byItemVendor.get(`${line.IDItem}_${vendorId}`) || byItem.get(line.IDItem);
+			if (!row) return;
+			line._Item.UoMs = row.UoMs || [];
+			line._Item._Vendors = row._Vendors || [];
+		});
+
+		const orderLines = this.formGroup.get('QuotationLines') as FormArray;
+		orderLines?.controls?.forEach((g) => {
+			const idItem = g.get('IDItem')?.value;
+			const vendorId = g.get('IDVendor')?.value || this.formGroup.get('IDBusinessPartner')?.value || 0;
+			const row = byItemVendor.get(`${idItem}_${vendorId}`) || byItem.get(idItem);
+			if (!row) return;
+
+			const uoms = row.UoMs || [];
+			const vendors = row._Vendors || [];
+			g.get('_IDUoMDataSource')?.setValue(uoms);
+			g.get('_Vendors')?.setValue(vendors);
+
+			const item = g.get('_Item')?.value;
+			if (item) {
+				g.get('_Item')?.setValue({
+					...item,
+					UoMs: uoms,
+					_Vendors: vendors,
+				});
+			}
+		});
 	}
 
 	async saveChange() {

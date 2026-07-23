@@ -67,7 +67,7 @@
 
 		<ion-popover #addNewPopover [isOpen]="isOpenAddNewPopover" (didDismiss)="isOpenAddNewPopover = false">
 			<ng-template>
-				<ion-content [fullscreen]="true" appScrollbarTheme scroll-y="false" scroll-x="true">
+				<ion-content [fullscreen]="true" appScrollbarTheme scroll-y="false" class="scrollx">
 					<ion-list lines="none">
 						<ion-item
 							*ngIf="canCreatePurchaseQuotation()"
@@ -98,7 +98,7 @@
 		</ion-popover>
 	</app-toolbar>
 </ion-header>
-<ion-content [fullscreen]="true" appScrollbarTheme scroll-x="true" class="header-table">
+<ion-content [fullscreen]="true" appScrollbarTheme class="header-table scrollx">
 	<app-page-title class="ion-padding safe-max-width" [pageConfig]="pageConfig"></app-page-title>
 
 	<div class="safe-max-width">
@@ -140,7 +140,4 @@
 	</div>
 
 	<div class="ion-padding"></div>
-	<ion-infinite-scroll color="primary" threshold="30%" (ionInfinite)="loadData($event)" [disabled]="!pageConfig.infiniteScroll || pageConfig.isEndOfData">
-		<ion-infinite-scroll-content loadingSpinner="dots"></ion-infinite-scroll-content>
-	</ion-infinite-scroll>
 </ion-content>

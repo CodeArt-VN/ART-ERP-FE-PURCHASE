@@ -42,11 +42,11 @@
 	</app-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" appScrollbarTheme class="ion-padding">
+<ion-content [fullscreen]="true" appScrollbarTheme class="scrollx">
 	<div id="ng-select-header" style="position: absolute; z-index: 30005"></div>
 	<div id="ng-select-table" style="position: absolute; z-index: 30005"></div>
 
-	<div class="main-view" *ngIf="item && pageConfig.showSpinner==false">
+	<div class="main-view safe-max-width" *ngIf="item && pageConfig.showSpinner==false" style="position: sticky; left: 0">
 		<ion-grid fixed>
 			<form [formGroup]="formGroup">
 				<ion-row class="hr-group">
@@ -100,20 +100,17 @@
 			</form>
 		</ion-grid>
 
-		<div class="row-full shadow safe-max-width" style="max-width: 1760px">
+		<div class="row-full shadow full-screen">
 			<ion-toolbar color="primary">
 				<ion-segment scrollable="true" (ionChange)="segmentChanged($event)" [value]="segmentView">
 					<ion-segment-button value="s1">
 						<ion-label>{{'Product list' | translate}}</ion-label>
-			
 					</ion-segment-button>
 					<ion-segment-button value="s2">
 						<ion-label>{{'Other information' | translate}}</ion-label>
 					</ion-segment-button>
-				
 				</ion-segment>
 				<ion-buttons slot="end" *ngIf="segmentView=='s1'">
-
 					<ion-button class="ion-hide-sm-down" *ngIf="pageConfig.canExport" (click)="export()" title="{{'Export' | translate}}">
 						<ion-icon slot="icon-only" name="cloud-download-outline"></ion-icon>
 					</ion-button>
@@ -126,24 +123,8 @@
 						<ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
 						<input class="hide-all" #importfile type="file" accept=".xlsx" (change)="import($event)" />
 					</ion-button>
-					</ion-buttons>
+				</ion-buttons>
 			</ion-toolbar>
-			<div *ngIf="segmentView == 's1'">
-				<app-purchase-items
-					[page]="this" 
-					[contentType]="_currentContentType"
-					[IDPurchaseRequest]="formGroup.get('Id').value"
-					[canEdit]="pageConfig.canEdit"
-					[IDVendor]="formGroup.get('IDVendor').value"
-					[status]="formGroup.get('Status').value"
-					[statusLineList]="statusLineList"
-					[orderLines]="item.OrderLines"
-					(renderFormArray)="renderFormArray($event)"
-					(removeItem)="removeItem($event)"
-					(onChange)="saveChange()"
-				>
-				</app-purchase-items>
-			</div>
 			<div *ngIf="segmentView == 's2'">
 				<div class="ion-padding">
 					<ion-grid fixed>
@@ -184,5 +165,24 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Product list — same layout as purchase-order-detail / forecast-detail (outside row-full) -->
+
+	<app-purchase-items
+		*ngIf="segmentView == 's1' && item && pageConfig.showSpinner==false"
+		[page]="this"
+		[contentType]="_currentContentType"
+		[IDPurchaseRequest]="formGroup.get('Id').value"
+		[canEdit]="pageConfig.canEdit"
+		[IDVendor]="formGroup.get('IDVendor').value"
+		[status]="formGroup.get('Status').value"
+		[statusLineList]="statusLineList"
+		[orderLines]="item.OrderLines"
+		(renderFormArray)="renderFormArray($event)"
+		(removeItem)="removeItem($event)"
+		(onChange)="saveChange()"
+	>
+	</app-purchase-items>
+
 	<app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>
 </ion-content>

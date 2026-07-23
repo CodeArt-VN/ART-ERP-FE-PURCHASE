@@ -71,6 +71,13 @@ export class PurchaseOrderItemsComponent extends PageBase {
 		let selectedItem = preLoadItems?.find((d) => d.Id == line.IDItem);
 		const isSourceLocked = this.isSourceLocked();
 		const canEditQuantityAdjusted = this.canEditQuantityAdjusted(isSourceLocked);
+		// Detail API no longer returns UoMs/PriceList on _Items — seed display UoM; edit data via ItemPrices
+		const seedUoMs =
+			selectedItem?.UoMs?.length > 0
+				? selectedItem.UoMs
+				: line.IDUoM
+					? [{ Id: line.IDUoM, Name: line.UoMName, PriceList: [] }]
+					: [];
 		const group = this.formBuilder.group({
 			_IDItemDataSource: [
 				{
@@ -97,7 +104,7 @@ export class PurchaseOrderItemsComponent extends PageBase {
 					},
 				},
 			],
-			_IDUoMDataSource: [selectedItem ? selectedItem.UoMs : []],
+			_IDUoMDataSource: [seedUoMs],
 			IDOrder: [line.IDOrder],
 			Id: [line.Id],
 			Remark: new FormControl({

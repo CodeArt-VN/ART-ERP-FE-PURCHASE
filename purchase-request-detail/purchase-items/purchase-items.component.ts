@@ -94,6 +94,19 @@ export class PurchaseItemsComponent extends PageBase {
 		let groups = <FormArray>this.formGroup.controls.OrderLines;
 		let selectedItem = line._Item;
 		line.Status = line.Status ?? 'Open';
+		// Detail API no longer returns full UoMs/_Vendors — seed display-only values; edit data via ItemPrices
+		const seedUoMs =
+			selectedItem?.UoMs?.length > 0
+				? selectedItem.UoMs
+				: line.IDItemUoM
+					? [{ Id: line.IDItemUoM, Name: line.UoMName, IsBaseUoM: line.IDBaseUoM == line.IDItemUoM, PriceList: [] }]
+					: [];
+		const seedVendors =
+			selectedItem?._Vendors?.length > 0
+				? selectedItem._Vendors
+				: selectedItem?._Vendor?.Id
+					? [selectedItem._Vendor]
+					: [];
 		let group = this.formBuilder.group({
 			_IDItemDataSource: this.buildSelectDataSource((term) => {
 				return this.pageProvider.commonService.connect('GET', 'PURCHASE/Request/ItemSearch/',{
@@ -106,9 +119,9 @@ export class PurchaseItemsComponent extends PageBase {
 					Keyword: term
 				});
 			}),
-			_IDUoMDataSource: [selectedItem ? selectedItem.UoMs : []],
-			_Vendors: [selectedItem ? selectedItem._Vendors : []],
-			_Vendor: [selectedItem ? selectedItem._Vendors?.find((d) => d.Id == line.IDVendor) : ''],
+			_IDUoMDataSource: [seedUoMs],
+			_Vendors: [seedVendors],
+			_Vendor: [seedVendors.find((d) => d.Id == line.IDVendor) || selectedItem?._Vendor || ''],
 			IDItem: [line.IDItem || 0],
 			IDRequest: [line.IDRequest || this._IDPurchaseRequest], //Validators.required
 			IDItemUoM: new FormControl(
@@ -237,12 +250,51 @@ export class PurchaseItemsComponent extends PageBase {
 					return;
 				}
 			}
+			this.submitData(group);
 		} else {
 			group.controls.UoMPrice.setValue(null);
 			group.controls.UoMPrice.markAsDirty();
 			group.controls.IDBaseUoM.setValue(null);
 			group.controls.IDBaseUoM.markAsDirty();
+			this.submitData(group);
 		}
+	}
+
+	changeLineVendor(g) {
+		const idItem = g.get('IDItem')?.value;
+		const idVendor = g.get('IDVendor')?.value || this._IDVendor;
+		if (!idItem) {
+			this.submitData(g);
+			return;
+		}
+
+		this.pageProvider.commonService
+			.connect('POST', 'PURCHASE/Request/ItemPrices', {
+				Lines: [{ IDItem: idItem, IDVendor: idVendor || 0 }],
+			})
+			.toPromise()
+			.then((prices: any) => {
+				const row = prices?.[0];
+				if (row) {
+					const uoms = row.UoMs || [];
+					const vendors = row._Vendors || [];
+					g.get('_IDUoMDataSource')?.setValue(uoms);
+					g.get('_Vendors')?.setValue(vendors);
+					g.get('_Vendor')?.setValue(vendors.find((v) => v.Id == idVendor) || null);
+					const item = g.get('_Item')?.value;
+					if (item) {
+						g.get('_Item')?.setValue({
+							...item,
+							UoMs: uoms,
+							_Vendors: vendors,
+						});
+					}
+					this.IDUoMChange(g);
+					return;
+				}
+				this.submitData(g);
+			})
+			.catch(() => this.submitData(g));
 	}
 
 	submitData(g) {

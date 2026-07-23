@@ -1,0 +1,68 @@
+// Mirror forecast-detail `.forecast-products-table` layout — page-scoped only.
+
+app-data-table.po-order-lines-table {
+	&.virtual-scroll {
+		::ng-deep datatable-body,
+		::ng-deep app-virtual-viewport,
+		::ng-deep .vs-content,
+		::ng-deep .datatable-virtual-item,
+		::ng-deep datatable-body-row.row {
+			width: 100%;
+			max-width: 100%;
+			min-width: 0;
+			box-sizing: border-box;
+		}
+	}
+
+	::ng-deep .col-id {
+		flex: 0 0 60px;
+		min-width: 60px;
+		max-width: 60px;
+	}
+
+	::ng-deep .col-name {
+		flex: 1 1 250px;
+		min-width: 250px;
+		max-width: none;
+		justify-content: flex-start;
+		text-align: left;
+	}
+
+	::ng-deep .col-name.po-remark-col {
+		flex: 1 1 160px;
+		min-width: 160px;
+		max-width: none;
+	}
+
+	::ng-deep .col-code {
+		flex: 1 1 100px;
+		min-width: 100px;
+		max-width: 100px;
+	}
+
+	::ng-deep .col-number.po-qty-col {
+		flex: 1 1 120px;
+		min-width: 120px;
+		max-width: 120px;
+		justify-content: flex-end;
+		text-align: right;
+
+		.c-input,
+		app-input-control {
+			text-align: right;
+		}
+	}
+
+	::ng-deep .col-promotion {
+		flex: 0 0 90px;
+		min-width: 90px;
+		max-width: 90px;
+		justify-content: center;
+	}
+
+	::ng-deep .col-icon {
+		flex: 0 0 40px;
+		min-width: 40px;
+		max-width: 40px;
+	}
+}

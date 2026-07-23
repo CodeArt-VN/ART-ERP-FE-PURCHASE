@@ -115,7 +115,7 @@
 	</app-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" appScrollbarTheme class="header-table" scroll-x="true">
+<ion-content [fullscreen]="true" appScrollbarTheme class="header-table scrollx">
 	<app-page-title class="ion-padding safe-max-width" [pageConfig]="pageConfig"></app-page-title>
 
 	<div class="safe-max-width">
@@ -149,12 +149,7 @@
 			</datatable-column>
 		</app-data-table>
 	</div>
-
-	<ion-infinite-scroll color="primary" threshold="20%" (ionInfinite)="loadData($event)" [disabled]="!pageConfig.infiniteScroll || pageConfig.isEndOfData">
-		<ion-infinite-scroll-content loadingSpinner="dots"></ion-infinite-scroll-content>
-	</ion-infinite-scroll>
-
-	<ion-popover class="w300" #popover [isOpen]="isOpenPopover" (didDismiss)="dismissPopover()">
+<ion-popover class="w300" #popover [isOpen]="isOpenPopover" (didDismiss)="dismissPopover()">
 		<ng-template>
 			<ion-content [fullscreen]="true" appScrollbarTheme>
 				<ion-grid>
