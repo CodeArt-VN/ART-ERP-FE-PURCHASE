@@ -331,7 +331,7 @@ export class PurchaseQuotationItemsComponent extends PageBase {
 		const groups = this.formGroup.controls.OrderLines as FormArray;
 		if (groups.controls[index].get('Id').value) {
 			this.env
-				.showPrompt('Bạn có chắc muốn xóa sản phẩm?', null, 'Xóa sản phẩm')
+				.showPrompt('Are you sure you want to delete the product?', null, 'Delete the product')
 				.then(() => {
 					const Ids = [groups.controls[index].get('Id').value];
 					this.removeItem.emit(Ids);
