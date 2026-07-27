@@ -327,8 +327,8 @@ export class PurchaseOrderDetailPage extends PageBase {
 
 						this.alertCtrl
 							.create({
-								header: 'Có lỗi import dữ liệu',
-								subHeader: 'Bạn có muốn xem lại các mục bị lỗi?',
+								header: 'Data import error',
+								subHeader: 'Do you want to review the items with errors?',
 								message: 'Có ' + resp.ErrorList.length + ' lỗi khi import:' + message,
 								cssClass: 'alert-text-left',
 								buttons: [
@@ -460,7 +460,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 		// 	.showLoading('Please wait for a few moments', this.pageProvider.commonService.connect('POST', 'PURCHASE/Order/CopyToAPInvoice/', { Ids: [this.item.Id] }).toPromise())
 		// 	.then((resp: any) => {
 		// 		this.env
-		// 			.showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
+		// 			.showPrompt('Do you want to open the newly created invoice?')
 		// 			.then((_) => {
 		// 				if (resp.length == 1) {
 		// 					this.nav('/ap-invoice/' + resp[0]);
@@ -477,7 +477,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 			.createInvoice(this.item, this.env, this.pageConfig)
 			.then((resp: any) => {
 				this.env
-					.showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
+					.showPrompt('Do you want to open the newly created invoice?')
 					.then((_) => {
 						if (resp.length == 1) {
 							this.nav('/ap-invoice/' + resp[0]);

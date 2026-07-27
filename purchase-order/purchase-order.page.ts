@@ -414,7 +414,7 @@ export class PurchaseOrderPage extends PageBase {
 	createInvoice() {
 		this.pageProvider.createInvoice(this.selectedItems, this.env, this.pageConfig).then((resp: any) => {
 			this.env
-				.showPrompt('Bạn có muốn mở hóa đơn vừa tạo?')
+				.showPrompt('Do you want to open the newly created invoice?')
 				.then((_) => {
 					if (resp.length == 1) {
 						this.nav('/ap-invoice/' + resp[0], 'forward');

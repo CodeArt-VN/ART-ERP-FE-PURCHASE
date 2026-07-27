@@ -316,7 +316,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		if (quotationLines?.controls.length > 0) {
 			if (e) {
 				this.env
-					.showPrompt('Tất cả hàng hoá trong danh sách khác với nhà cung cấp được chọn sẽ bị xoá. Bạn có muốn tiếp tục ? ', null, 'Thông báo')
+					.showPrompt('All items in the list that do not belong to the selected vendor will be deleted. Do you want to continue?', null, 'Announcement')
 					.then(() => {
 						let DeletedLines = quotationLines
 							.getRawValue()
@@ -509,7 +509,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		let quotationLines = this.formGroup.get('QuotationLines') as FormArray;
 		if (quotationLines.controls.length > 0) {
 			this.env
-				.showPrompt('Tất cả hàng hoá trong danh sách sẽ bị xoá khi bạn chọn nhà cung cấp khác. Bạn chắc chắn chứ? ', null, 'Thông báo')
+				.showPrompt('All items in the list will be deleted when you select another vendor. Are you sure?', null, 'Announcement')
 				.then(() => {
 					let DeletedLines = quotationLines
 						.getRawValue()
@@ -694,11 +694,11 @@ export class PurchaseQuotationDetailPage extends PageBase {
 					this.env
 						.showPrompt(
 							{
-								code: 'Có {{value}} lỗi khi import: {{value1}}',
+								code: '{{value}} error(s) during import: {{value1}}',
 								value: { value: resp.ErrorList.length, value1: message },
 							},
-							'Bạn có muốn xem lại các mục bị lỗi?',
-							'Có lỗi import dữ liệu'
+							'Do you want to review the items with errors?',
+							'Data import error'
 						)
 						.then((_) => {
 							this.downloadURLContent(resp.FileUrl);
