@@ -17,6 +17,7 @@ import { PriceListVersionModalPage } from '../pricelist-version-modal/pricelist-
 import { PURCHASE_QuotationService } from '../purchase-quotation.service';
 import { ItemPlanningDataModalPage } from '../item-planning-data-modal/item-planning-data-modal.page';
 import { SYS_ConfigService } from 'src/app/services/custom/system-config.service';
+import { PurchaseQuotationItemsComponent } from './purchase-quotation-items/purchase-quotation-items.component';
 
 @Component({
 	selector: 'app-purchase-quotation-detail',
@@ -26,6 +27,7 @@ import { SYS_ConfigService } from 'src/app/services/custom/system-config.service
 })
 export class PurchaseQuotationDetailPage extends PageBase {
 	@ViewChild('importfile') importfile: any;
+	@ViewChild('orderItems') orderItems: PurchaseQuotationItemsComponent;
 	checkingCanEdit = false;
 	statusList = [];
 	_statusLineList = [];
@@ -116,6 +118,13 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			this.pageConfig.canCreateFromVendor &&
 			(!this.item?.Id || this.item.Id == 0 || this.item.IDBusinessPartner == this.env.user.IDBusinessPartner)
 		);
+	}
+
+	canShowVendorProductActions() {
+		const vendorId = this.formGroup?.get('IDBusinessPartner')?.value;
+		const quotationId = this.formGroup?.get('Id')?.value || this.item?.Id;
+		if (!this.pageConfig?.canEdit || !vendorId || !quotationId) return false;
+		return !this.vendorView || this.pageConfig?.canCreateFromVendor;
 	}
 
 	applyVendorCreateDefaults() {
@@ -651,6 +660,11 @@ export class PurchaseQuotationDetailPage extends PageBase {
 		this.importfile.nativeElement.value = '';
 		this.importfile.nativeElement.click();
 	}
+
+	addProduct() {
+		this.orderItems?.addLine({}, true);
+	}
+
 	async export() {
 		if (this.submitAttempt) return;
 		let queryDetail = {

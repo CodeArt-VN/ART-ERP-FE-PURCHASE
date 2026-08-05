@@ -14,6 +14,7 @@ import { SaleOrderPickerModalPage } from '../sale-order-picker-modal/sale-order-
 import { PURCHASE_OrderService } from '../purchase-order-service';
 import { CopyFromPurchaseOrderToReceiptModalPage } from '../copy-from-purchase-order-to-receipt-modal/copy-from-purchase-order-to-receipt-modal.page';
 import { APIList } from 'src/app/services/static/global-variable';
+import { PurchaseOrderItemsComponent } from './purchase-order-items/purchase-order-items.component';
 
 @Component({
 	selector: 'app-purchase-order-detail',
@@ -23,6 +24,7 @@ import { APIList } from 'src/app/services/static/global-variable';
 })
 export class PurchaseOrderDetailPage extends PageBase {
 	@ViewChild('importfile') importfile: any;
+	@ViewChild('orderItems') orderItems: PurchaseOrderItemsComponent;
 	checkingCanEdit = false;
 	branchList = [];
 	storerList = [];
@@ -303,6 +305,28 @@ export class PurchaseOrderDetailPage extends PageBase {
 		this.importfile.nativeElement.value = '';
 		this.importfile.nativeElement.click();
 	}
+
+	addProduct() {
+		this.orderItems?.addLine({ IDOrder: this.item.Id, Id: 0 }, true);
+	}
+
+	async export() {
+		if (this.submitAttempt) return;
+		let queryDetail = {
+			IDOrder: this.formGroup.get('Id').value,
+		};
+		this.submitAttempt = true;
+		this.env
+			.showLoading('Please wait for a few moments', this.purchaseOrderDetailProvider.export(queryDetail))
+			.then((response: any) => {
+				this.downloadURLContent(response);
+				this.submitAttempt = false;
+			})
+			.catch((err) => {
+				this.submitAttempt = false;
+			});
+	}
+
 	async uploadOrderLine(event) {
 		if (event.target.files.length == 0) return;
 

@@ -59,6 +59,21 @@
 			<ion-button *ngIf="pageConfig.ShowReOpen && pageConfig.canSendReOpenRequest" fill="clear" title="Reopen" (click)="reOpen()">
 				<ion-icon slot="start" name="paper-plane"></ion-icon>
 			</ion-button>
+			<ion-button
+				*ngIf="segmentView=='s1' && pageConfig.canEdit"
+				(click)="addProduct()"
+				title="{{'Add product' | translate}}"
+			>
+				<ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+			</ion-button>
+			<ion-button
+				class="ion-hide-sm-down"
+				*ngIf="segmentView=='s1' && pageConfig.canExport && item?.Id"
+				(click)="export()"
+				title="{{'Export' | translate}}"
+			>
+				<ion-icon slot="icon-only" name="cloud-download-outline"></ion-icon>
+			</ion-button>
 			<ion-button (click)="importClick()" *ngIf="formGroup.controls.Status.value=='Draft' && pageConfig.canEdit" title="{{'Import product' | translate}}">
 				<ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
 			</ion-button>
@@ -275,20 +290,22 @@
 
 	<!-- Product list — same layout as forecast-detail Products segment (outside row-full) -->
 
-	<app-purchase-order-items
-		*ngIf="segmentView == 's1' && item && pageConfig.showSpinner==false"
-		[_item]="item"
-		[page]="this"
-		[orderLines]="item.OrderLines"
-		[vendorView]="vendorView"
-		[_status]="this.formGroup.get('Status').value"
-		(renderFormArray)="renderFormArray($event)"
-		(onChange)="saveOrder()"
-		(removeItem)="removeOrderItem($event)"
-		(onConfirmOrder)="confirmOrder()"
-		(onShowSaleOrder)="showSaleOrderPickerModal()"
-	>
-	</app-purchase-order-items>
+	<div class="main-view safe-max-width" *ngIf="segmentView == 's1' && item && pageConfig.showSpinner==false">
+		<app-purchase-order-items
+			#orderItems
+			[_item]="item"
+			[page]="this"
+			[orderLines]="item.OrderLines"
+			[vendorView]="vendorView"
+			[_status]="this.formGroup.get('Status').value"
+			(renderFormArray)="renderFormArray($event)"
+			(onChange)="saveOrder()"
+			(removeItem)="removeOrderItem($event)"
+			(onConfirmOrder)="confirmOrder()"
+			(onShowSaleOrder)="showSaleOrderPickerModal()"
+		>
+		</app-purchase-order-items>
+	</div>
 
 	<app-page-message [itemsLength]="item? 1: 0" [showSpinner]="pageConfig.showSpinner"></app-page-message>
 	<input class="hide-all" #importfile type="file" accept=".xlsx" (change)="uploadOrderLine($event)" />

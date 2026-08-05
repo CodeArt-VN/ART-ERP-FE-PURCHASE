@@ -12,10 +12,12 @@ import { PurchaseOrderModalPage } from './purchase-order-modal/purchase-order-mo
 import { PurchaseQuotationModalPage } from './purchase-quotation-modal/purchase-quotation-modal.page';
 import { PURCHASE_RequestService } from '../purchase-request.service';
 import { SYS_ConfigService } from 'src/app/services/custom/system-config.service';
+import { PurchaseItemsComponent } from './purchase-items/purchase-items.component';
 
 @Component({ selector: 'app-purchase-request-detail', templateUrl: './purchase-request-detail.page.html', styleUrls: ['./purchase-request-detail.page.scss'], standalone: false })
 export class PurchaseRequestDetailPage extends PageBase {
 	@ViewChild('importfile') importfile: any;
+	@ViewChild('orderItems') orderItems: PurchaseItemsComponent;
 	checkingCanEdit = false;
 	statusList = [];
 	statusLineList = [];
@@ -394,6 +396,11 @@ export class PurchaseRequestDetailPage extends PageBase {
 		this.importfile.nativeElement.value = '';
 		this.importfile.nativeElement.click();
 	}
+
+	addProduct() {
+		this.orderItems?.addLine({}, true);
+	}
+
 	async export() {
 		if (this.submitAttempt) return;
 		let queryDetail = {

@@ -49,6 +49,21 @@
 				</ion-content>
 			</ng-template>
 		</ion-popover>
+		<ion-button
+			*ngIf="segmentView=='s1' && canShowVendorProductActions()"
+			(click)="addProduct()"
+			title="{{'Add product' | translate}}"
+		>
+			<ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+		</ion-button>
+		<ion-button
+			class="ion-hide-sm-down"
+			*ngIf="segmentView=='s1' && pageConfig.canExport && item?.Id"
+			(click)="export()"
+			title="{{'Export' | translate}}"
+		>
+			<ion-icon slot="icon-only" name="cloud-download-outline"></ion-icon>
+		</ion-button>
 	</app-toolbar>
 </ion-header>
 
@@ -199,26 +214,28 @@
 
 	<!-- Product list — same layout as purchase-order-detail / forecast-detail (outside row-full) -->
 
-	<app-purchase-quotation-items
-		*ngIf="segmentView == 's1' && item && pageConfig.showSpinner==false && readyRender"
-		[page]="this"
-		[IDPurchaseQuotation]="formGroup.get('Id')?.value"
-		[contentType]="formGroup.get('ContentType')?.value"
-		[IDVendor]="formGroup.get('IDBusinessPartner')?.value"
-		[statusLineList]="_statusLineList"
-		[orderLines]="item.QuotationLines"
-		[vendorView]="vendorView"
-		[isShowtoggleAllQuantity]="_isShowtoggleAllQuantity"
-		[vendorDataSource]="_vendorDataSource"
-		[requiredDate]="formGroup.get('RequiredDate')?.value"
-		[sourceType]="formGroup.get('SourceType')?.value"
-		(renderFormArray)="renderQuotationFormArray($event)"
-		(confirmEvent)="confirm()"
-		(onChange)="saveChange()"
-		(onRefresh)="refresh()"
-		(removeItem)="removeQuotationItem($event)"
-	>
-	</app-purchase-quotation-items>
+	<div class="main-view safe-max-width" *ngIf="segmentView == 's1' && item && pageConfig.showSpinner==false && readyRender">
+		<app-purchase-quotation-items
+			#orderItems
+			[page]="this"
+			[IDPurchaseQuotation]="formGroup.get('Id')?.value"
+			[contentType]="formGroup.get('ContentType')?.value"
+			[IDVendor]="formGroup.get('IDBusinessPartner')?.value"
+			[statusLineList]="_statusLineList"
+			[orderLines]="item.QuotationLines"
+			[vendorView]="vendorView"
+			[isShowtoggleAllQuantity]="_isShowtoggleAllQuantity"
+			[vendorDataSource]="_vendorDataSource"
+			[requiredDate]="formGroup.get('RequiredDate')?.value"
+			[sourceType]="formGroup.get('SourceType')?.value"
+			(renderFormArray)="renderQuotationFormArray($event)"
+			(confirmEvent)="confirm()"
+			(onChange)="saveChange()"
+			(onRefresh)="refresh()"
+			(removeItem)="removeQuotationItem($event)"
+		>
+		</app-purchase-quotation-items>
+	</div>
 
 	<ion-popover #priceListVersionPopover class="w300" [isOpen]="isOpenPriceListVersionPopover" (didDismiss)="isOpenPriceListVersionPopover = false">
 		<ng-template>

@@ -39,6 +39,21 @@
 				</ion-content>
 			</ng-template>
 		</ion-popover>
+		<ion-button
+			*ngIf="segmentView=='s1' && pageConfig.canEdit"
+			(click)="addProduct()"
+			title="{{'Add product' | translate}}"
+		>
+			<ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+		</ion-button>
+		<ion-button
+			class="ion-hide-sm-down"
+			*ngIf="segmentView=='s1' && pageConfig.canExport && item?.Id"
+			(click)="export()"
+			title="{{'Export' | translate}}"
+		>
+			<ion-icon slot="icon-only" name="cloud-download-outline"></ion-icon>
+		</ion-button>
 	</app-toolbar>
 </ion-header>
 
@@ -169,6 +184,7 @@
 	<!-- Product list — same layout as purchase-order-detail / forecast-detail (outside row-full) -->
 
 	<app-purchase-items
+		#orderItems
 		*ngIf="segmentView == 's1' && item && pageConfig.showSpinner==false"
 		[page]="this"
 		[contentType]="_currentContentType"
