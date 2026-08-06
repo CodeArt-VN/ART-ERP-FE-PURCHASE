@@ -1,15 +1,17 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
+import { ChangeDetectorRef, Component, DoCheck, EventEmitter, Input, Output } from '@angular/core';
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { PageBase } from 'src/app/page-base';
 import { EnvService } from 'src/app/services/core/env.service';
+import { HistoryService } from 'src/app/services/custom/history.service';
 import { PROD_ItemInVendorProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
 import { IntervalItemModalComponent } from '../interval-item-modal/interval-item-modal';
 import { lib } from 'src/app/services/static/global-functions';
 
 @Component({ selector: 'app-purchase-items', templateUrl: './purchase-items.component.html', styleUrls: ['./purchase-items.component.scss'], standalone: false })
-export class PurchaseItemsComponent extends PageBase {
+export class PurchaseItemsComponent extends PageBase implements DoCheck {
+	private _historyViewIndex = -1;
 	_preloadItems;
 	_canEdit = false;
 	_IDPurchaseRequest;
@@ -56,6 +58,7 @@ export class PurchaseItemsComponent extends PageBase {
 	constructor(
 		public pageProvider: PROD_ItemInVendorProvider,
 		public itemProvider: WMS_ItemProvider,
+		public historyService: HistoryService,
 		public env: EnvService,
 		public route: ActivatedRoute,
 		public alertCtrl: AlertController,
@@ -73,6 +76,7 @@ export class PurchaseItemsComponent extends PageBase {
 		this.items = [];
 		super.loadedData();
 	}
+
 	setOrderLines() {
 		this.formGroup.controls.OrderLines = new FormArray([]);
 		if (this.items?.length) {
@@ -82,24 +86,73 @@ export class PurchaseItemsComponent extends PageBase {
 		this.items?.forEach((i) => {
 			this.addLine(i);
 		});
-		if(this.page.pageConfig.canEditPurchaseRequest != undefined) {
-			this.page.pageConfig.canEdit = this.page.pageConfig.canEditPurchaseRequest;
+		if (this.page?.pageConfig?.isHistoryView) {
+			(this.formGroup.controls.OrderLines as FormArray).controls.forEach((g) =>
+				g.enable({ emitEvent: false })
+			);
+		} else {
+			if (this.page?.pageConfig?.canEditPurchaseRequest != undefined) {
+				this.page.pageConfig.canEdit = this.page.pageConfig.canEditPurchaseRequest;
+			}
+			if (!this.page?.pageConfig?.canEdit) this.formGroup.disable();
 		}
-		if (!this.page.pageConfig.canEdit) this.formGroup.disable();
 
 		this.renderFormArray.emit(this.formGroup.controls.OrderLines);
 	}
 
+	ngDoCheck() {
+		if (!this.page) return;
+
+		if (!this.page.pageConfig?.isHistoryView) {
+			if (this._historyViewIndex !== -1) {
+				this._historyViewIndex = -1;
+				const lines = this.page.item?.OrderLines;
+				this.items = Array.isArray(lines) ? [...lines] : [];
+				this.setOrderLines();
+				this.cdr.detectChanges();
+			}
+			return;
+		}
+
+		const rev = this.page.historyRevision ?? this.page.historyIndex;
+		if (rev === this._historyViewIndex) return;
+		this._historyViewIndex = rev;
+		const lines = this.page.item?.OrderLines;
+		this.items = Array.isArray(lines) ? [...lines] : [];
+		this.setOrderLines();
+		this.cdr.detectChanges();
+	}
+
+	isHistoryCellChanged(group: FormGroup, fieldId: string): boolean {
+		if (!this.page?.pageConfig?.isHistoryView || !this.historyService.active) return false;
+		return this.historyService.isLineFieldChanged(
+			{
+				Id: group.get('Id')?.value,
+				_historyLineKey: group.get('_historyLineKey')?.value,
+			},
+			fieldId
+		);
+	}
+
+	/** Live line `_Item` + history-preloaded bag (deleted lines). */
+	resolveSelectedItem(line: any): any {
+		if (line?._Item?.Id) return line._Item;
+		const id = Number(line?.IDItem);
+		if (!(id > 0)) return null;
+		const bag = this.page?.historySnapshotBefore?._Items || [];
+		return bag.find((d) => d.Id == id) || null;
+	}
+
 	addLine(line, markAsDirty = false) {
 		let groups = <FormArray>this.formGroup.controls.OrderLines;
-		let selectedItem = line._Item;
+		let selectedItem = this.resolveSelectedItem(line);
 		line.Status = line.Status ?? 'Open';
 		// Detail API no longer returns full UoMs/_Vendors — seed display-only values; edit data via ItemPrices
 		const seedUoMs =
 			selectedItem?.UoMs?.length > 0
 				? selectedItem.UoMs
 				: line.IDItemUoM
-					? [{ Id: line.IDItemUoM, Name: line.UoMName, IsBaseUoM: line.IDBaseUoM == line.IDItemUoM, PriceList: [] }]
+					? [{ Id: line.IDItemUoM, Name: line.UoMName || selectedItem?.UoMs?.find((u) => u.Id == line.IDItemUoM)?.Name || `#${line.IDItemUoM}`, IsBaseUoM: line.IDBaseUoM == line.IDItemUoM, PriceList: [] }]
 					: [];
 		const seedVendors =
 			selectedItem?._Vendors?.length > 0
@@ -131,6 +184,9 @@ export class PurchaseItemsComponent extends PageBase {
 			IDBaseUoM: [line.IDBaseUoM],
 			IDVendor: [this._IDVendor ? this._IDVendor : line.IDVendor],
 			Id: [line.Id],
+			_historyLineKey: [line._historyLineKey || (Number(line.Id) > 0 ? String(line.Id) : '')],
+			_historyRemoved: [!!line._historyRemoved],
+			_historyTrackKey: [`${this.page?.historyRevision ?? 0}:${line._historyRemoved ? 'rm:' : ''}${line._historyLineKey || line.Id || groups.length}`],
 			Status: [line.Status],
 			Sort: [line.Sort],
 			Name: [line.Name],
@@ -155,7 +211,7 @@ export class PurchaseItemsComponent extends PageBase {
 			TotalDiscount: [line.TotalDiscount],
 
 			TotalAfterDiscount: [line.TotalAfterDiscount],
-			_Item: [line._Item],
+			_Item: [selectedItem || line._Item],
 			Tax: new FormControl({ value: line.Tax, disabled: true }),
 			IsDeleted: [line.IsDeleted],
 			CreatedBy: [line.CreatedBy],
@@ -164,7 +220,12 @@ export class PurchaseItemsComponent extends PageBase {
 			_Status: [this._statusLineList.find((d) => d.Code == line.Status)],
 		});
 		groups.push(group);
-		if (selectedItem) group.get('_IDItemDataSource').value.selected.push(selectedItem);
+		if (selectedItem) {
+			const ds = group.get('_IDItemDataSource').value;
+			if (ds && !ds.selected?.some((x) => x?.Id == selectedItem.Id)) {
+				ds.selected = [...(ds.selected || []), selectedItem];
+			}
+		}
 		group.get('_IDItemDataSource').value?.initSearch();
 
 		if (markAsDirty) {

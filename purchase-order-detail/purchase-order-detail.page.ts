@@ -63,6 +63,7 @@ export class PurchaseOrderDetailPage extends PageBase {
 	) {
 		super();
 		this.pageConfig.isDetailPage = true;
+		this.pageConfig.ShowHistory = true;
 		this.buildFormGroup();
 		if (this.env.user.IDBusinessPartner > 0 && this.env.user.SysRoles.includes('VENDOR')) {
 			this.vendorView = true;
@@ -189,6 +190,65 @@ export class PurchaseOrderDetailPage extends PageBase {
 		}
 		this._vendorDataSource.initSearch();
 		this.loadItemPricesIfEditable();
+	}
+
+	/**
+	 * Live _Items only has current OrderLines. History may show deleted lines whose
+	 * IDItem is missing from that list — preload them so ng-select can bind labels.
+	 */
+	protected async onHistoryDataReady(): Promise<void> {
+		const bag: any[] = Array.isArray(this.historySnapshotBefore?._Items)
+			? [...this.historySnapshotBefore._Items]
+			: [];
+		const known = new Set(bag.map((i) => Number(i?.Id)).filter((id) => id > 0));
+		const needed = new Set<number>();
+		for (const step of this.historySnapshots || []) {
+			const lines = step?.snapshot?.OrderLines;
+			if (!Array.isArray(lines)) continue;
+			for (const line of lines) {
+				const id = Number(line?.IDItem);
+				if (id > 0 && !known.has(id)) needed.add(id);
+			}
+		}
+		if (!needed.size) {
+			if (this.historySnapshotBefore) this.historySnapshotBefore._Items = bag;
+			return;
+		}
+
+		const missing = [...needed];
+		try {
+			const rows: any = await this.itemProvider
+				.search({ Id: JSON.stringify(missing), Take: missing.length, Skip: 0 })
+				.toPromise();
+			const list = Array.isArray(rows) ? rows : rows?.data || [];
+			for (const it of list) {
+				const id = Number(it?.Id);
+				if (id > 0 && !known.has(id)) {
+					bag.push(it);
+					known.add(id);
+				}
+			}
+		} catch {
+			/* fall through to per-id fetch */
+		}
+
+		for (const id of missing) {
+			if (known.has(id)) continue;
+			try {
+				const it: any = await this.itemProvider.getAnItem(id);
+				if (it?.Id) {
+					bag.push(it);
+					known.add(Number(it.Id));
+					continue;
+				}
+			} catch {
+				/* stub below */
+			}
+			bag.push({ Id: id, Name: `#${id}`, Code: String(id), UoMs: [] });
+			known.add(id);
+		}
+
+		if (this.historySnapshotBefore) this.historySnapshotBefore._Items = bag;
 	}
 
 	isPriceEditableStatus(status = this.formGroup?.get('Status')?.value || this.item?.Status) {

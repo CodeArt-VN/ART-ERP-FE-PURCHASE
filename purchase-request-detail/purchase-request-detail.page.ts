@@ -56,6 +56,7 @@ export class PurchaseRequestDetailPage extends PageBase {
 		super();
 		this.buildFormGroup();
 		this.pageConfig.isDetailPage = true;
+		this.pageConfig.ShowHistory = true;
 	}
 	buildFormGroup() {
 		this.formGroup = this.formBuilder.group({
@@ -155,6 +156,71 @@ export class PurchaseRequestDetailPage extends PageBase {
 
 		this.getNearestCompany(this.env.selectedBranch);
 		this.loadItemPricesIfEditable();
+	}
+
+	/**
+	 * Live lines only carry current `_Item`. History may show deleted lines whose
+	 * IDItem is missing — preload into historySnapshotBefore._Items for ng-select.
+	 */
+	protected async onHistoryDataReady(): Promise<void> {
+		const bag: any[] = Array.isArray(this.historySnapshotBefore?._Items)
+			? [...this.historySnapshotBefore._Items]
+			: [];
+		// Also seed from current live line helpers
+		for (const line of this.historySnapshotBefore?.OrderLines || []) {
+			if (line?._Item?.Id && !bag.some((i) => i.Id == line._Item.Id)) {
+				bag.push(line._Item);
+			}
+		}
+		const known = new Set(bag.map((i) => Number(i?.Id)).filter((id) => id > 0));
+		const needed = new Set<number>();
+		for (const step of this.historySnapshots || []) {
+			const lines = step?.snapshot?.OrderLines;
+			if (!Array.isArray(lines)) continue;
+			for (const line of lines) {
+				const id = Number(line?.IDItem);
+				if (id > 0 && !known.has(id)) needed.add(id);
+			}
+		}
+		if (!needed.size) {
+			if (this.historySnapshotBefore) this.historySnapshotBefore._Items = bag;
+			return;
+		}
+
+		const missing = [...needed];
+		try {
+			const rows: any = await this.itemProvider
+				.search({ Id: JSON.stringify(missing), Take: missing.length, Skip: 0 })
+				.toPromise();
+			const list = Array.isArray(rows) ? rows : rows?.data || [];
+			for (const it of list) {
+				const id = Number(it?.Id);
+				if (id > 0 && !known.has(id)) {
+					bag.push(it);
+					known.add(id);
+				}
+			}
+		} catch {
+			/* fall through */
+		}
+
+		for (const id of missing) {
+			if (known.has(id)) continue;
+			try {
+				const it: any = await this.itemProvider.getAnItem(id);
+				if (it?.Id) {
+					bag.push(it);
+					known.add(Number(it.Id));
+					continue;
+				}
+			} catch {
+				/* stub */
+			}
+			bag.push({ Id: id, Name: `#${id}`, Code: String(id), UoMs: [] });
+			known.add(id);
+		}
+
+		if (this.historySnapshotBefore) this.historySnapshotBefore._Items = bag;
 	}
 
 	/** Draft/Unapproved only — UoMs/_Vendors/PriceList via ItemPrices API */

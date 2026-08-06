@@ -177,20 +177,18 @@
 
 									<app-form-control (change)="saveOrder();" [field]="{ id: 'Name', type: 'text', label: 'Name',form: formGroup }"></app-form-control>
 
-									<div class="c-control">
-										<label class="c-label" for="Status"
-											>{{'Status' | translate}}
-											<span
-												*ngIf="!formGroup.controls.Status.valid && !formGroup.controls.Status.pending && (formGroup.controls.Status.dirty || submitAttempt)"
-												ion-text
-												color="danger"
-												>(*)</span
-											>
-										</label>
-										<select (change)="saveOrder();" class="c-input c-dropdown" formControlName="Status">
-											<option *ngFor="let i of statusList" [value]="i.Code">{{i.Name}}</option>
-										</select>
-									</div>
+									<app-form-control
+										(change)="saveOrder();"
+										[field]="{
+											id: 'Status',
+											label: 'Status',
+											type: 'ng-select-status',
+											dataSource: statusList,
+											bindLabel: 'Name',
+											bindValue: 'Code',
+											form: formGroup
+										}"
+									></app-form-control>
 									<app-form-control
 										[field]="{ id: 'PaymentStatus', type: 'ng-select', label: 'Payment status', dataSource: paymentStatusList, bindValue: 'Code', bindLabel: 'Name', form: formGroup }"
 									></app-form-control>

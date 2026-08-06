@@ -1,11 +1,12 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
+import { ChangeDetectorRef, Component, DoCheck, EventEmitter, Input, Output } from '@angular/core';
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { Subject, concat, of, distinctUntilChanged, tap, switchMap, catchError } from 'rxjs';
 import { PageBase } from 'src/app/page-base';
 import { EnvService } from 'src/app/services/core/env.service';
 import { PROD_ItemInVendorProvider, WMS_ItemProvider } from 'src/app/services/static/services.service';
+import { HistoryService } from 'src/app/services/custom/history.service';
 
 @Component({
 	selector: 'app-purchase-order-items',
@@ -13,7 +14,9 @@ import { PROD_ItemInVendorProvider, WMS_ItemProvider } from 'src/app/services/st
 	styleUrls: ['./purchase-order-items.component.scss'],
 	standalone: false,
 })
-export class PurchaseOrderItemsComponent extends PageBase {
+export class PurchaseOrderItemsComponent extends PageBase implements DoCheck {
+	private _historyViewIndex = -1;
+
 	@Input() page: any;
 	@Input() set _item(value: any) {
 		this.item = value;
@@ -35,6 +38,7 @@ export class PurchaseOrderItemsComponent extends PageBase {
 	constructor(
 		public pageProvider: PROD_ItemInVendorProvider,
 		public itemProvider: WMS_ItemProvider,
+		public historyService: HistoryService,
 		public env: EnvService,
 		public route: ActivatedRoute,
 		public alertCtrl: AlertController,
@@ -60,15 +64,59 @@ export class PurchaseOrderItemsComponent extends PageBase {
 	setOrderLines() {
 		this.formGroup.controls.OrderLines = new FormArray([]);
 		this.items?.forEach((i) => this.addLine(i));
-		this.updateFormPermissions();
+		if (this.page?.pageConfig?.isHistoryView) {
+			(this.formGroup.controls.OrderLines as FormArray).controls.forEach((g) =>
+				g.enable({ emitEvent: false })
+			);
+		} else {
+			this.updateFormPermissions();
+		}
 		this.renderFormArray.emit(this.formGroup.controls.OrderLines);
+	}
+
+	ngDoCheck() {
+		if (!this.page) return;
+
+		if (!this.page.pageConfig?.isHistoryView) {
+			if (this._historyViewIndex !== -1) {
+				this._historyViewIndex = -1;
+				const lines = this.page.item?.OrderLines;
+				this.items = Array.isArray(lines) ? [...lines] : [];
+				this.setOrderLines();
+				this.cdr.detectChanges();
+			}
+			return;
+		}
+
+		const rev = this.page.historyRevision ?? this.page.historyIndex;
+		if (rev === this._historyViewIndex) return;
+		this._historyViewIndex = rev;
+		const lines = this.page.item?.OrderLines;
+		this.items = Array.isArray(lines) ? [...lines] : [];
+		this.setOrderLines();
+		this.cdr.detectChanges();
+	}
+
+	isHistoryCellChanged(group: FormGroup, fieldId: string): boolean {
+		if (!this.page?.pageConfig?.isHistoryView || !this.historyService.active) return false;
+		return this.historyService.isLineFieldChanged(
+			{
+				Id: group.get('Id')?.value,
+				_historyLineKey: group.get('_historyLineKey')?.value,
+			},
+			fieldId
+		);
 	}
 
 	addLine(line, markAsDirty = false) {
 		const groups = this.formGroup.controls.OrderLines as FormArray;
 		line.Status = line.Status ?? 'Open';
-		let preLoadItems = this.item._Items;
+		const preLoadItems = this.resolveItemDataSourceList();
 		let selectedItem = preLoadItems?.find((d) => d.Id == line.IDItem);
+		// History deleted lines: IDItem may only exist after onHistoryDataReady preload
+		if (!selectedItem && line.IDItem && this.page?.pageConfig?.isHistoryView) {
+			selectedItem = this.page?.historySnapshotBefore?._Items?.find((d) => d.Id == line.IDItem);
+		}
 		const isSourceLocked = this.isSourceLocked();
 		const canEditQuantityAdjusted = this.canEditQuantityAdjusted(isSourceLocked);
 		// Detail API no longer returns UoMs/PriceList on _Items — seed display UoM; edit data via ItemPrices
@@ -76,7 +124,13 @@ export class PurchaseOrderItemsComponent extends PageBase {
 			selectedItem?.UoMs?.length > 0
 				? selectedItem.UoMs
 				: line.IDUoM
-					? [{ Id: line.IDUoM, Name: line.UoMName, PriceList: [] }]
+					? [
+							{
+								Id: line.IDUoM,
+								Name: line.UoMName || selectedItem?.UoMs?.find((u) => u.Id == line.IDUoM)?.Name || `#${line.IDUoM}`,
+								PriceList: [],
+							},
+						]
 					: [];
 		const group = this.formBuilder.group({
 			_IDItemDataSource: [
@@ -84,7 +138,7 @@ export class PurchaseOrderItemsComponent extends PageBase {
 					searchProvider: this.itemProvider,
 					loading: false,
 					input$: new Subject<string>(),
-					selected: preLoadItems,
+					selected: [...(preLoadItems || [])],
 					items$: null,
 					initSearch() {
 						this.loading = false;
@@ -107,6 +161,9 @@ export class PurchaseOrderItemsComponent extends PageBase {
 			_IDUoMDataSource: [seedUoMs],
 			IDOrder: [line.IDOrder],
 			Id: [line.Id],
+			_historyLineKey: [line._historyLineKey || (Number(line.Id) > 0 ? String(line.Id) : '')],
+			_historyRemoved: [!!line._historyRemoved],
+			_historyTrackKey: [`${this.page?.historyRevision ?? 0}:${line._historyRemoved ? 'rm:' : ''}${line._historyLineKey || line.Id || groups.length}`],
 			Remark: new FormControl({
 				value: line.Remark,
 				disabled: !(this.page.pageConfig.canEdit || ((this.item.Status == 'Approved' || this.item.Status == 'Ordered') && this.page.pageConfig.canEditApprovedOrder)),
@@ -132,12 +189,30 @@ export class PurchaseOrderItemsComponent extends PageBase {
 
 		groups.push(group);
 
-		if (selectedItem) group.get('_IDItemDataSource').value.selected.push(selectedItem);
+		if (selectedItem) {
+			const ds = group.get('_IDItemDataSource').value;
+			if (!ds.selected.some((x) => x?.Id == selectedItem.Id)) ds.selected.push(selectedItem);
+		}
 		group.get('_IDItemDataSource').value?.initSearch();
 
 		if (markAsDirty) {
 			group.get('IDOrder').markAsDirty();
 		}
+	}
+
+	/** Live _Items + history-preloaded extras (deleted lines). */
+	resolveItemDataSourceList(): any[] {
+		const map = new Map<number, any>();
+		const add = (list: any[]) => {
+			(list || []).forEach((it) => {
+				const id = Number(it?.Id);
+				if (id > 0 && !map.has(id)) map.set(id, it);
+			});
+		};
+		add(this.item?._Items);
+		add(this.page?.item?._Items);
+		add(this.page?.historySnapshotBefore?._Items);
+		return [...map.values()];
 	}
 
 	IDItemChange(e, group) {
@@ -299,6 +374,7 @@ export class PurchaseOrderItemsComponent extends PageBase {
 	}
 
 	updateFormPermissions() {
+		if (this.page?.pageConfig?.isHistoryView) return;
 		if (this.page.pageConfig.canEditPurchaseOrder != undefined) {
 			this.page.pageConfig.canEdit = this.page.pageConfig.canEditPurchaseOrder;
 		}

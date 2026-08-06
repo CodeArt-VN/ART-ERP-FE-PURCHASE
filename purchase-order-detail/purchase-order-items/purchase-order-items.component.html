@@ -2,7 +2,8 @@
 	<ng-container formArrayName="OrderLines">
 		<app-data-table
 			class="po-order-lines-table"
-			[virtualScroll]="true"
+			[virtualScroll]="!page?.pageConfig?.isHistoryView"
+			[trackBy]="page?.pageConfig?.isHistoryView ? '_historyTrackKey' : null"
 			[rows]="formGroup.get('OrderLines')['controls']"
 			[showSpinner]="page.pageConfig?.showSpinner"
 		>
@@ -30,7 +31,7 @@
 			</datatable-column>
 			<datatable-column class="col-id" name="No." property="#"></datatable-column>
 
-			<datatable-column class="col-name" name="Item" property="value">
+			<datatable-column class="col-name" name="Item" property="value" historyFieldId="IDItem">
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control
 						[field]="{
@@ -48,7 +49,7 @@
 					></app-input-control>
 				</ng-template>
 			</datatable-column>
-			<datatable-column class="col-code" name="Unit" property="value">
+			<datatable-column class="col-code" name="Unit" property="value" historyFieldId="IDUoM">
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control
 						[field]="{
@@ -70,47 +71,48 @@
 				class="col-number po-qty-col"
 				name="Đề nghị"
 				property="value"
+				historyFieldId="SuggestedQuantity"
 			>
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control (change)="submitData(g)" [field]="{ id: 'SuggestedQuantity', type: 'number', form: g }"></app-input-control>
 				</ng-template>
 			</datatable-column>
-			<datatable-column class="col-number po-qty-col" name="Order quantity" property="value">
+			<datatable-column class="col-number po-qty-col" name="Order quantity" property="value" historyFieldId="UoMQuantityExpected">
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control (change)="submitData(g)" [field]="{ id: 'UoMQuantityExpected', type: 'number', form: g }"></app-input-control>
 				</ng-template>
 			</datatable-column>
 
-			<datatable-column *ngIf="page.pageConfig.POShowAdjustedQuantity" class="col-number po-qty-col" name="SL đ.chỉnh" property="value">
+			<datatable-column *ngIf="page.pageConfig.POShowAdjustedQuantity" class="col-number po-qty-col" name="SL đ.chỉnh" property="value" historyFieldId="QuantityAdjusted">
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control (change)="submitData(g)" [field]="{ id: 'QuantityAdjusted', type: 'number', form: g }"></app-input-control>
 				</ng-template>
 			</datatable-column>
 
-			<datatable-column class="col-number po-qty-col" name="Discount" property="value">
+			<datatable-column class="col-number po-qty-col" name="Discount" property="value" historyFieldId="TotalDiscount">
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control (change)="submitData(g)" [field]="{ id: 'TotalDiscount', type: 'number', form: g }"></app-input-control>
 				</ng-template>
 			</datatable-column>
 
-			<datatable-column class="col-promotion" [checkbox]="true" name="Promotion goods" property="value">
+			<datatable-column class="col-promotion" [checkbox]="true" name="Promotion goods" property="value" historyFieldId="IsPromotionItem">
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control (change)="submitData(g)" [field]="{ id: 'IsPromotionItem', type: 'checkbox', form: g }"> </app-input-control>
 				</ng-template>
 			</datatable-column>
 
-			<datatable-column class="col-number po-qty-col" name="Unit price" property="value">
+			<datatable-column class="col-number po-qty-col" name="Unit price" property="value" historyFieldId="UoMPrice">
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control (change)="submitData(g)" [field]="{ id: 'UoMPrice', type: 'number', form: g }"> </app-input-control>
 				</ng-template>
 			</datatable-column>
 
-			<datatable-column class="col-number po-qty-col" name="VAT" property="value">
+			<datatable-column class="col-number po-qty-col" name="VAT" property="value" historyFieldId="TaxRate">
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control [field]="{ id: 'TaxRate', type: 'number', form: g }"></app-input-control>
 				</ng-template>
 			</datatable-column>
-			<datatable-column class="col-number po-qty-col" name="Total after tax" property="value">
+			<datatable-column class="col-number po-qty-col" name="Total after tax" property="value" historyFieldId="TotalAfterTax">
 				<ng-template let-g="row" datatable-cell-template>
 					<span class="c-input disable">
 						{{
@@ -125,7 +127,7 @@
 				</ng-template>
 			</datatable-column>
 
-			<datatable-column class="col-name po-remark-col" name="Remark" property="value">
+			<datatable-column class="col-name po-remark-col" name="Remark" property="value" historyFieldId="Remark">
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control (change)="submitData(g)" [field]="{ id: 'Remark', type: 'text', form: g }"> </app-input-control>
 				</ng-template>
