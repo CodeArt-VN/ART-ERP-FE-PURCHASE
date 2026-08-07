@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, DoCheck, EventEmitter, Input, Output } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { Subject, concat, of, distinctUntilChanged, tap, switchMap, catchError } from 'rxjs';
@@ -95,17 +95,6 @@ export class PurchaseOrderItemsComponent extends PageBase implements DoCheck {
 		this.items = Array.isArray(lines) ? [...lines] : [];
 		this.setOrderLines();
 		this.cdr.detectChanges();
-	}
-
-	isHistoryCellChanged(group: FormGroup, fieldId: string): boolean {
-		if (!this.page?.pageConfig?.isHistoryView || !this.historyService.active) return false;
-		return this.historyService.isLineFieldChanged(
-			{
-				Id: group.get('Id')?.value,
-				_historyLineKey: group.get('_historyLineKey')?.value,
-			},
-			fieldId
-		);
 	}
 
 	addLine(line, markAsDirty = false) {

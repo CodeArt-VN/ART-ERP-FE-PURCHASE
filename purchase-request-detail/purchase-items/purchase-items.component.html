@@ -2,10 +2,11 @@
 	<ng-container formArrayName="OrderLines">
 		<app-data-table
 			class="pr-order-lines-table"
-			[virtualScroll]="!page?.pageConfig?.isHistoryView"
+			editable="always"
 			[trackBy]="page?.pageConfig?.isHistoryView ? '_historyTrackKey' : null"
 			[rows]="formGroup.get('OrderLines')['controls']"
 			[showSpinner]="page.pageConfig.showSpinner"
+			(cellChange)="onCellChange($event)"
 		>
 			<datatable-empty-message subMessage="Please click add new to start...">
 				<ng-template datatable-empty-message-template>
@@ -20,7 +21,7 @@
 
 			<datatable-column class="col-id" name="No." property="#"></datatable-column>
 
-			<datatable-column class="col-name" name="Items" property="value" historyFieldId="IDItem">
+			<datatable-column class="col-name" name="Items" property="IDItem">
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control *ngIf="this._contentType != 'Item'" [field]="{ id: 'Name', label: 'Item', form: g }" (change)="submitData(g)"></app-input-control>
 					<app-input-control
@@ -42,7 +43,7 @@
 				</ng-template>
 			</datatable-column>
 
-			<datatable-column class="col-name pr-vendor-col" name="Vendor" property="value" historyFieldId="IDVendor" *ngIf="!_IDVendor && _contentType == 'Item'">
+			<datatable-column class="col-name pr-vendor-col" name="Vendor" property="IDVendor" *ngIf="!_IDVendor && _contentType == 'Item'">
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control
 						(change)="changeLineVendor(g)"
@@ -61,7 +62,7 @@
 				</ng-template>
 			</datatable-column>
 
-			<datatable-column class="col-code" name="Unit" property="value" historyFieldId="IDItemUoM">
+			<datatable-column class="col-code" name="Unit" property="IDItemUoM">
 				<ng-template let-g="row" datatable-cell-template>
 					<app-input-control
 						[field]="{
@@ -78,58 +79,43 @@
 				</ng-template>
 			</datatable-column>
 
-			<datatable-column class="col-number pr-date-col" name="Required date" property="value" historyFieldId="RequiredDate">
-				<ng-template let-g="row" datatable-cell-template>
-					<app-input-control [field]="{ id: 'RequiredDate', type: 'datetime-local', form: g }" (change)="submitData(g)"> </app-input-control>
-				</ng-template>
-			</datatable-column>
+			<datatable-column class="col-number pr-date-col" name="Required date" property="RequiredDate" editor="datetime-local" [canFilter]="false"></datatable-column>
 
-			<datatable-column class="col-number pr-qty-col" name="Quantity" property="value" historyFieldId="Quantity">
-				<ng-template let-g="row" datatable-cell-template>
-					<app-input-control (change)="changeQuantity(g)" [field]="{ id: 'Quantity', type: 'number', form: g }"></app-input-control>
-				</ng-template>
-			</datatable-column>
+			<datatable-column class="col-number pr-qty-col" name="Quantity" property="Quantity" editor="number" [canFilter]="false"></datatable-column>
 
-			<datatable-column class="col-number pr-qty-col" name="Remaining open" property="value" historyFieldId="QuantityRemainingOpen">
-				<ng-template let-g="row" datatable-cell-template>
-					<app-input-control (change)="submitData(g)" [field]="{ id: 'QuantityRemainingOpen', type: 'number', form: g }"></app-input-control>
-				</ng-template>
-			</datatable-column>
+			<datatable-column class="col-number pr-qty-col" name="Remaining open" property="QuantityRemainingOpen" editor="number" [canFilter]="false"></datatable-column>
 
-			<datatable-column class="col-number pr-qty-col" name="Discount" property="value" historyFieldId="TotalDiscount">
-				<ng-template let-g="row" datatable-cell-template>
-					<app-input-control (change)="submitData(g)" [field]="{ id: 'TotalDiscount', type: 'number', form: g }"> </app-input-control>
-				</ng-template>
-			</datatable-column>
+			<datatable-column class="col-number pr-qty-col" name="Discount" property="TotalDiscount" editor="number" [canFilter]="false"></datatable-column>
 
-			<datatable-column class="col-number pr-qty-col" name="Unit price" property="value" historyFieldId="UoMPrice" *ngIf="page.pageConfig.canViewPrice">
-				<ng-template let-g="row" datatable-cell-template>
-					<app-input-control (change)="submitData(g)" [field]="{ id: 'UoMPrice', type: 'number', form: g }"> </app-input-control>
-				</ng-template>
-			</datatable-column>
+			<datatable-column
+				class="col-number pr-qty-col"
+				name="Unit price"
+				property="UoMPrice"
+				editor="number"
+				[canFilter]="false"
+				*ngIf="page.pageConfig.canViewPrice"
+			></datatable-column>
 
-			<datatable-column class="col-number pr-qty-col" name="VAT" property="value" historyFieldId="TaxRate" *ngIf="page.pageConfig.canViewPrice">
-				<ng-template let-g="row" datatable-cell-template>
-					<app-input-control [field]="{ id: 'TaxRate', type: 'number', form: g }"></app-input-control>
-				</ng-template>
-			</datatable-column>
+			<datatable-column
+				class="col-number pr-qty-col"
+				name="VAT"
+				property="TaxRate"
+				editor="number"
+				[canFilter]="false"
+				*ngIf="page.pageConfig.canViewPrice"
+			></datatable-column>
 
-			<datatable-column class="col-number pr-qty-col" name="Total after tax" property="value" historyFieldId="TotalAfterTax" *ngIf="page.pageConfig.canViewPrice">
+			<datatable-column class="col-number pr-qty-col" name="Total after tax" property="TotalAfterTax" [editable]="false" *ngIf="page.pageConfig.canViewPrice">
 				<ng-template let-g="row" datatable-cell-template>
-					<span class="c-input disable">{{
-						g.controls.Quantity.value * (g.controls.UoMPrice.value - (g.controls.TotalDiscount.value || 0)) * (1 + g.controls.TaxRate.value / 100)
-							| number: '1.0-0'
+					<span class="c-input disable">{{ 0||
+						g.controls.Quantity.value * (g.controls.UoMPrice.value - (g.controls.TotalDiscount.value || 0)) * (1 + g.controls.TaxRate.value / 100) | number: '1.0-0'
 					}}</span>
 				</ng-template>
 			</datatable-column>
 
-			<datatable-column class="col-name pr-remark-col" name="Remark" property="value" historyFieldId="Remark">
-				<ng-template let-g="row" datatable-cell-template>
-					<app-input-control (change)="submitData(g)" [field]="{ id: 'Remark', type: 'text', form: g }"></app-input-control>
-				</ng-template>
-			</datatable-column>
+			<datatable-column class="col-name pr-remark-col" name="Remark" property="Remark" editor="text" [canFilter]="false"></datatable-column>
 
-			<datatable-column *ngIf="_showStatus" class="col-status" name="Status" property="value" historyFieldId="Status" filterControlType="ng-select" [filterDataSource]="statusLineList">
+			<datatable-column *ngIf="_showStatus" class="col-status" name="Status" property="Status" filterControlType="ng-select" [filterDataSource]="statusLineList">
 				<ng-template let-g="row" datatable-cell-template>
 					<ion-badge [color]="g.controls._Status.value?.Color" [title]="g.controls._Status.value?.Name">
 						{{ g.controls._Status.value?.Name | translate }}
