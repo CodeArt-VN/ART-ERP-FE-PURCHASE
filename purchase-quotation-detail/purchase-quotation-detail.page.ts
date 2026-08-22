@@ -413,7 +413,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 			const translationPromises = invalidControls.map((control) => this.env.translateResource(control));
 			Promise.all(translationPromises).then((values) => {
 				let invalidControls = values;
-				this.env.showMessage('Please recheck control(s): {{value}}', 'warning', invalidControls.join(' | '));
+				this.env.showMessage('Please recheck control(s): {value}', 'warning', invalidControls.join(' | '));
 			});
 		} else {
 			let Ids = [this.item.Id];
@@ -708,7 +708,7 @@ export class PurchaseQuotationDetailPage extends PageBase {
 					this.env
 						.showPrompt(
 							{
-								code: '{{value}} error(s) during import: {{value1}}',
+								code: '{value} error(s) during import: {value1}',
 								value: { value: resp.ErrorList.length, value1: message },
 							},
 							'Do you want to review the items with errors?',

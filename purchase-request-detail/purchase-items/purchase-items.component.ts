@@ -353,7 +353,7 @@ export class PurchaseItemsComponent extends PageBase implements DoCheck {
 			const translationPromises = invalidControls.map((control) => this.env.translateResource(control));
 			Promise.all(translationPromises).then((values) => {
 				let invalidControlsTranslated = values;
-				this.env.showMessage('Please recheck control(s): {{value}}', 'warning', invalidControlsTranslated.join(' | '));
+				this.env.showMessage('Please recheck control(s): {value}', 'warning', invalidControlsTranslated.join(' | '));
 			});
 			g._Vendor = g.controls._Vendors?.value?.find((d) => d.Id == g.controls.IDVendor.value);
 		} else {

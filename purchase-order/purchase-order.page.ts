@@ -460,7 +460,7 @@ export class PurchaseOrderPage extends PageBase {
 				const translationPromises = invalidControls.map((control) => this.env.translateResource(control));
 				Promise.all(translationPromises).then((values) => {
 					let invalidControls = values;
-					this.env.showMessage('Please recheck control(s): {{value}}', 'warning', invalidControls.join(' | '));
+					this.env.showMessage('Please recheck control(s): {value}', 'warning', invalidControls.join(' | '));
 				});
 			} else {
 				this.env
@@ -486,10 +486,10 @@ export class PurchaseOrderPage extends PageBase {
 						if (r.Id) ids.push(r.Id);
 						if (r.RecheckReceipts && r.RecheckReceipts.length) recheckList = [...recheckList, ...r.RecheckReceipts];
 						if (recheckList.length > 0) message = recheckList.join(', ');
-						if (ids.length > 0) messageTitle = { code: 'Created ASN successfully with Id: {{value}}', value: ids.join(', ') };
+						if (ids.length > 0) messageTitle = { code: 'Created ASN successfully with Id: {value}', value: ids.join(', ') };
 						else messageTitle = 'PO has entered a full amount of quantity!';
 						this.env
-							.showPrompt(message != '' ? { code: 'Refer to ASN: {{value}}', value: message } : null, ids.length > 0 ? subMessage : null, messageTitle)
+							.showPrompt(message != '' ? { code: 'Refer to ASN: {value}', value: message } : null, ids.length > 0 ? subMessage : null, messageTitle)
 							.then((_) => {
 								if (ids.length > 0) {
 									this.refresh();
