@@ -49,6 +49,7 @@ export class PurchaseOrderPage extends PageBase {
 		public purchaseRequestProvider: PURCHASE_RequestService
 	) {
 		super();
+		this.pageConfig.listSyncFetchById = true;
 
 		this.formGroup = formBuilder.group({
 			PaymentType: [''],
@@ -102,17 +103,24 @@ export class PurchaseOrderPage extends PageBase {
 		});
 	}
 
+	enrichListItem(row: any) {
+		if (!row) {
+			return row;
+		}
+		const i = { ...row };
+		i.TotalAfterTaxText = lib.currencyFormat(i.TotalAfterTax);
+		i.ExpectedReceiptDateText = lib.dateFormat(i.ExpectedReceiptDate, 'dd/mm/yyyy');
+		i.ExpectedReceiptTimeText = lib.dateFormat(i.ExpectedReceiptDate, 'hh:MM');
+		i.OrderDateText = lib.dateFormat(i.OrderDate, 'dd/mm/yyyy');
+		i.OrderTimeText = lib.dateFormat(i.OrderDate, 'hh:MM');
+		i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
+		i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
+		i.WarehouseName = this.env?.branchList?.find((d) => d.Id == i.IDWarehouse)?.Name;
+		return i;
+	}
+
 	loadedData(event) {
-		this.items.forEach((i) => {
-			i.TotalAfterTaxText = lib.currencyFormat(i.TotalAfterTax);
-			i.ExpectedReceiptDateText = lib.dateFormat(i.ExpectedReceiptDate, 'dd/mm/yyyy');
-			i.ExpectedReceiptTimeText = lib.dateFormat(i.ExpectedReceiptDate, 'hh:MM');
-			i.OrderDateText = lib.dateFormat(i.OrderDate, 'dd/mm/yyyy');
-			i.OrderTimeText = lib.dateFormat(i.OrderDate, 'hh:MM');
-			i.StatusText = lib.getAttrib(i.Status, this.statusList, 'Name', '--', 'Code');
-			i.StatusColor = lib.getAttrib(i.Status, this.statusList, 'Color', 'dark', 'Code');
-			i.WarehouseName = this.env.branchList.find(d => d.Id == i.IDWarehouse)?.Name
-		});
+		this.items = (this.items || []).map((i) => this.enrichListItem(i));
 		if (this.pageConfig.canSubmitOrdersForApproval) {
 			this.pageConfig.canSubmit = true;
 		}
